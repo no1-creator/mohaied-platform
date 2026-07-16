@@ -99,3 +99,11 @@ const router = useRouter();
     </main>
   );
 }
+
+export default function NewComplaintPage() {
+  return (
+    <Suspense fallback={null}>
+      <NewComplaintInner />
+    </Suspense>
+  );
+}
