@@ -1,38 +1,27 @@
-# Mohaied Platform — محايد
+# MVP Scope
 
-محايد منصة وتطبيق لحفظ حقوق أطراف المشروع من خلال توثيق الاتفاق، متابعة مراحل التنفيذ، دعم المشرف المتخصص، وإدارة الشكاوى والنزاعات.
+## Roles
 
-## Project Apps
+- Visitor
+- Client
+- Company
+- Freelancer
+- Supervisor
+- Admin
 
-- `apps/web` — الموقع الرئيسي ومنصة المستخدمين.
-- `apps/admin` — لوحة إدارة محايد.
-- `apps/mobile` — تطبيق الهاتف.
-- `apps/api` — Backend API.
+## MVP Modules
 
-## Shared Packages
-
-- `packages/ui` — Design system/components.
-- `packages/types` — Shared TypeScript types.
-- `packages/config` — Shared configs.
-- `packages/utils` — Shared utilities.
-
-## Docs
-
-- `docs/product` — Product flows and MVP scope.
-- `docs/design` — Design standards and UI rules.
-- `docs/api` — API planning.
-- `docs/database` — Database and ERD planning.
-
-## Prototypes
-
-- `prototypes/sprint-01-foundation` — أول Prototype للكود والهوية والمقاسات.
-
-## Recommended Stack
-
-- Web: Next.js + TypeScript + Tailwind CSS
-- Admin: Next.js + TypeScript + Tailwind CSS
-- Mobile: React Native / Expo + TypeScript
-- API: NestJS + TypeScript
-- Database: PostgreSQL
-- ORM: Prisma
-- Package manager: pnpm
+1. Authentication and account type selection.
+2. Profiles and verification.
+3. Services/categories.
+4. Create project flow.
+5. Invitations.
+6. Offers.
+7. Agreements.
+8. Project hub.
+9. Milestones.
+10. Files.
+11. Chat.
+12. Complaints.
+13. Supervisor review.
+14. Admin dashboard.
