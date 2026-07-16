@@ -162,7 +162,7 @@ export default function AdminComplaintDetailPage() {
               </div>
             ) : (
               <form onSubmit={decide} className="card space-y-4">
-                <h2 className="font-black">إصدار القرar</h2>
+                <h2 className="font-black">إصدار القرار</h2>
                 <div>
                   <label className="label">نوع القرار</label>
                   <select
