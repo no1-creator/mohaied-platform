@@ -1,0 +1,398 @@
+// Mohaied Platform — Database Schema
+// قاعدة بيانات منصة محايد
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== ENUMS ====================
+
+enum UserRole {
+  CLIENT
+  PROVIDER
+  SUPERVISOR
+  ADMIN
+}
+
+enum ProviderType {
+  COMPANY
+  FREELANCER
+}
+
+enum ProjectStatus {
+  DRAFT
+  OPEN
+  IN_AGREEMENT
+  IN_PROGRESS
+  COMPLETED
+  DISPUTED
+  CANCELLED
+}
+
+enum OfferStatus {
+  DRAFT
+  SUBMITTED
+  REVISION_REQUESTED
+  REVISED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum AgreementStatus {
+  PENDING_CLIENT
+  PENDING_PROVIDER
+  CONFIRMED
+  CANCELLED
+  SUPERSEDED
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  SUBMITTED
+  UNDER_REVIEW
+  REVISION_REQUESTED
+  APPROVED
+  REJECTED
+}
+
+enum SupervisorAssignmentStatus {
+  INVITED
+  ACCEPTED
+  DECLINED
+  ACTIVE
+  COMPLETED
+  REMOVED
+}
+
+enum SupervisorReportStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED_DELIVERY
+  NEEDS_REVISION
+  NEEDS_CLARIFICATION
+}
+
+enum ComplaintType {
+  DELIVERY_DELAY
+  AGREEMENT_VIOLATION
+  PAYMENT_ISSUE
+  UNPROFESSIONAL
+}
+
+enum ComplaintStatus {
+  OPEN
+  AWAITING_RESPONSE
+  UNDER_REVIEW
+  IN_ARBITRATION
+  RESOLVED
+  REJECTED
+  CLOSED
+}
+
+enum DecisionType {
+  EXTEND_DURATION
+  FAVOR_CLIENT
+  FAVOR_PROVIDER
+  AMICABLE
+}
+
+// ==================== USERS ====================
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  phone        String?   @unique
+  passwordHash String
+  fullName     String
+  role         UserRole
+  avatarUrl    String?
+  isVerified   Boolean   @default(false)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  providerProfile   ProviderProfile?
+  supervisorProfile SupervisorProfile?
+
+  clientProjects    Project[] @relation("ClientProjects")
+  providerProjects  Project[] @relation("ProviderProjects")
+
+  offers            Offer[]
+  submissions       Submission[]
+  supervisorAssignments SupervisorAssignment[]
+  complaintsFiled   Complaint[] @relation("ComplaintCreator")
+  activityLogs      ActivityLog[]
+  messages          Message[]
+}
+
+model ProviderProfile {
+  id            String       @id @default(uuid())
+  userId        String       @unique
+  user          User         @relation(fields: [userId], references: [id])
+  type          ProviderType
+  companyName   String?
+  field         String
+  bio           String?
+  rating        Float        @default(0)
+  reviewsCount  Int          @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model SupervisorProfile {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+  title         String
+  field         String
+  yearsExp      Int      @default(0)
+  ratePerReview Decimal  @default(0)
+  rating        Float    @default(0)
+  reviewsCount  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ==================== PROJECTS ====================
+
+model Project {
+  id          String        @id @default(uuid())
+  title       String
+  field       String
+  description String
+  status      ProjectStatus @default(DRAFT)
+
+  clientId    String
+  client      User          @relation("ClientProjects", fields: [clientId], references: [id])
+
+  providerId  String?
+  provider    User?         @relation("ProviderProjects", fields: [providerId], references: [id])
+
+  budgetMin   Decimal?
+  budgetMax   Decimal?
+  durationDays Int?
+
+  offers      Offer[]
+  agreement   Agreement?
+  milestones  Milestone[]
+  complaints  Complaint[]
+  files       FileAsset[]
+  messages    Message[]
+  supervisorAssignments SupervisorAssignment[]
+  activityLogs ActivityLog[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+// ==================== OFFERS ====================
+
+model Offer {
+  id          String        @id @default(uuid())
+  projectId   String
+  project     Project       @relation(fields: [projectId], references: [id])
+  providerId  String
+  provider    User          @relation(fields: [providerId], references: [id])
+
+  status      OfferStatus   @default(DRAFT)
+  totalPrice  Decimal
+  durationDays Int
+  scope       String
+  version     Int           @default(1)
+
+  milestones  OfferMilestone[]
+  agreement   Agreement?
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model OfferMilestone {
+  id           String   @id @default(uuid())
+  offerId      String
+  offer        Offer    @relation(fields: [offerId], references: [id])
+  title        String
+  description  String
+  price        Decimal
+  durationDays Int
+  orderIndex   Int
+}
+
+// ==================== AGREEMENT ====================
+
+model Agreement {
+  id          String          @id @default(uuid())
+  projectId   String          @unique
+  project     Project         @relation(fields: [projectId], references: [id])
+  offerId     String          @unique
+  offer       Offer           @relation(fields: [offerId], references: [id])
+
+  status      AgreementStatus @default(PENDING_CLIENT)
+  totalValue  Decimal
+  durationDays Int
+  revisionPolicy String?
+  clientApprovedAt   DateTime?
+  providerApprovedAt DateTime?
+  confirmedAt        DateTime?
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+// ==================== MILESTONES & SUBMISSIONS ====================
+
+model Milestone {
+  id           String          @id @default(uuid())
+  projectId    String
+  project      Project         @relation(fields: [projectId], references: [id])
+  title        String
+  description  String
+  value        Decimal
+  durationDays Int
+  orderIndex   Int
+  status       MilestoneStatus @default(PENDING)
+  dueDate      DateTime?
+
+  submissions  Submission[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model Submission {
+  id          String     @id @default(uuid())
+  milestoneId String
+  milestone   Milestone  @relation(fields: [milestoneId], references: [id])
+  providerId  String
+  provider    User        @relation(fields: [providerId], references: [id])
+  notes       String
+  externalLink String?
+  reviewNotes String?
+  approved    Boolean?
+
+  files       FileAsset[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+// ==================== SUPERVISOR ====================
+
+model SupervisorAssignment {
+  id           String                     @id @default(uuid())
+  projectId    String
+  project      Project                    @relation(fields: [projectId], references: [id])
+  supervisorId String
+  supervisor   User                       @relation(fields: [supervisorId], references: [id])
+  status       SupervisorAssignmentStatus @default(INVITED)
+  ratePerReview Decimal
+
+  reports      SupervisorReport[]
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+}
+
+model SupervisorReport {
+  id           String                 @id @default(uuid())
+  assignmentId String
+  assignment   SupervisorAssignment   @relation(fields: [assignmentId], references: [id])
+  milestoneId  String?
+  summary      String
+  notes        String?
+  status       SupervisorReportStatus @default(DRAFT)
+
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+}
+
+// ==================== COMPLAINTS ====================
+
+model Complaint {
+  id          String          @id @default(uuid())
+  code        String          @unique
+  projectId   String
+  project     Project         @relation(fields: [projectId], references: [id])
+  milestoneId String?
+  creatorId   String
+  creator     User            @relation("ComplaintCreator", fields: [creatorId], references: [id])
+
+  type        ComplaintType
+  status      ComplaintStatus @default(OPEN)
+  details     String
+
+  evidences   ComplaintEvidence[]
+  responses   ComplaintResponse[]
+  decision    Decision?
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model ComplaintEvidence {
+  id          String     @id @default(uuid())
+  complaintId String
+  complaint   Complaint  @relation(fields: [complaintId], references: [id])
+  fileUrl     String?
+  link        String?
+  createdAt   DateTime   @default(now())
+}
+
+model ComplaintResponse {
+  id          String     @id @default(uuid())
+  complaintId String
+  complaint   Complaint  @relation(fields: [complaintId], references: [id])
+  responderId String
+  message     String
+  createdAt   DateTime   @default(now())
+}
+
+model Decision {
+  id          String       @id @default(uuid())
+  complaintId String       @unique
+  complaint   Complaint    @relation(fields: [complaintId], references: [id])
+  type        DecisionType
+  reason      String
+  decidedById String
+  createdAt   DateTime     @default(now())
+}
+
+// ==================== FILES & CHAT & LOG ====================
+
+model FileAsset {
+  id           String      @id @default(uuid())
+  name         String
+  url          String
+  mimeType     String?
+  projectId    String?
+  project      Project?    @relation(fields: [projectId], references: [id])
+  submissionId String?
+  submission   Submission? @relation(fields: [submissionId], references: [id])
+  createdAt    DateTime    @default(now())
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id])
+  senderId   String?
+  sender     User?    @relation(fields: [senderId], references: [id])
+  isSystem   Boolean  @default(false)
+  content    String
+  createdAt  DateTime @default(now())
+}
+
+model ActivityLog {
+  id         String   @id @default(uuid())
+  projectId  String?
+  project    Project? @relation(fields: [projectId], references: [id])
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id])
+  action     String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+}
