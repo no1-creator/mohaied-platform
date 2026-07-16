@@ -1,0 +1,12 @@
+{
+  "name": "mohaied-platform",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Mohaied platform monorepo",
+  "scripts": {
+    "dev": "echo \"Setup apps first\"",
+    "lint": "echo \"Lint pipeline pending\"",
+    "typecheck": "echo \"Typecheck pipeline pending\""
+  },
+  "packageManager": "pnpm@9.0.0"
+}
