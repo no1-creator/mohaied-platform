@@ -19,8 +19,8 @@ const emptyMilestone: MilestoneInput = {
   durationDays: '',
 };
 
-export default function NewOfferPage() {
-  const router = useRouter();
+function NewOfferInner() {
+const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId') || '';
 
@@ -212,5 +212,13 @@ export default function NewOfferPage() {
         </form>
       </div>
     </main>
+  );
+}
+
+export default function NewOfferPage() {
+  return (
+    <Suspense fallback={null}>
+      <NewOfferInner />
+    </Suspense>
   );
 }
