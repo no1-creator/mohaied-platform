@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>محايد — Sprint 8 Admin Dashboard</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="side-brand">
+        <div class="logo-mark">◇</div>
+        <span>محايد</span>
+      </div>
+
+      <nav class="side-nav">
+        <a href="#" class="active">لوحة التحكم</a>
+        <a href="#">المشاريع</a>
+        <a href="#">المستخدمون</a>
+        <a href="#">مقدمو الخدمة</a>
+        <a href="#">المشرفون</a>
+        <a href="#">الشكاوى</a>
+        <a href="#">المدفوعات</a>
+        <a href="#">التقارير</a>
+        <a href="#">الإعدادات</a>
+      </nav>
+
+      <div class="side-footer">
+        <div class="admin-avatar"></div>
+        <div>
+          <b>أدمن محايد</b>
+          <span>مدير النظام</span>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-area">
+      <header class="topbar">
+        <div>
+          <h1>لوحة التحكم</h1>
+          <p>نظرة عامة على أداء المنصة</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="search-box">بحث...</div>
+          <div class="bell">🔔</div>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="stats-row">
+          <div class="stat-card">
+            <span class="stat-label">المشاريع النشطة</span>
+            <b class="stat-value">128</b>
+            <span class="stat-trend up">▲ 12% هذا الشهر</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">المستخدمون</span>
+            <b class="stat-value">3,540</b>
+            <span class="stat-trend up">▲ 8% هذا الشهر</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">الشكاوى المفتوحة</span>
+            <b class="stat-value">14</b>
+            <span class="stat-trend down">▼ 3% هذا الشهر</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">قيمة المشاريع</span>
+            <b class="stat-value">1.2M ج.م</b>
+            <span class="stat-trend up">▲ 18% هذا الشهر</span>
+          </div>
+        </section>
+
+        <section class="grid-2">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>أحدث المشاريع</h2>
+              <a href="#">عرض الكل</a>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>المشروع</th>
+                  <th>العميل</th>
+                  <th>الحالة</th>
+                  <th>القيمة</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>موقع تعريفي لشركة</td>
+                  <td>شركة العميل</td>
+                  <td><span class="tag green">قيد التنفيذ</span></td>
+                  <td>50,000</td>
+                </tr>
+                <tr>
+                  <td>تطبيق حجز مواعيد</td>
+                  <td>عيادة النور</td>
+                  <td><span class="tag amber">مراجعة</span></td>
+                  <td>80,000</td>
+                </tr>
+                <tr>
+                  <td>متجر إلكتروني</td>
+                  <td>متجر السعادة</td>
+                  <td><span class="tag green">قيد التنفيذ</span></td>
+                  <td>120,000</td>
+                </tr>
+                <tr>
+                  <td>لوحة تحكم داخلية</td>
+                  <td>شركة اللوجستيات</td>
+                  <td><span class="tag gray">مكتمل</span></td>
+                  <td>95,000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h2>الشكاوى الأخيرة</h2>
+              <a href="#">عرض الكل</a>
+            </div>
+
+            <div class="complaint-item">
+              <div>
+                <b>#C-1043</b>
+                <span>تأخير في التسليم</span>
+              </div>
+              <span class="tag amber">قيد المراجعة</span>
+            </div>
+            <div class="complaint-item">
+              <div>
+                <b>#C-1041</b>
+                <span>مخالفة للاتفاق</span>
+              </div>
+              <span class="tag red">تحكيم</span>
+            </div>
+            <div class="complaint-item">
+              <div>
+                <b>#C-1038</b>
+                <span>مشكلة في الدفع</span>
+              </div>
+              <span class="tag green">تم الحل</span>
+            </div>
+            <div class="complaint-item">
+              <div>
+                <b>#C-1035</b>
+                <span>سلوك غير مهني</span>
+              </div>
+              <span class="tag green">تم الحل</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>طلبات بانتظار المراجعة</h2>
+            <a href="#">عرض الكل</a>
+          </div>
+
+          <div class="approval-grid">
+            <div class="approval-card">
+              <span class="tag amber">توثيق</span>
+              <h3>توثيق مقدم خدمة جديد</h3>
+              <p>شركة التقنية الحديثة — بانتظار مراجعة المستندات.</p>
+              <div class="approval-actions">
+                <button class="mini-btn primary">قبول</button>
+                <button class="mini-btn ghost">رفض</button>
+              </div>
+            </div>
+
+            <div class="approval-card">
+              <span class="tag amber">مشرف</span>
+              <h3>طلب انضمام مشرف</h3>
+              <p>م. أحمد مصطفى — Senior Software Engineer.</p>
+              <div class="approval-actions">
+                <button class="mini-btn primary">قبول</button>
+                <button class="mini-btn ghost">رفض</button>
+              </div>
+            </div>
+
+            <div class="approval-card">
+              <span class="tag amber">سحب</span>
+              <h3>طلب سحب أرباح</h3>
+              <p>فريلانسر — 12,000 ج.م بانتظار الموافقة.</p>
+              <div class="approval-actions">
+                <button class="mini-btn primary">قبول</button>
+                <button class="mini-btn ghost">رفض</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
