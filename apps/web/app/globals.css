@@ -645,16 +645,22 @@ a {
   .float-badge { display: none; }
 }
 .logo-mark {
-  width: 40px;
-  height: 40px;
-  border-radius: 13px;
-  background: linear-gradient(135deg, var(--green), #efe2aa);
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(140deg, var(--green-light), var(--green-dark));
   display: grid;
   place-items: center;
   color: white;
-  font-size: 22px;
-  box-shadow: 0 8px 22px rgba(40, 125, 115, 0.22);
+  box-shadow: 0 10px 26px rgba(40, 125, 115, 0.32);
 }
+.logo-mark svg { width: 25px; height: 25px; }
+.logo-mark.small {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+}
+.logo-mark.small svg { width: 19px; height: 19px; }
 
 .logo-mark.small {
   width: 32px;
