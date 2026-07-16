@@ -562,3 +562,393 @@ a {
     gap: 18px;
   }
 }
+
+/* =========================================================
+   نظام الشاشات بعد الدخول + شاشات الدخول/التسجيل
+   (نفس لغة تصميم فيجما — sprint 02 & 04)
+   ========================================================= */
+:root {
+  --green: #287d73;
+  --green-dark: #216c63;
+}
+
+/* ---- شريط علوي للتطبيق ---- */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 30px;
+  background: rgba(247, 250, 248, 0.94);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+}
+
+.app-brand-name {
+  font-size: 19px;
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.app-brand-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 2px 0 0;
+}
+
+.app-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.app-user-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.app-logout {
+  background: white;
+  color: var(--green);
+  border: 1px solid #c7ddd6;
+  border-radius: 10px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.15s;
+}
+
+.app-logout:hover {
+  background: var(--mint);
+}
+
+/* ---- حاوية الصفحة ---- */
+.app-page {
+  max-width: 1080px;
+  margin: auto;
+  padding: 32px 30px 60px;
+}
+
+/* ---- كارت الترحيب ---- */
+.welcome-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 28px;
+  margin-bottom: 26px;
+  box-shadow: 0 15px 35px rgba(40, 125, 115, 0.08);
+}
+
+.welcome-card h2 {
+  margin: 12px 0 6px;
+  font-size: 28px;
+}
+
+.welcome-card p {
+  color: var(--muted);
+  margin: 0;
+  font-size: 15px;
+}
+
+.role-badge {
+  display: inline-block;
+  background: var(--mint);
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 7px 14px;
+  border-radius: 999px;
+}
+
+/* ---- شبكة البطاقات ---- */
+.tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.tile {
+  display: block;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 24px;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(40, 125, 115, 0.12);
+  border-color: #cfe4dd;
+}
+
+.tile-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--mint);
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  margin-bottom: 14px;
+}
+
+.tile h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.tile p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ---- حالات التحميل/الخطأ ---- */
+.app-state {
+  min-height: 60vh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--muted);
+  padding: 30px;
+}
+
+/* =========================================================
+   شاشات الدخول والتسجيل
+   ========================================================= */
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.auth-brand {
+  background: linear-gradient(150deg, var(--green), var(--green-dark));
+  color: white;
+  padding: 60px 54px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+}
+
+.auth-brand h2 {
+  font-size: 32px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.auth-brand > p {
+  font-size: 16px;
+  opacity: 0.9;
+  line-height: 1.9;
+  margin: 0;
+}
+
+.auth-points {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: grid;
+  gap: 14px;
+}
+
+.auth-points li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.auth-points li::before {
+  content: "✓";
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.auth-brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.auth-form-wrap {
+  display: grid;
+  place-items: center;
+  padding: 40px 24px;
+}
+
+.auth-box {
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-head {
+  text-align: center;
+  margin-bottom: 26px;
+}
+
+.auth-head .logo-mark {
+  margin: 0 auto 14px;
+}
+
+.auth-title {
+  font-size: 24px;
+  font-weight: 900;
+  margin: 0 0 4px;
+}
+
+.auth-sub {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 7px;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0 14px;
+  font-size: 14px;
+  background: white;
+  outline: none;
+  font-family: inherit;
+  color: var(--ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(40, 125, 115, 0.12);
+}
+
+.auth-error {
+  background: #fdecec;
+  color: #b73535;
+  border: 1px solid #f3c9c9;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.auth-submit {
+  width: 100%;
+  height: 50px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--green);
+  color: white;
+  font-weight: 900;
+  font-size: 15px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.15s;
+}
+
+.auth-submit:hover {
+  background: var(--green-dark);
+}
+
+.auth-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.auth-switch a {
+  color: var(--green);
+  font-weight: 800;
+}
+
+/* حسابات تجريبية سريعة */
+.quick-login {
+  margin-top: 24px;
+  border: 1.5px dashed #bfd8d1;
+  background: #f8fbfa;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.quick-login h4 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--green);
+  text-align: center;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.quick-grid button {
+  border: 1px solid #cfe4dd;
+  background: white;
+  color: var(--green);
+  border-radius: 10px;
+  padding: 9px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.quick-grid button:hover {
+  background: var(--mint);
+}
+
+@media (max-width: 850px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+  }
+  .auth-brand {
+    display: none;
+  }
+  .app-header {
+    padding: 14px 18px;
+  }
+  .app-page {
+    padding: 22px 18px 50px;
+  }
+}
