@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 
@@ -91,9 +92,24 @@ export default function ProjectDetailPage() {
             <span className="text-xs text-muted">{project?.field}</span>
           </div>
           <h1 className="text-2xl font-black mb-3">{project?.title}</h1>
-          <p className="text-muted leading-loose whitespace-pre-line">
+          <p className="text-muted leading-loose whitespace-pre-line mb-5">
             {project?.description}
           </p>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={`/projects/${id}/offers`}
+              className="bg-white border border-line text-brand px-4 py-2 rounded-xl text-sm font-extrabold"
+            >
+              عرض العروض
+            </Link>
+            <Link
+              href={`/projects/${id}/milestones`}
+              className="bg-brand text-white px-4 py-2 rounded-xl text-sm font-extrabold"
+            >
+              إدارة المراحل
+            </Link>
+          </div>
         </div>
 
         <div className="card">
