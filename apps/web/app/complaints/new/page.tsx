@@ -12,8 +12,8 @@ const TYPES = [
   { value: 'UNPROFESSIONAL', label: 'سلوك غير مهني' },
 ];
 
-export default function NewComplaintPage() {
-  const router = useRouter();
+function NewComplaintInner() {
+const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId') || '';
 
