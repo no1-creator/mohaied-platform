@@ -7,6 +7,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { OffersModule } from './offers/offers.module';
 import { AgreementsModule } from './agreements/agreements.module';
 import { MilestonesModule } from './milestones/milestones.module';
+import { ComplaintsModule } from './complaints/complaints.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MilestonesModule } from './milestones/milestones.module';
     OffersModule,
     AgreementsModule,
     MilestonesModule,
+    ComplaintsModule,
   ],
   controllers: [],
   providers: [],
