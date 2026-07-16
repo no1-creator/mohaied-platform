@@ -109,6 +109,12 @@ export default function ProjectDetailPage() {
             >
               إدارة المراحل
             </Link>
+            <Link
+              href={`/complaints/new?projectId=${id}`}
+              className="bg-white border border-line text-red-600 px-4 py-2 rounded-xl text-sm font-extrabold"
+            >
+              فتح شكوى
+            </Link>
           </div>
         </div>
 
