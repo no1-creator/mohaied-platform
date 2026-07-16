@@ -12,75 +12,120 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function doLogin(mail: string, pass: string) {
     setError('');
     setLoading(true);
     try {
       const res = await api<{ accessToken: string }>('/auth/login', {
         method: 'POST',
         auth: false,
-        body: { email, password },
+        body: { email: mail, password: pass },
       });
       saveToken(res.accessToken);
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message);
-    } finally {
       setLoading(false);
     }
   }
 
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    doLogin(email, password);
+  }
+
+  function quick(mail: string) {
+    setEmail(mail);
+    setPassword('Test@1234');
+    doLogin(mail, 'Test@1234');
+  }
+
   return (
-    <main className="min-h-screen grid place-items-center px-6">
-      <div className="card w-full max-w-md">
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-xl bg-brand text-white grid place-items-center text-2xl mx-auto mb-3">
-            ◇
-          </div>
-          <h1 className="text-2xl font-black">تسجيل الدخول</h1>
-          <p className="text-muted text-sm mt-1">أهلًا بيك تاني في محايد</p>
+    <div className="auth-shell">
+      <div className="auth-brand">
+        <div className="auth-brand-logo">
+          <div className="logo-mark">◇</div>
+          <span>محايد</span>
         </div>
-
-        {error && (
-          <div className="bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3 mb-4">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="label">البريد الإلكتروني</label>
-            <input
-              type="email"
-              className="input-field"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="label">كلمة المرور</label>
-            <input
-              type="password"
-              className="input-field"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'جاري الدخول...' : 'دخول'}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-muted mt-6">
-          لسه معندكش حساب؟{' '}
-          <Link href="/register" className="text-brand font-extrabold">
-            إنشاء حساب
-          </Link>
+        <h2>نفّذ مشروعك بثقة، وحقوقك محفوظة</h2>
+        <p>
+          منصة محايدة تربط العميل بمقدم الخدمة داخل بيئة موثقة، مع اتفاق واضح
+          ومتابعة للمراحل وحل عادل للنزاعات.
         </p>
+        <ul className="auth-points">
+          <li>اتفاق موثّق لكل مرحلة</li>
+          <li>حماية حقوق الطرفين</li>
+          <li>إشراف متخصص اختياري</li>
+        </ul>
       </div>
-    </main>
+
+      <div className="auth-form-wrap">
+        <div className="auth-box">
+          <div className="auth-head">
+            <Link href="/" className="logo-mark">
+              ◇
+            </Link>
+            <h1 className="auth-title">تسجيل الدخول</h1>
+            <p className="auth-sub">أهلًا بيك تاني في محايد</p>
+          </div>
+
+          {error && <div className="auth-error">{error}</div>}
+
+          <form onSubmit={handleSubmit}>
+            <div className="field">
+              <label>البريد الإلكتروني</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <div className="field">
+              <label>كلمة المرور</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
+            </div>
+            <button type="submit" className="auth-submit" disabled={loading}>
+              {loading ? 'جاري الدخول...' : 'دخول'}
+            </button>
+          </form>
+
+          <p className="auth-switch">
+            لسه معندكش حساب؟ <Link href="/register">إنشاء حساب</Link>
+          </p>
+
+          <div className="quick-login">
+            <h4>حسابات تجريبية (اضغط للدخول السريع)</h4>
+            <div className="quick-grid">
+              <button type="button" onClick={() => quick('admin@mohaied.test')}>
+                أدمن
+              </button>
+              <button type="button" onClick={() => quick('client@mohaied.test')}>
+                عميل
+              </button>
+              <button
+                type="button"
+                onClick={() => quick('provider@mohaied.test')}
+              >
+                مقدم خدمة
+              </button>
+              <button
+                type="button"
+                onClick={() => quick('supervisor@mohaied.test')}
+              >
+                مشرف
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
