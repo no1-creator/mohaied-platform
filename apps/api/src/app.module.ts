@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { ProjectsModule } from './projects/projects.module';
 import { OffersModule } from './offers/offers.module';
 import { AgreementsModule } from './agreements/agreements.module';
+import { MilestonesModule } from './milestones/milestones.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AgreementsModule } from './agreements/agreements.module';
     ProjectsModule,
     OffersModule,
     AgreementsModule,
+    MilestonesModule,
   ],
   controllers: [],
   providers: [],
