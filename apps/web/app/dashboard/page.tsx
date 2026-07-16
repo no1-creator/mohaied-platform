@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 
@@ -63,6 +64,8 @@ export default function DashboardPage() {
     );
   }
 
+  const role = me?.role;
+
   return (
     <main className="min-h-screen">
       <TopBar name={me?.fullName} />
@@ -82,18 +85,57 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div className="card">
+          <Link href="/projects" className="card block hover:border-brand">
             <h3 className="font-black mb-1">مشاريعي</h3>
             <p className="text-sm text-muted">تابع مشاريعك الحالية.</p>
-          </div>
-          <div className="card">
-            <h3 className="font-black mb-1">العروض</h3>
-            <p className="text-sm text-muted">العروض المقدّمة أو المستلمة.</p>
-          </div>
-          <div className="card">
-            <h3 className="font-black mb-1">الشكاوى</h3>
-            <p className="text-sm text-muted">حالة الشكاوى المرتبطة بك.</p>
-          </div>
+          </Link>
+
+          {role === 'CLIENT' && (
+            <Link
+              href="/projects/new"
+              className="card block hover:border-brand"
+            >
+              <h3 className="font-black mb-1">مشروع جديد</h3>
+              <p className="text-sm text-muted">انشر مشروعك واستقبل العروض.</p>
+            </Link>
+          )}
+
+          {role === 'PROVIDER' && (
+            <Link
+              href="/projects/open"
+              className="card block hover:border-brand"
+            >
+              <h3 className="font-black mb-1">مشاريع مفتوحة</h3>
+              <p className="text-sm text-muted">تصفّح المشاريع وقدّم عروضك.</p>
+            </Link>
+          )}
+
+          {role === 'PROVIDER' && (
+            <Link href="/offers/mine" className="card block hover:border-brand">
+              <h3 className="font-black mb-1">عروضي</h3>
+              <p className="text-sm text-muted">تابع حالة العروض اللي قدّمتها.</p>
+            </Link>
+          )}
+
+          {role === 'SUPERVISOR' && (
+            <Link
+              href="/supervisor/assignments"
+              className="card block hover:border-brand"
+            >
+              <h3 className="font-black mb-1">تكليفاتي</h3>
+              <p className="text-sm text-muted">المشاريع اللي بتشرف عليها.</p>
+            </Link>
+          )}
+
+          {role === 'ADMIN' && (
+            <Link
+              href="/admin/complaints"
+              className="card block hover:border-brand"
+            >
+              <h3 className="font-black mb-1">الشكاوى</h3>
+              <p className="text-sm text-muted">راجع الشكاوى وأصدر القرارات.</p>
+            </Link>
+          )}
         </div>
       </div>
     </main>
