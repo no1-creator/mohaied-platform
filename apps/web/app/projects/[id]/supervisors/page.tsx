@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
+import Icon from '@/components/Icon';
 
 type SupProfile = {
   title?: string;
@@ -66,12 +67,13 @@ const SV_CSS = `
 .sv-card-top { display:flex; align-items:center; gap:11px; margin-bottom:10px; }
 .sv-avatar { width:46px; height:46px; border-radius:12px; background:linear-gradient(140deg,var(--green-light),var(--green-dark)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:19px; flex-shrink:0; }
 .sv-name { font-weight:800; color:var(--ink); font-size:15.5px; display:flex; align-items:center; gap:6px; }
-.sv-verified { color:var(--green); font-size:12px; background:var(--mint); border-radius:6px; padding:2px 7px; }
+.sv-verified { display:inline-flex; align-items:center; gap:3px; color:var(--green); font-size:12px; background:var(--mint); border-radius:6px; padding:2px 7px; }
 .sv-role { font-size:12.5px; color:var(--muted); margin-top:2px; }
 .sv-tags { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
 .sv-tag { background:var(--mint); color:var(--green-dark); border-radius:8px; padding:4px 9px; font-size:11.5px; font-weight:700; }
 .sv-bio { font-size:13px; color:var(--muted); line-height:1.7; margin:6px 0 12px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 .sv-stats { display:flex; gap:16px; font-size:12.5px; color:var(--muted); margin-bottom:14px; flex-wrap:wrap; }
+.sv-stats span { display:inline-flex; align-items:center; gap:4px; }
 .sv-stats b { color:var(--ink); }
 .sv-invite { margin-top:auto; border-top:1px solid var(--line); padding-top:12px; }
 .sv-rate-label { font-size:12px; font-weight:700; color:var(--ink); margin-bottom:6px; display:block; }
@@ -148,7 +150,7 @@ export default function ProjectSupervisorsPage() {
         method: 'POST',
         body: { projectId: id, supervisorId, ratePerReview: rate },
       });
-      setNotice('تم إرسال الدعوة للمشرف بنجاح ✅');
+      setNotice('تم إرسال الدعوة للمشرف بنجاح');
       await loadAll();
     } catch (err: any) {
       setError(err.message);
@@ -244,7 +246,9 @@ export default function ProjectSupervisorsPage() {
                               <div className="sv-name">
                                 {s.fullName}
                                 {s.isVerified && (
-                                  <span className="sv-verified">موثّق ✓</span>
+                                  <span className="sv-verified">
+                                    <Icon name="badgeCheck" size={12} /> موثّق
+                                  </span>
                                 )}
                               </div>
                               <div className="sv-role">
@@ -269,15 +273,19 @@ export default function ProjectSupervisorsPage() {
                           <div className="sv-stats">
                             {p.yearsExp != null && (
                               <span>
-                                خبرة <b>{p.yearsExp}</b> سنة
+                                <Icon name="briefcase" size={13} /> خبرة <b>{p.yearsExp}</b> سنة
                               </span>
                             )}
                             {p.rating != null && p.rating > 0 && (
                               <span>
-                                ⭐ <b>{p.rating}</b> ({p.reviewsCount || 0})
+                                <Icon name="star" size={13} /> <b>{p.rating}</b> ({p.reviewsCount || 0})
                               </span>
                             )}
-                            {p.city && <span>📍 {p.city}</span>}
+                            {p.city && (
+                              <span>
+                                <Icon name="mapPin" size={13} /> {p.city}
+                              </span>
+                            )}
                           </div>
 
                           <div className="sv-invite">
