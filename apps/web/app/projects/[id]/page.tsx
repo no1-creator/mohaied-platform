@@ -115,6 +115,9 @@ export default function ProjectDetailPage() {
             >
               فتح شكوى
             </Link>
+         <Link href={`/projects/${id}/supervisors`} className="ضع_نفس_الكلاس_هنا">
+  👁️‍🗨️ المشرفون
+</Link>
           </div>
         </div>
 
