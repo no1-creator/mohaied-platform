@@ -5,6 +5,25 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, saveToken } from '@/lib/api';
 
+const LOGO = (
+  <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M16 3.2l9.5 3.6v6.8c0 6.2-4.2 10.7-9.5 12.4C10.7 24.3 6.5 19.8 6.5 13.6V6.8L16 3.2z"
+      fill="white"
+      fillOpacity="0.2"
+      stroke="white"
+      strokeWidth="1.4"
+    />
+    <path
+      d="M11.5 16l3 3 6-6.5"
+      stroke="white"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 const ROLES = [
   { value: 'CLIENT', label: 'عميل — عايز أنفّذ مشروع' },
   { value: 'PROVIDER', label: 'مقدم خدمة / فريلانسر' },
@@ -42,27 +61,25 @@ export default function RegisterPage() {
     <div className="auth-shell">
       <div className="auth-brand">
         <div className="auth-brand-logo">
-          <div className="logo-mark">◇</div>
-          <span>محايد</span>
+          <span className="logo-mark">{LOGO}</span>
+          محايد
         </div>
-        <h2>ابدأ أول مشروع موثق على محايد</h2>
+        <h2>ابدأ أول مشروع موثّق على محايد</h2>
         <p>
-          سجّل مجانًا وابدأ رحلتك سواء كنت عميل أو مقدم خدمة — كل خطوة موثقة
+          سجّل مجانًا وابدأ رحلتك سواء كنت عميل أو مقدم خدمة — كل خطوة موثّقة
           وحقوقك محفوظة.
         </p>
         <ul className="auth-points">
           <li>تسجيل مجاني بالكامل</li>
-          <li>بيئة عمل موثقة وآمنة</li>
-          <li>دعم ومتابعة مستمرة</li>
+          <li>بيئة عمل موثّقة وآمنة</li>
+          <li>تحت إشراف الحكومة المصرية</li>
         </ul>
       </div>
 
       <div className="auth-form-wrap">
         <div className="auth-box">
           <div className="auth-head">
-            <Link href="/" className="logo-mark">
-              ◇
-            </Link>
+            <span className="logo-mark">{LOGO}</span>
             <h1 className="auth-title">إنشاء حساب</h1>
             <p className="auth-sub">ابدأ رحلتك على محايد</p>
           </div>
@@ -75,6 +92,7 @@ export default function RegisterPage() {
               <input
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
+                placeholder="اكتب اسمك"
                 required
               />
             </div>
@@ -84,6 +102,7 @@ export default function RegisterPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
                 required
               />
             </div>
@@ -93,6 +112,7 @@ export default function RegisterPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
                 minLength={6}
                 required
               />
@@ -112,9 +132,9 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          <p className="auth-switch">
+          <div className="auth-switch">
             عندك حساب بالفعل؟ <Link href="/login">تسجيل الدخول</Link>
-          </p>
+          </div>
         </div>
       </div>
     </div>
