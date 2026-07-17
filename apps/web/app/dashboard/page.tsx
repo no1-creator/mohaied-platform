@@ -114,10 +114,10 @@ export default function DashboardPage() {
           )}
 
           {role === 'ADMIN' && (
-            <Link href="/admin/complaints" className="tile">
-              <div className="tile-icon">⚖️</div>
-              <h3>الشكاوى</h3>
-              <p>راجع الشكاوى وأصدر القرارات.</p>
+            <Link href="/admin" className="tile">
+              <div className="tile-icon">🛡️</div>
+              <h3>لوحة التحكم</h3>
+              <p>تحكم كامل في المنصة والمستخدمين.</p>
             </Link>
           )}
         </div>
