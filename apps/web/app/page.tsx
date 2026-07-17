@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect } from 'react';
+import Icon from '@/components/Icon';
 
 const STEPS = [
   { t: 'اطرح مشروعك', d: 'اكتب اللي محتاجه بوضوح — المطلوب، الميزانية، والمدة المتوقّعة.' },
@@ -11,24 +12,24 @@ const STEPS = [
 ];
 
 const SERVICES = [
-  { icon: '💻', t: 'برمجة ومواقع', d: 'مواقع، تطبيقات، وأنظمة ويب بمتابعة موثّقة.' },
-  { icon: '📐', t: 'هندسة وتصميم', d: 'تصميمات ومخططات هندسية بإشراف متخصص.' },
-  { icon: '🎨', t: 'تصميم جرافيك', d: 'هوية بصرية وتصميمات احترافية بعقد واضح.' },
+  { icon: 'laptop', t: 'برمجة ومواقع', d: 'مواقع، تطبيقات، وأنظمة ويب بمتابعة موثّقة.' },
+  { icon: 'ruler', t: 'هندسة وتصميم', d: 'تصميمات ومخططات هندسية بإشراف متخصص.' },
+  { icon: 'palette', t: 'تصميم جرافيك', d: 'هوية بصرية وتصميمات احترافية بعقد واضح.' },
 ];
 
 const ROLES = [
   {
-    icon: '🧑‍💼',
+    icon: 'user',
     t: 'العميل',
     items: ['يطلب مشروعه بثقة', 'يتابع كل مرحلة أول بأول', 'يستلم شغل بجودة متفق عليها', 'حقه محفوظ لو حصل أي خلاف'],
   },
   {
-    icon: '🏗️',
+    icon: 'building',
     t: 'المهندس أو الشركة',
     items: ['يستقبل طلبات جادّة', 'حقوقه المالية موثّقة', 'تقييم يبني سمعته المهنية', 'حماية من التلاعب والمماطلة'],
   },
   {
-    icon: '🛡️',
+    icon: 'shield',
     t: 'المشرف المتخصص',
     items: ['مراجعة فنية اختيارية', 'يضمن الجودة والحياد', 'يوثّق الملاحظات رسميًا', 'يساعد في حل النزاع بعدالة'],
   },
@@ -36,20 +37,8 @@ const ROLES = [
 
 const LOGO = (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M16 3.2l9.5 3.6v6.8c0 6.2-4.2 10.7-9.5 12.4C10.7 24.3 6.5 19.8 6.5 13.6V6.8L16 3.2z"
-      fill="white"
-      fillOpacity="0.2"
-      stroke="white"
-      strokeWidth="1.4"
-    />
-    <path
-      d="M11.5 16l3 3 6-6.5"
-      stroke="white"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
+    <path d="M16 3.2l9.5 3.6v6.8c0 6.2-4.2 10.7-9.5 12.4C10.7 24.3 6.5 19.8 6.5 13.6V6.8L16 3.2z" fill="rgba(255,255,255,.16)" stroke="#fff" strokeWidth="1.7" />
+    <path d="M11.5 16l3 3 6-6.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -72,7 +61,7 @@ export default function LandingPage() {
           }
         });
       },
-      { threshold: 0.12 }
+      { threshold: 0.12 },
     );
     document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
 
@@ -88,15 +77,17 @@ export default function LandingPage() {
       <header className="site-header">
         <div className="nav-inner">
           <div className="brand">
-            <span className="logo-mark">{LOGO}</span>
+            <div className="logo-mark small">{LOGO}</div>
             <div>
               <div className="brand-name">محايد</div>
-              <div className="brand-tag">🏛️ تحت إشراف حكومي</div>
+              <span className="brand-tag">
+                <Icon name="landmark" size={13} /> تحت إشراف حكومي
+              </span>
             </div>
           </div>
           <nav className="main-nav">
             <a href="#how">كيف تعمل</a>
-            <a href="#sectors">المجالات</a>
+            <a href="#services">المجالات</a>
             <a href="#roles">لكل الأطراف</a>
             <a href="#gov">الإشراف الحكومي</a>
           </nav>
@@ -113,7 +104,7 @@ export default function LandingPage() {
         <div className="hero-blob two" />
         <div className="hero-inner">
           <div className="hero-text">
-            <span className="hero-badge">🏛️ منصة تعمل تحت إشراف الحكومة المصرية</span>
+            <span className="hero-badge">منصة تعمل تحت إشراف الحكومة المصرية</span>
             <h1>نفّذ مشروعك بثقة، وحقوقك محفوظة من الأول للآخر</h1>
             <p>
               محايد منصة مستقلة تربط العميل بالمهندس أو الشركة داخل بيئة موثّقة:
@@ -134,25 +125,33 @@ export default function LandingPage() {
             <div className="visual-card floating">
               <span className="mini-chip">قيد التنفيذ</span>
               <h3>موقع تعريفي لشركة</h3>
-              <div className="visual-bar">
-                <span style={{ ['--bar' as string]: '66%' } as React.CSSProperties} />
-              </div>
+              <div className="visual-bar"><span /></div>
               <p>المرحلة 2 من 3 — التصميم والتطوير</p>
               <div className="visual-row">
                 <span>العميل</span>
                 <span>مقدم الخدمة</span>
               </div>
             </div>
-            <div className="float-badge one">✅ اتفاق موثّق</div>
-            <div className="float-badge two">🛡️ إشراف حكومي</div>
+            <div className="float-badge one">
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                <Icon name="badgeCheck" size={15} /> اتفاق موثّق
+              </span>
+            </div>
+            <div className="float-badge two">
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                <Icon name="shield" size={15} /> إشراف حكومي
+              </span>
+            </div>
           </div>
         </div>
       </section>
 
       {/* بانر الإشراف الحكومي */}
-      <div className="gov-band reveal" id="gov">
+      <section id="gov" className="gov-band">
         <div className="gov-inner">
-          <div className="gov-emblem">🏛️</div>
+          <div className="gov-emblem">
+            <Icon name="landmark" size={54} />
+          </div>
           <div className="gov-content">
             <h2>منصة تعمل تحت إشراف الحكومة المصرية</h2>
             <p>
@@ -175,16 +174,16 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* كيف تعمل */}
-      <section className="section" id="how">
+      <section id="how" className="section">
         <div className="section-inner">
-          <h2 className="section-title reveal">إزاي محايد بيحمي حقك؟</h2>
-          <p className="section-sub reveal">أربع خطوات واضحة من بداية الفكرة لحد التسليم</p>
+          <h2 className="section-title">إزاي محايد بيحمي حقك؟</h2>
+          <p className="section-sub">أربع خطوات واضحة من بداية الفكرة لحد التسليم</p>
           <div className="steps-grid">
             {STEPS.map((s, i) => (
-              <div className="step-card reveal" style={{ transitionDelay: `${i * 0.08}s` }} key={i}>
+              <div key={i} className="step-card reveal">
                 <div className="step-num">{i + 1}</div>
                 <h3>{s.t}</h3>
                 <p>{s.d}</p>
@@ -195,32 +194,40 @@ export default function LandingPage() {
       </section>
 
       {/* المجالات */}
-      <section className="section alt" id="sectors">
+      <section id="services" className="section alt">
         <div className="section-inner">
-          <h2 className="section-title reveal">المجالات المتاحة الآن</h2>
-          <p className="section-sub reveal">نبدأ بالمجالات الأكثر طلبًا، وبنوسّع تباعًا</p>
+          <h2 className="section-title">المجالات المتاحة الآن</h2>
+          <p className="section-sub">نبدأ بالمجالات الأكثر طلبًا، وبنوسّع تباعًا</p>
           <div className="services-grid">
             {SERVICES.map((s, i) => (
-              <div className="service-card reveal" style={{ transitionDelay: `${i * 0.08}s` }} key={i}>
-                <div className="service-icon">{s.icon}</div>
+              <div key={i} className="service-card reveal">
+                <div className="service-icon">
+                  <Icon name={s.icon} size={30} style={{ color: 'var(--green)' }} />
+                </div>
                 <h3>{s.t}</h3>
                 <p>{s.d}</p>
               </div>
             ))}
           </div>
-          <p className="soon-note reveal">🚀 مجالات أكثر في الطريق قريبًا</p>
+          <p className="soon-note">
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <Icon name="rocket" size={16} /> مجالات أكثر في الطريق قريبًا
+            </span>
+          </p>
         </div>
       </section>
 
       {/* لكل الأطراف */}
-      <section className="section" id="roles">
+      <section id="roles" className="section">
         <div className="section-inner">
-          <h2 className="section-title reveal">منصة واحدة تحمي كل الأطراف</h2>
-          <p className="section-sub reveal">حقوق واضحة ومتوازنة للعميل، للمهندس والشركة، وللمشرف</p>
+          <h2 className="section-title">منصة واحدة تحمي كل الأطراف</h2>
+          <p className="section-sub">حقوق واضحة ومتوازنة للعميل، للمهندس والشركة، وللمشرف</p>
           <div className="roles-grid">
             {ROLES.map((r, i) => (
-              <div className="role-card reveal" style={{ transitionDelay: `${i * 0.08}s` }} key={i}>
-                <div className="role-icon">{r.icon}</div>
+              <div key={i} className="role-card reveal">
+                <div className="role-icon">
+                  <Icon name={r.icon} size={26} style={{ color: 'var(--green)' }} />
+                </div>
                 <h3>{r.t}</h3>
                 <ul>
                   {r.items.map((it, j) => (
@@ -247,8 +254,7 @@ export default function LandingPage() {
         <div className="footer-inner">
           <div>
             <div className="footer-brand">
-              <span className="logo-mark small">{LOGO}</span>
-              محايد
+              <div className="logo-mark small">{LOGO}</div> محايد
             </div>
             <p className="footer-about">
               منصة محايدة لحماية الحقوق، تعمل تحت إشراف الحكومة المصرية لضمان تنفيذ
@@ -259,7 +265,7 @@ export default function LandingPage() {
             <div>
               <h4>المنصة</h4>
               <a href="#how">كيف تعمل</a>
-              <a href="#sectors">المجالات</a>
+              <a href="#services">المجالات</a>
               <a href="#roles">لكل الأطراف</a>
             </div>
             <div>
@@ -270,7 +276,7 @@ export default function LandingPage() {
             <div>
               <h4>عن محايد</h4>
               <a href="#gov">الإشراف الحكومي</a>
-              <a href="#">حماية الحقوق</a>
+              <a href="#roles">حماية الحقوق</a>
             </div>
           </div>
         </div>
