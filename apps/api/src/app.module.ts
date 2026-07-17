@@ -12,6 +12,7 @@ import { SupervisorsModule } from './supervisors/supervisors.module';
 import { AdminModule } from './admin/admin.module';
 import { SettingsModule } from './settings/settings.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { EscrowModule } from './escrow/escrow.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module';
     AdminModule,
     SettingsModule,
     SubscriptionsModule,
+    EscrowModule,
   ],
   controllers: [],
   providers: [],
