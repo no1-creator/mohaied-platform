@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
+import Icon from '@/components/Icon';
 
 type Me = {
   role: string;
@@ -35,10 +36,11 @@ const PS_CSS = `
 .ps-type { border:1.5px solid var(--line); border-radius:14px; padding:18px; cursor:pointer; text-align:center; background:#fff; transition:all .15s; }
 .ps-type:hover { border-color:var(--green-light); }
 .ps-type.active { border-color:var(--green); background:var(--mint); }
-.ps-type-icon { font-size:28px; margin-bottom:7px; }
+.ps-type-icon { color:var(--green); margin-bottom:9px; display:flex; justify-content:center; }
 .ps-type-name { font-weight:800; color:var(--ink); font-size:15px; }
 .ps-type-desc { font-size:12px; color:var(--muted); margin-top:3px; }
-.ps-note { background:var(--mint); border:1px solid var(--line); border-radius:12px; padding:12px 14px; font-size:12.5px; color:var(--green-dark); line-height:1.7; margin-bottom:22px; }
+.ps-note { background:var(--mint); border:1px solid var(--line); border-radius:12px; padding:12px 14px; font-size:12.5px; color:var(--green-dark); line-height:1.7; margin-bottom:22px; display:flex; align-items:flex-start; gap:9px; }
+.ps-note-ic { flex-shrink:0; margin-top:1px; }
 .ps-submit { width:100%; background:var(--green); color:#fff; border:none; border-radius:12px; padding:15px; font-size:16px; font-weight:800; cursor:pointer; font-family:inherit; margin-top:6px; transition:background .15s; }
 .ps-submit:hover { background:var(--green-dark); }
 .ps-submit:disabled { opacity:.6; cursor:not-allowed; }
@@ -191,7 +193,9 @@ export default function ProfileSetupPage() {
       <TopBar />
       <div className="ps-wrap">
         <div className="ps-head">
-          <span className="ps-badge">🛡️ خطوة أخيرة لتفعيل حسابك</span>
+          <span className="ps-badge">
+            <Icon name="shield" size={14} /> خطوة أخيرة لتفعيل حسابك
+          </span>
           <h1 className="ps-title">
             {state === 'provider' ? 'ملف مقدم الخدمة' : 'ملف المشرف المتخصص'}
           </h1>
@@ -209,7 +213,10 @@ export default function ProfileSetupPage() {
           {state === 'provider' && (
             <form onSubmit={submitProvider}>
               <div className="ps-note">
-                🏛️ محايد منصة موثّقة تحت إشراف حكومي — بيانات التوثيق بتزوّد ثقة العملاء وبتفعّل شارة «موثّق» على ملفك.
+                <Icon name="shield" size={16} className="ps-note-ic" />
+                <span>
+                  محايد منصة موثّقة تحت إشراف حكومي — بيانات التوثيق بتزوّد ثقة العملاء وبتفعّل شارة «موثّق» على ملفك.
+                </span>
               </div>
 
               {/* نوع الحساب */}
@@ -220,7 +227,9 @@ export default function ProfileSetupPage() {
                     className={`ps-type ${ptype === 'FREELANCER' ? 'active' : ''}`}
                     onClick={() => setPtype('FREELANCER')}
                   >
-                    <div className="ps-type-icon">👤</div>
+                    <div className="ps-type-icon">
+                      <Icon name="user" size={26} />
+                    </div>
                     <div className="ps-type-name">فريلانسر</div>
                     <div className="ps-type-desc">بشتغل كفرد مستقل</div>
                   </div>
@@ -228,7 +237,9 @@ export default function ProfileSetupPage() {
                     className={`ps-type ${ptype === 'COMPANY' ? 'active' : ''}`}
                     onClick={() => setPtype('COMPANY')}
                   >
-                    <div className="ps-type-icon">🏢</div>
+                    <div className="ps-type-icon">
+                      <Icon name="building" size={26} />
+                    </div>
                     <div className="ps-type-name">شركة</div>
                     <div className="ps-type-desc">كيان أو فريق عمل</div>
                   </div>
@@ -333,7 +344,10 @@ export default function ProfileSetupPage() {
           {state === 'supervisor' && (
             <form onSubmit={submitSupervisor}>
               <div className="ps-note">
-                ⚖️ المشرف المحايد هو ضمانة الجودة والحياد في محايد — كل ما بياناتك كانت أدق، فرص تكليفك بتزيد.
+                <Icon name="scale" size={16} className="ps-note-ic" />
+                <span>
+                  المشرف المحايد هو ضمانة الجودة والحياد في محايد — كل ما بياناتك كانت أدق، فرص تكليفك بتزيد.
+                </span>
               </div>
 
               {/* المعلومات الأساسية */}
