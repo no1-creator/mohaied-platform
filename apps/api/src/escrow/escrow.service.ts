@@ -102,9 +102,12 @@ export class EscrowService {
     if (!isAdmin && escrow.project.clientId !== userId) {
       throw new ForbiddenException('لا تملك صلاحية تحرير هذا المبلغ');
     }
-    if (escrow.status !== EscrowStatus.FUNDED) {
-      throw new BadRequestException('لا يمكن التحرير إلا لمبلغ مموّل');
-    }
+    if (
+  escrow.status !== EscrowStatus.FUNDED &&
+  escrow.status !== EscrowStatus.DISPUTED
+) {
+  throw new BadRequestException('لا يمكن التحرير في الحالة الحالية');
+}
 
     const updated = await this.prisma.escrowTransaction.update({
       where: { id: escrowId },
