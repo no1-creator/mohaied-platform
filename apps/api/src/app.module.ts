@@ -9,6 +9,7 @@ import { AgreementsModule } from './agreements/agreements.module';
 import { MilestonesModule } from './milestones/milestones.module';
 import { ComplaintsModule } from './complaints/complaints.module';
 import { SupervisorsModule } from './supervisors/supervisors.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { SupervisorsModule } from './supervisors/supervisors.module';
     MilestonesModule,
     ComplaintsModule,
     SupervisorsModule,
+    AdminModule,
   ],
   controllers: [],
   providers: [],
