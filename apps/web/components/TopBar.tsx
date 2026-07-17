@@ -24,7 +24,12 @@ const LOGO = (
   </svg>
 );
 
-type Me = { fullName?: string; role?: string };
+type Me = {
+  fullName?: string;
+  role?: string;
+  providerProfile?: unknown | null;
+  supervisorProfile?: unknown | null;
+};
 
 const NAV: Record<string, { href: string; label: string }[]> = {
   CLIENT: [
@@ -81,9 +86,17 @@ export default function TopBar({ name }: { name?: string }) {
   useEffect(() => {
     if (!getToken()) return;
     api<Me>('/users/me')
-      .then((data) => setMe({ fullName: data.fullName, role: data.role }))
+      .then((data) => {
+        setMe({ fullName: data.fullName, role: data.role });
+        // بوابة إكمال البروفايل: مقدم خدمة/مشرف لسه ملوش بروفايل → روح للفورم
+        const needsProvider = data.role === 'PROVIDER' && !data.providerProfile;
+        const needsSupervisor = data.role === 'SUPERVISOR' && !data.supervisorProfile;
+        if ((needsProvider || needsSupervisor) && pathname !== '/profile/setup') {
+          router.replace('/profile/setup');
+        }
+      })
       .catch(() => {});
-  }, []);
+  }, [pathname, router]);
 
   const displayName = name || me.fullName;
   const links = (me.role && NAV[me.role]) || [];
