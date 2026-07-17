@@ -4,15 +4,23 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, getToken, clearToken } from '@/lib/api';
+import Icon from '@/components/Icon';
 
 type Me = { fullName: string; role: string };
 
+const LOGO = (
+  <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 3.2l9.5 3.6v6.8c0 6.2-4.2 10.7-9.5 12.4C10.7 24.3 6.5 19.8 6.5 13.6V6.8L16 3.2z" fill="rgba(255,255,255,.16)" stroke="#fff" strokeWidth="1.7" />
+    <path d="M11.5 16l3 3 6-6.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 const NAV = [
-  { key: 'overview', href: '/admin', label: 'نظرة عامة', icon: '📊' },
-  { key: 'users', href: '/admin/users', label: 'المستخدمون', icon: '👥' },
-  { key: 'projects', href: '/admin/projects', label: 'المشاريع', icon: '📁' },
-  { key: 'supervisors', href: '/admin/supervisors', label: 'المشرفون', icon: '🧑‍⚖️' },
-  { key: 'complaints', href: '/admin/complaints', label: 'الشكاوى', icon: '⚖️' },
+  { key: 'overview', href: '/admin', label: 'نظرة عامة', icon: 'grid' },
+  { key: 'users', href: '/admin/users', label: 'المستخدمون', icon: 'users' },
+  { key: 'projects', href: '/admin/projects', label: 'المشاريع', icon: 'folder' },
+  { key: 'supervisors', href: '/admin/supervisors', label: 'المشرفون', icon: 'shield' },
+  { key: 'complaints', href: '/admin/complaints', label: 'الشكاوى', icon: 'scale' },
 ];
 
 export default function AdminShell({
@@ -64,8 +72,10 @@ export default function AdminShell({
       <div className="ad-boot">
         <style>{ADMIN_CSS}</style>
         <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: 44, marginBottom: 8 }}>🔒</p>
-          <p style={{ marginBottom: 16 }}>الصفحة دي متاحة للأدمن بس.</p>
+          <div style={{ color: 'var(--green-dark)', marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+            <Icon name="lock" size={40} />
+          </div>
+          <p>الصفحة دي متاحة للأدمن بس.</p>
           <button className="ad-btn" onClick={() => router.push('/dashboard')}>
             رجوع للوحة
           </button>
@@ -80,48 +90,33 @@ export default function AdminShell({
 
       <aside className="ad-sidebar">
         <div className="ad-brand">
-          <span className="ad-brand-logo">
-            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M16 3.2l9.5 3.6v6.8c0 6.2-4.2 10.7-9.5 12.4C10.7 24.3 6.5 19.8 6.5 13.6V6.8L16 3.2z"
-                fill="white"
-                fillOpacity="0.2"
-                stroke="white"
-                strokeWidth="1.4"
-              />
-              <path
-                d="M11.5 16l3 3 6-6.5"
-                stroke="white"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
+          <div className="ad-brand-logo">{LOGO}</div>
           <div>
-            <p className="ad-brand-name">محايد</p>
-            <p className="ad-brand-sub">لوحة التحكم</p>
+            <div className="ad-brand-name">محايد</div>
+            <div className="ad-brand-sub">لوحة التحكم</div>
           </div>
         </div>
 
         <nav className="ad-nav">
           {NAV.map((n) => (
-            <Link
-              key={n.key}
-              href={n.href}
-              className={active === n.key ? 'active' : ''}
-            >
-              <span className="ad-nav-icon">{n.icon}</span>
+            <Link key={n.key} href={n.href} className={active === n.key ? 'active' : ''}>
+              <span className="ad-nav-icon">
+                <Icon name={n.icon} size={18} />
+              </span>
               {n.label}
             </Link>
           ))}
         </nav>
 
-        <div className="ad-sidebar-foot">🏛️ تحت إشراف الحكومة المصرية</div>
+        <div className="ad-sidebar-foot">
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Icon name="landmark" size={14} /> تحت إشراف الحكومة المصرية
+          </span>
+        </div>
       </aside>
 
       <div className="ad-main">
-        <header className="ad-topbar">
+        <div className="ad-topbar">
           <h1>{title}</h1>
           <div className="ad-user">
             <span>{me?.fullName}</span>
@@ -129,8 +124,8 @@ export default function AdminShell({
               خروج
             </button>
           </div>
-        </header>
-        <main className="ad-content">{children}</main>
+        </div>
+        <div className="ad-content">{children}</div>
       </div>
     </div>
   );
@@ -150,7 +145,7 @@ const ADMIN_CSS = `
 .ad-nav a{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:11px;color:rgba(255,255,255,.82);font-size:14.5px;font-weight:600;text-decoration:none;transition:all .15s;}
 .ad-nav a:hover{background:rgba(255,255,255,.1);color:#fff;}
 .ad-nav a.active{background:#fff;color:var(--green-dark);box-shadow:0 6px 16px rgba(0,0,0,.15);}
-.ad-nav-icon{font-size:17px;}
+.ad-nav-icon{display:inline-flex;align-items:center;}
 .ad-sidebar-foot{margin-top:auto;font-size:12px;opacity:.72;padding:14px 10px 4px;border-top:1px solid rgba(255,255,255,.15);}
 
 .ad-main{flex:1;min-width:0;display:flex;flex-direction:column;}
@@ -166,12 +161,12 @@ const ADMIN_CSS = `
 
 .ad-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;}
 .ad-stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;align-items:center;gap:14px;box-shadow:0 10px 26px rgba(24,70,61,.06);}
-.ad-stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--mint);flex-shrink:0;}
+.ad-stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--mint);color:var(--green-dark);flex-shrink:0;}
 .ad-stat-value{font-size:26px;font-weight:800;color:var(--ink);line-height:1;}
 .ad-stat-label{font-size:13px;color:var(--muted);margin-top:4px;}
-.ad-stat.tone-red .ad-stat-icon{background:#fdeceb;}
-.ad-stat.tone-amber .ad-stat-icon{background:#fdf3dd;}
-.ad-stat.tone-blue .ad-stat-icon{background:#e7f0fb;}
+.ad-stat.tone-red .ad-stat-icon{background:#fdeceb;color:#b4322b;}
+.ad-stat.tone-amber .ad-stat-icon{background:#fdf3dd;color:#96690f;}
+.ad-stat.tone-blue .ad-stat-icon{background:#e7f0fb;color:#2f5fa6;}
 
 .ad-grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .ad-panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;}
@@ -214,7 +209,7 @@ const ADMIN_CSS = `
 .ad-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
 .ad-sup-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 10px 26px rgba(24,70,61,.05);}
 .ad-sup-head{display:flex;align-items:center;gap:12px;}
-.ad-sup-avatar{width:44px;height:44px;border-radius:12px;background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:22px;}
+.ad-sup-avatar{width:44px;height:44px;border-radius:12px;background:var(--mint);color:var(--green-dark);display:flex;align-items:center;justify-content:center;}
 .ad-sup-name{font-weight:800;color:var(--ink);}
 .ad-sup-title{font-size:12.5px;color:var(--muted);}
 .ad-sup-head .ad-badge{margin-inline-start:auto;}
