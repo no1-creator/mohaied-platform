@@ -52,6 +52,16 @@ export class UsersService {
         companyName: dto.companyName,
         field: dto.field,
         bio: dto.bio,
+        yearsExp: dto.yearsExp,
+        teamSize: dto.teamSize,
+        city: dto.city,
+        phone: dto.phone,
+        website: dto.website,
+        portfolioUrl: dto.portfolioUrl,
+        skills: dto.skills,
+        commercialRegNo: dto.commercialRegNo,
+        taxId: dto.taxId,
+        nationalId: dto.nationalId,
       },
     });
   }
@@ -74,6 +84,15 @@ export class UsersService {
         field: dto.field,
         yearsExp: dto.yearsExp,
         ratePerReview: dto.ratePerReview,
+        bio: dto.bio,
+        education: dto.education,
+        certifications: dto.certifications,
+        specialties: dto.specialties,
+        languages: dto.languages,
+        city: dto.city,
+        phone: dto.phone,
+        linkedinUrl: dto.linkedinUrl,
+        membershipNo: dto.membershipNo,
       },
     });
   }
