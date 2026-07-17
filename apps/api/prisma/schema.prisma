@@ -106,58 +106,77 @@ enum DecisionType {
 // ==================== USERS ====================
 
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  phone        String?   @unique
+  id           String   @id @default(uuid())
+  email        String   @unique
+  phone        String?  @unique
   passwordHash String
   fullName     String
   role         UserRole
   avatarUrl    String?
-  isVerified   Boolean   @default(false)
-  isActive     Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  isVerified   Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   providerProfile   ProviderProfile?
   supervisorProfile SupervisorProfile?
 
-  clientProjects    Project[] @relation("ClientProjects")
-  providerProjects  Project[] @relation("ProviderProjects")
+  clientProjects   Project[] @relation("ClientProjects")
+  providerProjects Project[] @relation("ProviderProjects")
 
-  offers            Offer[]
-  submissions       Submission[]
+  offers                Offer[]
+  submissions           Submission[]
   supervisorAssignments SupervisorAssignment[]
-  complaintsFiled   Complaint[] @relation("ComplaintCreator")
-  activityLogs      ActivityLog[]
-  messages          Message[]
+  complaintsFiled       Complaint[]            @relation("ComplaintCreator")
+  activityLogs          ActivityLog[]
+  messages              Message[]
 }
 
 model ProviderProfile {
-  id            String       @id @default(uuid())
-  userId        String       @unique
-  user          User         @relation(fields: [userId], references: [id])
-  type          ProviderType
-  companyName   String?
-  field         String
-  bio           String?
-  rating        Float        @default(0)
-  reviewsCount  Int          @default(0)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id              String       @id @default(uuid())
+  userId          String       @unique
+  user            User         @relation(fields: [userId], references: [id])
+  type            ProviderType
+  companyName     String?
+  field           String
+  bio             String?
+  yearsExp        Int?
+  teamSize        Int?
+  city            String?
+  phone           String?
+  website         String?
+  portfolioUrl    String?
+  skills          String?
+  commercialRegNo String?
+  taxId           String?
+  nationalId      String?
+  rating          Float        @default(0)
+  reviewsCount    Int          @default(0)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
 model SupervisorProfile {
-  id            String   @id @default(uuid())
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id])
-  title         String
-  field         String
-  yearsExp      Int      @default(0)
-  ratePerReview Decimal  @default(0)
-  rating        Float    @default(0)
-  reviewsCount  Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  title          String
+  field          String
+  yearsExp       Int      @default(0)
+  ratePerReview  Decimal  @default(0)
+  bio            String?
+  education      String?
+  certifications String?
+  specialties    String?
+  languages      String?
+  city           String?
+  phone          String?
+  linkedinUrl    String?
+  membershipNo   String?
+  rating         Float    @default(0)
+  reviewsCount   Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 // ==================== PROJECTS ====================
@@ -169,55 +188,55 @@ model Project {
   description String
   status      ProjectStatus @default(DRAFT)
 
-  clientId    String
-  client      User          @relation("ClientProjects", fields: [clientId], references: [id])
+  clientId String
+  client   User   @relation("ClientProjects", fields: [clientId], references: [id])
 
-  providerId  String?
-  provider    User?         @relation("ProviderProjects", fields: [providerId], references: [id])
+  providerId String?
+  provider   User?   @relation("ProviderProjects", fields: [providerId], references: [id])
 
-  budgetMin   Decimal?
-  budgetMax   Decimal?
+  budgetMin    Decimal?
+  budgetMax    Decimal?
   durationDays Int?
 
-  offers      Offer[]
-  agreement   Agreement?
-  milestones  Milestone[]
-  complaints  Complaint[]
-  files       FileAsset[]
-  messages    Message[]
+  offers                Offer[]
+  agreement             Agreement?
+  milestones            Milestone[]
+  complaints            Complaint[]
+  files                 FileAsset[]
+  messages              Message[]
   supervisorAssignments SupervisorAssignment[]
-  activityLogs ActivityLog[]
+  activityLogs          ActivityLog[]
 
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ==================== OFFERS ====================
 
 model Offer {
-  id          String        @id @default(uuid())
-  projectId   String
-  project     Project       @relation(fields: [projectId], references: [id])
-  providerId  String
-  provider    User          @relation(fields: [providerId], references: [id])
+  id         String  @id @default(uuid())
+  projectId  String
+  project    Project @relation(fields: [projectId], references: [id])
+  providerId String
+  provider   User    @relation(fields: [providerId], references: [id])
 
-  status      OfferStatus   @default(DRAFT)
+  status      OfferStatus @default(DRAFT)
   totalPrice  Decimal
   durationDays Int
   scope       String
-  version     Int           @default(1)
+  version     Int         @default(1)
 
-  milestones  OfferMilestone[]
-  agreement   Agreement?
+  milestones OfferMilestone[]
+  agreement  Agreement?
 
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model OfferMilestone {
-  id           String   @id @default(uuid())
+  id           String  @id @default(uuid())
   offerId      String
-  offer        Offer    @relation(fields: [offerId], references: [id])
+  offer        Offer   @relation(fields: [offerId], references: [id])
   title        String
   description  String
   price        Decimal
@@ -228,22 +247,22 @@ model OfferMilestone {
 // ==================== AGREEMENT ====================
 
 model Agreement {
-  id          String          @id @default(uuid())
-  projectId   String          @unique
-  project     Project         @relation(fields: [projectId], references: [id])
-  offerId     String          @unique
-  offer       Offer           @relation(fields: [offerId], references: [id])
+  id        String  @id @default(uuid())
+  projectId String  @unique
+  project   Project @relation(fields: [projectId], references: [id])
+  offerId   String  @unique
+  offer     Offer   @relation(fields: [offerId], references: [id])
 
-  status      AgreementStatus @default(PENDING_CLIENT)
-  totalValue  Decimal
-  durationDays Int
-  revisionPolicy String?
+  status             AgreementStatus @default(PENDING_CLIENT)
+  totalValue         Decimal
+  durationDays       Int
+  revisionPolicy     String?
   clientApprovedAt   DateTime?
   providerApprovedAt DateTime?
   confirmedAt        DateTime?
 
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ==================== MILESTONES & SUBMISSIONS ====================
@@ -260,41 +279,41 @@ model Milestone {
   status       MilestoneStatus @default(PENDING)
   dueDate      DateTime?
 
-  submissions  Submission[]
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  submissions Submission[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 model Submission {
-  id          String     @id @default(uuid())
-  milestoneId String
-  milestone   Milestone  @relation(fields: [milestoneId], references: [id])
-  providerId  String
-  provider    User        @relation(fields: [providerId], references: [id])
-  notes       String
+  id           String    @id @default(uuid())
+  milestoneId  String
+  milestone    Milestone @relation(fields: [milestoneId], references: [id])
+  providerId   String
+  provider     User      @relation(fields: [providerId], references: [id])
+  notes        String
   externalLink String?
-  reviewNotes String?
-  approved    Boolean?
+  reviewNotes  String?
+  approved     Boolean?
 
-  files       FileAsset[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  files     FileAsset[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
 
 // ==================== SUPERVISOR ====================
 
 model SupervisorAssignment {
-  id           String                     @id @default(uuid())
-  projectId    String
-  project      Project                    @relation(fields: [projectId], references: [id])
-  supervisorId String
-  supervisor   User                       @relation(fields: [supervisorId], references: [id])
-  status       SupervisorAssignmentStatus @default(INVITED)
+  id            String                     @id @default(uuid())
+  projectId     String
+  project       Project                    @relation(fields: [projectId], references: [id])
+  supervisorId  String
+  supervisor    User                       @relation(fields: [supervisorId], references: [id])
+  status        SupervisorAssignmentStatus @default(INVITED)
   ratePerReview Decimal
 
-  reports      SupervisorReport[]
-  createdAt    DateTime                   @default(now())
-  updatedAt    DateTime                   @updatedAt
+  reports   SupervisorReport[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
 }
 
 model SupervisorReport {
@@ -306,8 +325,8 @@ model SupervisorReport {
   notes        String?
   status       SupervisorReportStatus @default(DRAFT)
 
-  createdAt    DateTime               @default(now())
-  updatedAt    DateTime               @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ==================== COMPLAINTS ====================
@@ -321,34 +340,34 @@ model Complaint {
   creatorId   String
   creator     User            @relation("ComplaintCreator", fields: [creatorId], references: [id])
 
-  type        ComplaintType
-  status      ComplaintStatus @default(OPEN)
-  details     String
+  type    ComplaintType
+  status  ComplaintStatus @default(OPEN)
+  details String
 
-  evidences   ComplaintEvidence[]
-  responses   ComplaintResponse[]
-  decision    Decision?
+  evidences ComplaintEvidence[]
+  responses ComplaintResponse[]
+  decision  Decision?
 
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ComplaintEvidence {
-  id          String     @id @default(uuid())
+  id          String    @id @default(uuid())
   complaintId String
-  complaint   Complaint  @relation(fields: [complaintId], references: [id])
+  complaint   Complaint @relation(fields: [complaintId], references: [id])
   fileUrl     String?
   link        String?
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime  @default(now())
 }
 
 model ComplaintResponse {
-  id          String     @id @default(uuid())
+  id          String    @id @default(uuid())
   complaintId String
-  complaint   Complaint  @relation(fields: [complaintId], references: [id])
+  complaint   Complaint @relation(fields: [complaintId], references: [id])
   responderId String
   message     String
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime  @default(now())
 }
 
 model Decision {
@@ -376,23 +395,23 @@ model FileAsset {
 }
 
 model Message {
-  id         String   @id @default(uuid())
-  projectId  String
-  project    Project  @relation(fields: [projectId], references: [id])
-  senderId   String?
-  sender     User?    @relation(fields: [senderId], references: [id])
-  isSystem   Boolean  @default(false)
-  content    String
-  createdAt  DateTime @default(now())
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  senderId  String?
+  sender    User?    @relation(fields: [senderId], references: [id])
+  isSystem  Boolean  @default(false)
+  content   String
+  createdAt DateTime @default(now())
 }
 
 model ActivityLog {
-  id         String   @id @default(uuid())
-  projectId  String?
-  project    Project? @relation(fields: [projectId], references: [id])
-  actorId    String?
-  actor      User?    @relation(fields: [actorId], references: [id])
-  action     String
-  metadata   Json?
-  createdAt  DateTime @default(now())
+  id        String   @id @default(uuid())
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id])
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now())
 }
