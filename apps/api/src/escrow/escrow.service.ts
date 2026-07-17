@@ -205,7 +205,7 @@ export class EscrowService {
     projectId: string,
     actorId: string,
     action: string,
-    metadata: Record<string, unknown>,
+metadata: any,
   ) {
     return this.prisma.activityLog.create({
       data: { projectId, actorId, action, metadata },
