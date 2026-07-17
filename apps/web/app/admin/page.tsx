@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 import { api } from '@/lib/api';
+import Icon from '@/components/Icon';
 
 type Stats = {
   users: {
@@ -26,18 +27,10 @@ type Stats = {
   supervision: { activeAssignments: number };
 };
 
-function BarRow({
-  label,
-  value,
-  total,
-}: {
-  label: string;
-  value: number;
-  total: number;
-}) {
+function BarRow({ label, value, total }: { label: string; value: number; total: number }) {
   const pct = total > 0 ? Math.round((value / total) * 100) : 0;
   return (
-    <li className="ad-bar-row">
+    <li>
       <div className="ad-bar-head">
         <span>{label}</span>
         <span>{value}</span>
@@ -63,14 +56,14 @@ export default function AdminOverviewPage() {
 
   const cards = stats
     ? [
-        { icon: '👥', label: 'إجمالي المستخدمين', value: stats.users.total, tone: 'green' },
-        { icon: '✅', label: 'حسابات موثّقة', value: stats.users.verified, tone: 'blue' },
-        { icon: '📁', label: 'إجمالي المشاريع', value: stats.projects.total, tone: 'green' },
-        { icon: '🚧', label: 'مشاريع جارية', value: stats.projects.inProgress, tone: 'amber' },
-        { icon: '📨', label: 'إجمالي العروض', value: stats.offers.total, tone: 'blue' },
-        { icon: '🤝', label: 'اتفاقيات مؤكدة', value: stats.offers.confirmedAgreements, tone: 'green' },
-        { icon: '⚖️', label: 'شكاوى مفتوحة', value: stats.complaints.open, tone: 'red' },
-        { icon: '🧑‍⚖️', label: 'إشراف نشط', value: stats.supervision.activeAssignments, tone: 'green' },
+        { icon: 'users', label: 'إجمالي المستخدمين', value: stats.users.total, tone: 'green' },
+        { icon: 'badgeCheck', label: 'حسابات موثّقة', value: stats.users.verified, tone: 'blue' },
+        { icon: 'folder', label: 'إجمالي المشاريع', value: stats.projects.total, tone: 'green' },
+        { icon: 'clock', label: 'مشاريع جارية', value: stats.projects.inProgress, tone: 'amber' },
+        { icon: 'fileText', label: 'إجمالي العروض', value: stats.offers.total, tone: 'blue' },
+        { icon: 'fileCheck', label: 'اتفاقيات مؤكدة', value: stats.offers.confirmedAgreements, tone: 'green' },
+        { icon: 'scale', label: 'شكاوى مفتوحة', value: stats.complaints.open, tone: 'red' },
+        { icon: 'shield', label: 'إشراف نشط', value: stats.supervision.activeAssignments, tone: 'green' },
       ]
     : [];
 
@@ -84,10 +77,12 @@ export default function AdminOverviewPage() {
           <div className="ad-stats">
             {cards.map((c) => (
               <div key={c.label} className={`ad-stat tone-${c.tone}`}>
-                <span className="ad-stat-icon">{c.icon}</span>
+                <div className="ad-stat-icon">
+                  <Icon name={c.icon} size={22} />
+                </div>
                 <div>
-                  <p className="ad-stat-value">{c.value}</p>
-                  <p className="ad-stat-label">{c.label}</p>
+                  <div className="ad-stat-value">{c.value}</div>
+                  <div className="ad-stat-label">{c.label}</div>
                 </div>
               </div>
             ))}
@@ -95,7 +90,7 @@ export default function AdminOverviewPage() {
 
           <div className="ad-grid2">
             <div className="ad-panel">
-              <h3 className="ad-panel-title">توزيع المستخدمين</h3>
+              <div className="ad-panel-title">توزيع المستخدمين</div>
               <ul className="ad-bars">
                 <BarRow label="عملاء" value={stats.users.clients} total={stats.users.total} />
                 <BarRow label="مقدمو خدمة" value={stats.users.providers} total={stats.users.total} />
@@ -103,8 +98,9 @@ export default function AdminOverviewPage() {
                 <BarRow label="أدمن" value={stats.users.admins} total={stats.users.total} />
               </ul>
             </div>
+
             <div className="ad-panel">
-              <h3 className="ad-panel-title">حالة المشاريع</h3>
+              <div className="ad-panel-title">حالة المشاريع</div>
               <ul className="ad-bars">
                 <BarRow label="مفتوحة" value={stats.projects.open} total={stats.projects.total} />
                 <BarRow label="جارية" value={stats.projects.inProgress} total={stats.projects.total} />
