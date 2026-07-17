@@ -32,7 +32,6 @@ export default function DashboardPage() {
       router.push('/login');
       return;
     }
-
     api<Me>('/users/me')
       .then((data) => setMe(data))
       .catch((err) => setError(err.message))
@@ -40,104 +39,89 @@ export default function DashboardPage() {
   }, [router]);
 
   if (loading) {
-    return (
-      <main className="min-h-screen grid place-items-center text-muted">
-        جاري التحميل...
-      </main>
-    );
+    return <div className="app-state">جاري التحميل...</div>;
   }
 
   if (error) {
     return (
-      <main className="min-h-screen">
-        <TopBar />
-        <div className="max-w-3xl mx-auto px-6 py-20 text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+      <div className="app-state">
+        <div>
+          <p style={{ marginBottom: 16 }}>{error}</p>
           <button
+            className="auth-submit"
+            style={{ maxWidth: 260 }}
             onClick={() => router.push('/login')}
-            className="btn-primary max-w-xs mx-auto"
           >
             الرجوع لتسجيل الدخول
           </button>
         </div>
-      </main>
+      </div>
     );
   }
 
   const role = me?.role;
 
   return (
-    <main className="min-h-screen">
+    <>
       <TopBar name={me?.fullName} />
-
-      <div className="max-w-5xl mx-auto px-6 py-10">
-        <div className="card mb-8">
-          <span className="inline-block bg-brand-mint text-brand text-xs font-extrabold px-3 py-1 rounded-full mb-3">
-            {me ? ROLE_LABELS[me.role] : ''}
-          </span>
-          <h1 className="text-2xl font-black mb-2">
-            أهلًا بيك، {me?.fullName}
-          </h1>
-          <p className="text-muted text-sm">
+      <div className="app-page">
+        <div className="welcome-card">
+          <span className="role-badge">{me ? ROLE_LABELS[me.role] : ''}</span>
+          <h2>أهلًا بيك، {me?.fullName}</h2>
+          <p>
             {me?.email}
             {me && !me.isVerified && ' — حسابك بانتظار التوثيق'}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <Link href="/projects" className="card block hover:border-brand">
-            <h3 className="font-black mb-1">مشاريعي</h3>
-            <p className="text-sm text-muted">تابع مشاريعك الحالية.</p>
+        <div className="tiles-grid">
+          <Link href="/projects" className="tile">
+            <div className="tile-icon">📁</div>
+            <h3>مشاريعي</h3>
+            <p>تابع مشاريعك الحالية.</p>
           </Link>
 
           {role === 'CLIENT' && (
-            <Link
-              href="/projects/new"
-              className="card block hover:border-brand"
-            >
-              <h3 className="font-black mb-1">مشروع جديد</h3>
-              <p className="text-sm text-muted">انشر مشروعك واستقبل العروض.</p>
+            <Link href="/projects/new" className="tile">
+              <div className="tile-icon">➕</div>
+              <h3>مشروع جديد</h3>
+              <p>انشر مشروعك واستقبل العروض.</p>
             </Link>
           )}
 
           {role === 'PROVIDER' && (
-            <Link
-              href="/projects/open"
-              className="card block hover:border-brand"
-            >
-              <h3 className="font-black mb-1">مشاريع مفتوحة</h3>
-              <p className="text-sm text-muted">تصفّح المشاريع وقدّم عروضك.</p>
+            <Link href="/projects/open" className="tile">
+              <div className="tile-icon">🔍</div>
+              <h3>مشاريع مفتوحة</h3>
+              <p>تصفّح المشاريع وقدّم عروضك.</p>
             </Link>
           )}
 
           {role === 'PROVIDER' && (
-            <Link href="/offers/mine" className="card block hover:border-brand">
-              <h3 className="font-black mb-1">عروضي</h3>
-              <p className="text-sm text-muted">تابع حالة العروض اللي قدّمتها.</p>
+            <Link href="/offers/mine" className="tile">
+              <div className="tile-icon">📨</div>
+              <h3>عروضي</h3>
+              <p>تابع حالة العروض اللي قدّمتها.</p>
             </Link>
           )}
 
           {role === 'SUPERVISOR' && (
-            <Link
-              href="/supervisor/assignments"
-              className="card block hover:border-brand"
-            >
-              <h3 className="font-black mb-1">تكليفاتي</h3>
-              <p className="text-sm text-muted">المشاريع اللي بتشرف عليها.</p>
+            <Link href="/supervisor/assignments" className="tile">
+              <div className="tile-icon">🛡️</div>
+              <h3>تكليفاتي</h3>
+              <p>المشاريع اللي بتشرف عليها.</p>
             </Link>
           )}
 
           {role === 'ADMIN' && (
-            <Link
-              href="/admin/complaints"
-              className="card block hover:border-brand"
-            >
-              <h3 className="font-black mb-1">الشكاوى</h3>
-              <p className="text-sm text-muted">راجع الشكاوى وأصدر القرارات.</p>
+            <Link href="/admin/complaints" className="tile">
+              <div className="tile-icon">⚖️</div>
+              <h3>الشكاوى</h3>
+              <p>راجع الشكاوى وأصدر القرارات.</p>
             </Link>
           )}
         </div>
       </div>
-    </main>
+    </>
   );
 }
