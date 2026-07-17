@@ -10,6 +10,8 @@ import { MilestonesModule } from './milestones/milestones.module';
 import { ComplaintsModule } from './complaints/complaints.module';
 import { SupervisorsModule } from './supervisors/supervisors.module';
 import { AdminModule } from './admin/admin.module';
+import { SettingsModule } from './settings/settings.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { AdminModule } from './admin/admin.module';
     ComplaintsModule,
     SupervisorsModule,
     AdminModule,
+    SettingsModule,
+    SubscriptionsModule,
   ],
   controllers: [],
   providers: [],
