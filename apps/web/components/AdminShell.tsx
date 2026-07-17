@@ -23,7 +23,7 @@ const NAV = [
   { key: 'complaints', href: '/admin/complaints', label: 'الشكاوى', icon: 'scale' },
   { key: 'plans', href: '/admin/plans', label: 'الباقات والعمولة', icon: 'creditCard' },
 ];
-];
+
 
 export default function AdminShell({
   active,
