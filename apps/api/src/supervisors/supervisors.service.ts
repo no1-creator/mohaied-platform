@@ -78,6 +78,22 @@ export class SupervisorsService {
     return assignment;
   }
 
+  // قائمة المشرفين المتاحين (للعميل يختار منهم)
+  async listAvailable() {
+    const supervisors = await this.prisma.user.findMany({
+      where: { role: UserRole.SUPERVISOR, isActive: true },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        fullName: true,
+        isVerified: true,
+        supervisorProfile: true,
+      },
+    });
+    // نرجّع اللي كمّلوا بروفايلهم بس
+    return supervisors.filter((s) => s.supervisorProfile);
+  }
+
   // المشرف يقبل أو يرفض التكليف
   async respondInvite(
     assignmentId: string,
