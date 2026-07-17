@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
+import EscrowPanel from '@/components/EscrowPanel';
 
 type Submission = {
   id: string;
@@ -109,7 +110,8 @@ export default function MilestonesPage() {
       <TopBar />
       <div className="max-w-3xl mx-auto px-6 py-10">
         <h1 className="text-2xl font-black mb-8">إدارة المراحل</h1>
-
+<EscrowPanel projectId={projectId} />
+        
         {loading && <p className="text-muted">جاري التحميل...</p>}
         {error && <p className="text-red-600 mb-4">{error}</p>}
 
