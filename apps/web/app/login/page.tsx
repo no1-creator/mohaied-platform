@@ -5,6 +5,25 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, saveToken } from '@/lib/api';
 
+const LOGO = (
+  <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M16 3.2l9.5 3.6v6.8c0 6.2-4.2 10.7-9.5 12.4C10.7 24.3 6.5 19.8 6.5 13.6V6.8L16 3.2z"
+      fill="white"
+      fillOpacity="0.2"
+      stroke="white"
+      strokeWidth="1.4"
+    />
+    <path
+      d="M11.5 16l3 3 6-6.5"
+      stroke="white"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -44,27 +63,25 @@ export default function LoginPage() {
     <div className="auth-shell">
       <div className="auth-brand">
         <div className="auth-brand-logo">
-          <div className="logo-mark">◇</div>
-          <span>محايد</span>
+          <span className="logo-mark">{LOGO}</span>
+          محايد
         </div>
         <h2>نفّذ مشروعك بثقة، وحقوقك محفوظة</h2>
         <p>
-          منصة محايدة تربط العميل بمقدم الخدمة داخل بيئة موثقة، مع اتفاق واضح
-          ومتابعة للمراحل وحل عادل للنزاعات.
+          منصة محايدة تربط العميل بالمهندس أو الشركة داخل بيئة موثّقة، مع اتفاق
+          واضح ومتابعة للمراحل وحل عادل للنزاعات.
         </p>
         <ul className="auth-points">
           <li>اتفاق موثّق لكل مرحلة</li>
-          <li>حماية حقوق الطرفين</li>
-          <li>إشراف متخصص اختياري</li>
+          <li>حماية حقوق كل الأطراف</li>
+          <li>تحت إشراف الحكومة المصرية</li>
         </ul>
       </div>
 
       <div className="auth-form-wrap">
         <div className="auth-box">
           <div className="auth-head">
-            <Link href="/" className="logo-mark">
-              ◇
-            </Link>
+            <span className="logo-mark">{LOGO}</span>
             <h1 className="auth-title">تسجيل الدخول</h1>
             <p className="auth-sub">أهلًا بيك تاني في محايد</p>
           </div>
@@ -97,31 +114,17 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="auth-switch">
+          <div className="auth-switch">
             لسه معندكش حساب؟ <Link href="/register">إنشاء حساب</Link>
-          </p>
+          </div>
 
           <div className="quick-login">
             <h4>حسابات تجريبية (اضغط للدخول السريع)</h4>
             <div className="quick-grid">
-              <button type="button" onClick={() => quick('admin@mohaied.test')}>
-                أدمن
-              </button>
-              <button type="button" onClick={() => quick('client@mohaied.test')}>
-                عميل
-              </button>
-              <button
-                type="button"
-                onClick={() => quick('provider@mohaied.test')}
-              >
-                مقدم خدمة
-              </button>
-              <button
-                type="button"
-                onClick={() => quick('supervisor@mohaied.test')}
-              >
-                مشرف
-              </button>
+              <button onClick={() => quick('admin@mohaied.test')}>أدمن</button>
+              <button onClick={() => quick('client@mohaied.test')}>عميل</button>
+              <button onClick={() => quick('provider@mohaied.test')}>مقدم خدمة</button>
+              <button onClick={() => quick('supervisor@mohaied.test')}>مشرف</button>
             </div>
           </div>
         </div>
