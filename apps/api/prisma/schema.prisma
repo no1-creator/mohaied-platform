@@ -103,6 +103,41 @@ enum DecisionType {
   AMICABLE
 }
 
+// ---- Monetization enums (جديد) ----
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum EscrowStatus {
+  PENDING
+  FUNDED
+  RELEASED
+  REFUNDED
+  DISPUTED
+}
+
+enum InvoiceType {
+  SUBSCRIPTION
+  MILESTONE
+  COMMISSION
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
 // ==================== USERS ====================
 
 model User {
@@ -130,30 +165,33 @@ model User {
   complaintsFiled       Complaint[]            @relation("ComplaintCreator")
   activityLogs          ActivityLog[]
   messages              Message[]
+
+  subscriptions Subscription[]
+  invoices      Invoice[]
 }
 
 model ProviderProfile {
-  id              String       @id @default(uuid())
-  userId          String       @unique
-  user            User         @relation(fields: [userId], references: [id])
-  type            ProviderType
-  companyName     String?
-  field           String
-  bio             String?
-  yearsExp        Int?
-  teamSize        Int?
-  city            String?
-  phone           String?
-  website         String?
-  portfolioUrl    String?
-  skills          String?
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  type           ProviderType
+  companyName    String?
+  field          String
+  bio            String?
+  yearsExp       Int?
+  teamSize       Int?
+  city           String?
+  phone          String?
+  website        String?
+  portfolioUrl   String?
+  skills         String?
   commercialRegNo String?
-  taxId           String?
-  nationalId      String?
-  rating          Float        @default(0)
-  reviewsCount    Int          @default(0)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  taxId          String?
+  nationalId     String?
+  rating         Float    @default(0)
+  reviewsCount   Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model SupervisorProfile {
@@ -206,6 +244,7 @@ model Project {
   messages              Message[]
   supervisorAssignments SupervisorAssignment[]
   activityLogs          ActivityLog[]
+  escrowTransactions    EscrowTransaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -214,17 +253,17 @@ model Project {
 // ==================== OFFERS ====================
 
 model Offer {
-  id         String  @id @default(uuid())
+  id         String @id @default(uuid())
   projectId  String
   project    Project @relation(fields: [projectId], references: [id])
   providerId String
   provider   User    @relation(fields: [providerId], references: [id])
 
-  status      OfferStatus @default(DRAFT)
-  totalPrice  Decimal
+  status       OfferStatus @default(DRAFT)
+  totalPrice   Decimal
   durationDays Int
-  scope       String
-  version     Int         @default(1)
+  scope        String
+  version      Int         @default(1)
 
   milestones OfferMilestone[]
   agreement  Agreement?
@@ -253,13 +292,13 @@ model Agreement {
   offerId   String  @unique
   offer     Offer   @relation(fields: [offerId], references: [id])
 
-  status             AgreementStatus @default(PENDING_CLIENT)
-  totalValue         Decimal
-  durationDays       Int
-  revisionPolicy     String?
-  clientApprovedAt   DateTime?
+  status            AgreementStatus @default(PENDING_CLIENT)
+  totalValue        Decimal
+  durationDays      Int
+  revisionPolicy    String?
+  clientApprovedAt  DateTime?
   providerApprovedAt DateTime?
-  confirmedAt        DateTime?
+  confirmedAt       DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -280,8 +319,10 @@ model Milestone {
   dueDate      DateTime?
 
   submissions Submission[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  escrow      EscrowTransaction?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Submission {
@@ -296,8 +337,8 @@ model Submission {
   approved     Boolean?
 
   files     FileAsset[]
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
 // ==================== SUPERVISOR ====================
@@ -414,4 +455,90 @@ model ActivityLog {
   action    String
   metadata  Json?
   createdAt DateTime @default(now())
+}
+
+// ==================== MONETIZATION (جديد) ====================
+
+model PlatformSettings {
+  id                    String   @id @default(uuid())
+  defaultCommissionRate Decimal  @default(15)
+  escrowEnabled         Boolean  @default(true)
+  platformName          String   @default("محايد")
+  supportEmail          String?
+  updatedAt             DateTime @updatedAt
+}
+
+model SubscriptionPlan {
+  id             String       @id @default(uuid())
+  name           String
+  description    String?
+  price          Decimal      @default(0)
+  billingCycle   BillingCycle @default(MONTHLY)
+  commissionRate Decimal      @default(10)
+  features       String?
+  maxOffers      Int?
+  isFeatured     Boolean      @default(false)
+  isActive       Boolean      @default(true)
+  orderIndex     Int          @default(0)
+
+  subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Subscription {
+  id        String             @id @default(uuid())
+  userId    String
+  user      User               @relation(fields: [userId], references: [id])
+  planId    String
+  plan      SubscriptionPlan   @relation(fields: [planId], references: [id])
+  status    SubscriptionStatus @default(PENDING)
+  startedAt DateTime?
+  expiresAt DateTime?
+  autoRenew Boolean            @default(false)
+
+  invoices  Invoice[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model EscrowTransaction {
+  id               String       @id @default(uuid())
+  milestoneId      String       @unique
+  milestone        Milestone    @relation(fields: [milestoneId], references: [id])
+  projectId        String
+  project          Project      @relation(fields: [projectId], references: [id])
+  amount           Decimal
+  commissionRate   Decimal      @default(0)
+  commissionAmount Decimal      @default(0)
+  netAmount        Decimal      @default(0)
+  status           EscrowStatus @default(PENDING)
+  fundedAt         DateTime?
+  releasedAt       DateTime?
+  refundedAt       DateTime?
+
+  invoices  Invoice[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Invoice {
+  id          String        @id @default(uuid())
+  code        String        @unique
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  type        InvoiceType
+  status      InvoiceStatus @default(UNPAID)
+  amount      Decimal
+  description String?
+
+  subscriptionId String?
+  subscription   Subscription?      @relation(fields: [subscriptionId], references: [id])
+  escrowId       String?
+  escrow         EscrowTransaction? @relation(fields: [escrowId], references: [id])
+
+  issuedAt  DateTime  @default(now())
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
