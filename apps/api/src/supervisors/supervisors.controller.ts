@@ -29,6 +29,12 @@ export class SupervisorsController {
     return this.supervisorsService.invite(clientId, dto);
   }
 
+  @Get('available')
+  @Roles(UserRole.CLIENT)
+  listAvailable() {
+    return this.supervisorsService.listAvailable();
+  }
+
   @Patch('assignments/:id/respond')
   @Roles(UserRole.SUPERVISOR)
   respondInvite(
