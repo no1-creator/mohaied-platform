@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 import { api } from '@/lib/api';
+import Icon from '@/components/Icon';
 
 type Supervisor = {
   id: string;
@@ -63,19 +64,20 @@ export default function AdminSupervisorsPage() {
           {items.map((s) => (
             <div key={s.id} className="ad-sup-card">
               <div className="ad-sup-head">
-                <div className="ad-sup-avatar">🧑‍⚖️</div>
-                <div>
-                  <p className="ad-sup-name">{s.fullName}</p>
-                  <p className="ad-sup-title">
-                    {s.supervisorProfile?.title || 'مشرف متخصص'}
-                  </p>
+                <div className="ad-sup-avatar">
+                  <Icon name="shield" size={22} />
                 </div>
-                {s.isVerified ? (
-                  <span className="ad-badge ok">موثّق</span>
-                ) : (
-                  <span className="ad-badge muted">غير موثّق</span>
-                )}
+                <div>
+                  <div className="ad-sup-name">{s.fullName}</div>
+                  <div className="ad-sup-title">
+                    {s.supervisorProfile?.title || 'مشرف متخصص'}
+                  </div>
+                </div>
+                <span className={`ad-badge ${s.isVerified ? 'ok' : 'muted'}`}>
+                  {s.isVerified ? 'موثّق' : 'غير موثّق'}
+                </span>
               </div>
+
               <ul className="ad-sup-meta">
                 <li>
                   <span>المجال</span>
@@ -87,17 +89,20 @@ export default function AdminSupervisorsPage() {
                 </li>
                 <li>
                   <span>التقييم</span>
-                  <b>⭐ {s.supervisorProfile?.rating ?? 0}</b>
+                  <b style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <Icon name="star" size={14} /> {s.supervisorProfile?.rating ?? 0}
+                  </b>
                 </li>
                 <li>
                   <span>مهام الإشراف</span>
                   <b>{s._count.supervisorAssignments}</b>
                 </li>
               </ul>
+
               <button
                 className="ad-btn-mini"
-                disabled={busy === s.id}
                 onClick={() => toggleVerify(s)}
+                disabled={busy === s.id}
               >
                 {s.isVerified ? 'إلغاء الاعتماد' : 'اعتماد المشرف'}
               </button>
