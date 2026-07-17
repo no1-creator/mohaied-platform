@@ -21,6 +21,8 @@ const NAV = [
   { key: 'projects', href: '/admin/projects', label: 'المشاريع', icon: 'folder' },
   { key: 'supervisors', href: '/admin/supervisors', label: 'المشرفون', icon: 'shield' },
   { key: 'complaints', href: '/admin/complaints', label: 'الشكاوى', icon: 'scale' },
+  { key: 'plans', href: '/admin/plans', label: 'الباقات والعمولة', icon: 'creditCard' },
+];
 ];
 
 export default function AdminShell({
