@@ -35,7 +35,7 @@ type Tile = {
 
 const TILES: Tile[] = [
   { href: '/projects', icon: 'folder', title: 'مشاريعي', desc: 'تابع مشاريعك الحالية وحالتها.', roles: [] },
-  { href: '/projects/new', icon: 'plus', title: 'مشروع جديد', desc: 'انشر مشروعك واستقبل العروض.', roles: ['CLIENT'], accent: true },
+{ href: '/projects/start', icon: 'plus', title: 'مشروع جديد', desc: 'اختار طريقتك في إيجاد مقدم الخدمة.', roles: ['CLIENT'], accent: true },
   { href: '/projects/open', icon: 'search', title: 'مشاريع مفتوحة', desc: 'تصفّح المشاريع وقدّم عروضك.', roles: ['PROVIDER'] },
   { href: '/offers/mine', icon: 'fileText', title: 'عروضي', desc: 'تابع حالة العروض اللي قدّمتها.', roles: ['PROVIDER'] },
   { href: '/complaints/mine', icon: 'scale', title: 'شكاويّ ونزاعاتي', desc: 'تابع شكاويك وردود وقرارات إدارة محايد.', roles: ['CLIENT', 'PROVIDER'] },
@@ -68,7 +68,7 @@ const PROVIDER_PERKS = [
 const HERO_BY_ROLE: Record<string, { tag: string; cta?: { label: string; href: string } }> = {
   CLIENT: {
     tag: 'نفّذ مشاريعك بثقة — كل خطوة موثّقة وحقوقك محفوظة داخل بيئة محايدة.',
-    cta: { label: 'انشر مشروع جديد', href: '/projects/new' },
+cta: { label: 'ابدأ مشروع جديد', href: '/projects/start' },
   },
   PROVIDER: {
     tag: 'استقبل المشاريع، قدّم عروضك، واشتغل في بيئة موثّقة تحفظ حقوقك المالية والمهنية.',
@@ -290,8 +290,8 @@ export default function DashboardPage() {
               <div className="db-band-content">
                 <h3>عندك مشروع في بالك؟</h3>
                 <p>انشره دلوقتي واستقبل عروض من أفضل مقدمي الخدمات — كله موثّق ومضمون من محايد.</p>
-                <Link href="/projects/new" className="db-band-btn">
-                  ابدأ مشروعك الآن
+<Link href="/projects/start" className="db-band-btn">
+                ابدأ مشروعك الآن
                   <Icon name="plus" size={16} />
                 </Link>
               </div>
