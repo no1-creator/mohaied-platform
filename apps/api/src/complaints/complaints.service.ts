@@ -38,6 +38,7 @@ export class ComplaintsService {
           milestoneId: dto.milestoneId,
           creatorId: userId,
           type: dto.type,
+          customType: dto.customType,
           details: dto.details,
           status: ComplaintStatus.AWAITING_RESPONSE,
         },
@@ -174,6 +175,7 @@ export class ComplaintsService {
         data: {
           complaintId,
           type: dto.type,
+          customType: dto.customType,
           reason: dto.reason,
           decidedById: adminId,
         },
