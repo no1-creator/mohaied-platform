@@ -39,7 +39,6 @@ const EMPTY = {
   placement: 'HOME_STRIP',
 };
 
-// ===== ضغط الصورة قبل الرفع =====
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const i = new Image();
@@ -75,19 +74,19 @@ async function compressImage(file: File): Promise<string> {
     ctx.drawImage(img, 0, 0, w, h);
     return c.toDataURL('image/jpeg', quality);
   };
-  const LIMIT = 85000;
-  let out = render(1000, 0.72);
-  let q = 0.72;
-  while (out.length > LIMIT && q > 0.35) {
-    q -= 0.1;
-    out = render(1000, q);
+  const LIMIT = 3500000;
+  let out = render(1920, 0.85);
+  let q = 0.85;
+  while (out.length > LIMIT && q > 0.5) {
+    q -= 0.07;
+    out = render(1920, q);
   }
   if (out.length > LIMIT) {
-    q = 0.6;
-    out = render(680, q);
-    while (out.length > LIMIT && q > 0.3) {
-      q -= 0.1;
-      out = render(680, q);
+    q = 0.72;
+    out = render(1500, q);
+    while (out.length > LIMIT && q > 0.45) {
+      q -= 0.07;
+      out = render(1500, q);
     }
   }
   return out;
@@ -99,6 +98,20 @@ const ADV_CSS = `
 .adv-hero h1 { font-size:26px; font-weight:900; margin:0 0 10px; }
 .adv-hero p { font-size:15px; opacity:.95; line-height:1.9; margin:0; max-width:620px; }
 .adv-success { background:#e7f6ef; color:#1f8f5f; border:1px solid #bfe6d3; border-radius:12px; padding:14px 18px; font-weight:800; font-size:14px; margin-bottom:18px; }
+
+/* المعاينة الحيّة */
+.advp-label { font-size:13px; font-weight:800; color:var(--green-dark); margin:0 0 10px; display:flex; align-items:center; gap:8px; }
+.advp-banner { position:relative; width:100%; height:320px; border-radius:20px; overflow:hidden; box-shadow:0 16px 40px rgba(23,33,31,.15); background:var(--mint); margin-bottom:24px; }
+.advp-bg { position:absolute; inset:0; background-size:cover; background-position:center; }
+.advp-bg.fallback { background:linear-gradient(135deg,var(--green),var(--green-dark)); }
+.advp-overlay { position:absolute; inset:0; background:linear-gradient(to left, rgba(0,0,0,.62), rgba(0,0,0,.28) 55%, rgba(0,0,0,.08)); }
+.advp-content { position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:12px; padding:0 44px; color:#fff; max-width:640px; }
+.advp-title { font-size:30px; font-weight:900; margin:0; line-height:1.25; text-shadow:0 2px 14px rgba(0,0,0,.35); }
+.advp-title.ph { opacity:.7; font-style:italic; }
+.advp-sub { font-size:16px; margin:0; line-height:1.7; opacity:.96; text-shadow:0 2px 10px rgba(0,0,0,.35); }
+.advp-cta { display:inline-flex; align-items:center; background:#fff; color:var(--green-dark); padding:11px 26px; border-radius:12px; font-weight:900; font-size:15px; margin-top:4px; box-shadow:0 12px 26px rgba(0,0,0,.22); }
+.advp-tag { position:absolute; top:14px; inset-inline-end:14px; z-index:3; background:rgba(0,0,0,.45); color:#fff; font-size:11.5px; font-weight:700; padding:5px 12px; border-radius:999px; backdrop-filter:blur(4px); }
+
 .adv-cols { display:grid; grid-template-columns:1.4fr 1fr; gap:20px; align-items:start; }
 .adv-form, .adv-side { background:#fff; border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:0 4px 16px rgba(23,33,31,.04); }
 .adv-form-title { font-size:17px; font-weight:800; color:var(--ink); margin-bottom:16px; }
@@ -110,9 +123,8 @@ const ADV_CSS = `
 .adv-drop { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; border:2px dashed var(--line); border-radius:12px; padding:26px; cursor:pointer; color:var(--muted); font-size:13.5px; font-weight:700; background:#fafcfb; transition:all .16s; text-align:center; }
 .adv-drop:hover { border-color:var(--green-light); color:var(--green-dark); background:var(--mint); }
 .adv-drop-hint { font-size:11.5px; font-weight:600; opacity:.8; }
-.adv-preview { position:relative; width:100%; height:170px; border-radius:12px; background-size:cover; background-position:center; background-color:var(--mint); border:1px solid var(--line); }
+.adv-preview { position:relative; width:100%; height:150px; border-radius:12px; background-size:cover; background-position:center; background-color:var(--mint); border:1px solid var(--line); }
 .adv-preview-x { position:absolute; top:8px; inset-inline-start:8px; width:30px; height:30px; border-radius:50%; border:none; background:rgba(0,0,0,.55); color:#fff; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-.adv-preview-x:hover { background:rgba(0,0,0,.78); }
 .adv-submit { width:100%; background:var(--green); color:#fff; border:none; border-radius:11px; padding:14px; font-weight:800; font-size:15px; cursor:pointer; font-family:inherit; transition:background .2s; }
 .adv-submit:hover:not(:disabled) { background:var(--green-dark); }
 .adv-submit:disabled { opacity:.55; cursor:not-allowed; }
@@ -129,7 +141,12 @@ const ADV_CSS = `
 .adv-s-REJECTED { background:#fef2f2; color:#b91c1c; }
 .adv-s-EXPIRED { background:#eef1f0; color:#70807b; }
 .adv-empty { color:var(--muted); font-size:13px; text-align:center; padding:24px 10px; line-height:1.7; }
-@media (max-width:760px) { .adv-cols { grid-template-columns:1fr; } }
+@media (max-width:760px) {
+  .adv-cols { grid-template-columns:1fr; }
+  .advp-banner { height:230px; }
+  .advp-content { padding:0 24px; }
+  .advp-title { font-size:22px; }
+}
 `;
 
 export default function AdvertisePage() {
@@ -211,12 +228,30 @@ export default function AdvertisePage() {
       <main className="adv-wrap">
         <section className="adv-hero">
           <h1>أعلن معنا على محايد 📣</h1>
-          <p>وصّل خدماتك لعملاء وزوار المنصة — اعرض إعلانك في الصفحة الرئيسية أو صفحة العملاء، وزوّد فرص شغلك.</p>
+          <p>وصّل خدماتك لعملاء وزوار المنصة — اكتب إعلانك وارفع صورته، وشوف شكله مباشرةً قبل ما تبعته.</p>
         </section>
 
         {done && (
           <div className="adv-success">✅ تم إرسال إعلانك بنجاح! هيظهر بعد مراجعة الإدارة والموافقة عليه.</div>
         )}
+
+        {/* المعاينة الحيّة */}
+        <div className="advp-label">👁️ معاينة مباشرة — كده هيبان إعلانك على المنصة</div>
+        <div className="advp-banner">
+          <div
+            className={`advp-bg${form.imageUrl ? '' : ' fallback'}`}
+            style={form.imageUrl ? { backgroundImage: `url(${form.imageUrl})` } : undefined}
+          />
+          <div className="advp-overlay" />
+          <span className="advp-tag">معاينة</span>
+          <div className="advp-content">
+            <h3 className={`advp-title${form.title.trim() ? '' : ' ph'}`}>
+              {form.title.trim() || 'عنوان إعلانك هيظهر هنا'}
+            </h3>
+            {form.subtitle.trim() && <p className="advp-sub">{form.subtitle}</p>}
+            <span className="advp-cta">{form.ctaLabel.trim() || 'اعرف أكثر'}</span>
+          </div>
+        </div>
 
         <div className="adv-cols">
           <div className="adv-form">
@@ -259,7 +294,7 @@ export default function AdvertisePage() {
               ) : (
                 <label className="adv-drop">
                   <span>🖼️ {uploading ? 'جاري المعالجة...' : 'ارفع صورة من جهازك'}</span>
-                  <span className="adv-drop-hint">هتتضغط وتتصغّر تلقائيًا قبل الرفع</span>
+                  <span className="adv-drop-hint">يفضّل صورة عريضة (مثال 1600×600) — بتتصغّر تلقائيًا</span>
                   <input type="file" accept="image/*" onChange={onFile} hidden />
                 </label>
               )}
