@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, clearToken, getToken } from '@/lib/api';
-
+import NotificationBell from '@/components/NotificationBell';
 const LOGO = (
   <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
@@ -27,6 +27,7 @@ const LOGO = (
 type Me = {
   fullName?: string;
   role?: string;
+  avatarUrl?: string | null;
   providerProfile?: unknown | null;
   supervisorProfile?: unknown | null;
 };
@@ -67,6 +68,10 @@ const TB_CSS = `
 .tb-link.active { color:var(--green-dark); background:var(--mint); }
 .tb-end { display:flex; align-items:center; gap:12px; margin-inline-start:auto; flex-shrink:0; }
 .tb-user { font-size:13.5px; color:var(--muted); white-space:nowrap; }
+.tb-profile { display:flex; align-items:center; gap:8px; text-decoration:none; padding:4px 10px 4px 4px; border-radius:22px; border:1px solid var(--line); background:#fff; transition:all .15s; }
+.tb-profile:hover { background:var(--mint); border-color:var(--green-light); }
+.tb-avatar { width:30px; height:30px; border-radius:50%; background:linear-gradient(140deg,var(--green-light),var(--green-dark)); color:#fff; font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
+.tb-avatar img { width:100%; height:100%; object-fit:cover; }
 .tb-logout { padding:8px 16px; border-radius:9px; border:1px solid var(--line); background:#fff; color:var(--ink); font-weight:700; font-size:13.5px; cursor:pointer; font-family:inherit; transition:all .15s; }
 .tb-logout:hover { border-color:#fecaca; background:#fef2f2; color:#b91c1c; }
 @media (max-width:760px){
@@ -85,7 +90,7 @@ export default function TopBar({ name }: { name?: string }) {
     if (!getToken()) return;
     api<Me>('/users/me')
       .then((data) => {
-        setMe({ fullName: data.fullName, role: data.role });
+setMe({ fullName: data.fullName, role: data.role, avatarUrl: data.avatarUrl });
         // بوابة إكمال البروفايل: مقدم خدمة/مشرف لسه ملوش بروفايل → روح للفورم
         const needsProvider = data.role === 'PROVIDER' && !data.providerProfile;
         const needsSupervisor = data.role === 'SUPERVISOR' && !data.supervisorProfile;
@@ -132,11 +137,22 @@ export default function TopBar({ name }: { name?: string }) {
         </nav>
 
         <div className="tb-end">
-          {displayName && <span className="tb-user">أهلًا، {displayName}</span>}
-          <button className="tb-logout" onClick={logout}>
-            خروج
-          </button>
-        </div>
+  <NotificationBell />
+  <Link href="/profile" className="tb-profile">
+    <span className="tb-avatar">
+      {me.avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={me.avatarUrl} alt="" />
+      ) : (
+        (displayName || '؟').charAt(0)
+      )}
+    </span>
+    {displayName && <span className="tb-user">{displayName}</span>}
+  </Link>
+  <button className="tb-logout" onClick={logout}>
+    خروج
+  </button>
+</div>
       </div>
     </header>
   );
