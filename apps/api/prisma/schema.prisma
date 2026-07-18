@@ -385,7 +385,8 @@ model Complaint {
 
 type       ComplaintType
 customType String?
-status     ComplaintStatus @default(OPEN)
+arbitratorId String?
+status ComplaintStatus @default(OPEN)
   details String
 
   evidences ComplaintEvidence[]
