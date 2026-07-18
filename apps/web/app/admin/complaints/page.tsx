@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, getToken } from '@/lib/api';
-import TopBar from '@/components/TopBar';
+import AdminShell from '@/components/AdminShell';
 
 type Complaint = {
   id: string;
@@ -22,14 +22,14 @@ const TYPE_LABELS: Record<string, string> = {
   UNPROFESSIONAL: 'سلوك غير مهني',
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  OPEN: 'مفتوحة',
-  AWAITING_RESPONSE: 'بانتظار الرد',
-  UNDER_REVIEW: 'قيد المراجعة',
-  IN_ARBITRATION: 'في التحكيم',
-  RESOLVED: 'تم الحل',
-  REJECTED: 'مرفوضة',
-  CLOSED: 'مغلقة',
+const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
+  OPEN: { label: 'مفتوحة', cls: 'blue' },
+  AWAITING_RESPONSE: { label: 'بانتظار الرد', cls: 'amber' },
+  UNDER_REVIEW: { label: 'قيد المراجعة', cls: 'amber' },
+  IN_ARBITRATION: { label: 'في التحكيم', cls: 'blue' },
+  RESOLVED: { label: 'تم الحل', cls: 'ok' },
+  REJECTED: { label: 'مرفوضة', cls: 'red' },
+  CLOSED: { label: 'مغلقة', cls: 'muted' },
 };
 
 export default function AdminComplaintsPage() {
@@ -43,51 +43,54 @@ export default function AdminComplaintsPage() {
       router.push('/login');
       return;
     }
-
     api<Complaint[]>('/complaints/admin/all')
       .then((data) => setComplaints(data))
-      .catch((err) => setError(err.message))
+      .catch((err: any) => setError(err.message))
       .finally(() => setLoading(false));
   }, [router]);
 
   return (
-    <main className="min-h-screen">
-      <TopBar />
-      <div className="max-w-4xl mx-auto px-6 py-10">
-        <h1 className="text-2xl font-black mb-8">إدارة الشكاوى</h1>
-
-        {loading && <p className="text-muted">جاري التحميل...</p>}
-        {error && <p className="text-red-600">{error}</p>}
-
-        {!loading && !error && complaints.length === 0 && (
-          <div className="card text-center py-16 text-muted">
-            مفيش شكاوى حاليًا.
-          </div>
-        )}
-
-        <div className="space-y-4">
-          {complaints.map((c) => (
-            <Link
-              key={c.id}
-              href={`/admin/complaints/${c.id}`}
-              className="card block hover:border-brand"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-black text-muted">
-                  #{c.code}
-                </span>
-                <span className="bg-brand-mint text-brand text-xs font-extrabold px-3 py-1 rounded-full">
-                  {STATUS_LABELS[c.status] || c.status}
-                </span>
-              </div>
-              <h3 className="font-black">
-                {TYPE_LABELS[c.type] || c.type}
-              </h3>
-              <p className="text-xs text-muted mt-1">{c.project?.title}</p>
-            </Link>
-          ))}
+    <AdminShell active="complaints" title="الشكاوى والنزاعات">
+      {loading && <div className="ad-loading">جاري التحميل…</div>}
+      {error && <div className="ad-error">{error}</div>}
+      {!loading && !error && complaints.length === 0 && (
+        <div className="ad-empty">مفيش شكاوى حاليًا.</div>
+      )}
+      {!loading && !error && complaints.length > 0 && (
+        <div className="ad-table-wrap">
+          <table className="ad-table">
+            <thead>
+              <tr>
+                <th>الكود</th>
+                <th>النوع</th>
+                <th>المشروع</th>
+                <th>الحالة</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {complaints.map((c) => {
+                const s = STATUS_BADGE[c.status] || { label: c.status, cls: 'muted' };
+                return (
+                  <tr key={c.id}>
+                    <td className="ad-mono">#{c.code}</td>
+                    <td>{TYPE_LABELS[c.type] || c.type}</td>
+                    <td>{c.project?.title || '—'}</td>
+                    <td>
+                      <span className={`ad-badge ${s.cls}`}>{s.label}</span>
+                    </td>
+                    <td>
+                      <Link href={`/admin/complaints/${c.id}`} className="ad-btn-mini">
+                        فتح الملف
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      </div>
-    </main>
+      )}
+    </AdminShell>
   );
 }
