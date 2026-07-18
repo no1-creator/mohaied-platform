@@ -8,6 +8,7 @@ import {
   CreateProviderProfileDto,
   CreateSupervisorProfileDto,
 } from './dto/profile.dto';
+import { UpdateMeDto } from './dto/update-me.dto';
 
 @Injectable()
 export class UsersService {
@@ -34,10 +35,26 @@ export class UsersService {
       throw new NotFoundException('المستخدم غير موجود');
     }
 
-    return user;
-  }
+     return user;
+}
 
-  async createProviderProfile(userId: string, dto: CreateProviderProfileDto) {
+async updateMe(userId: string, dto: UpdateMeDto) {
+  const data: Record<string, unknown> = {};
+  if (dto.fullName !== undefined) data.fullName = dto.fullName;
+  if (dto.avatarUrl !== undefined) data.avatarUrl = dto.avatarUrl || null;
+  if (dto.phone !== undefined) data.phone = dto.phone ? dto.phone : null;
+  try {
+    await this.prisma.user.update({ where: { id: userId }, data });
+  } catch (e: any) {
+    if (e?.code === 'P2002') {
+      throw new ConflictException('رقم الهاتف مستخدم بالفعل');
+    }
+    throw e;
+  }
+  return this.getMe(userId);
+}
+
+async createProviderProfile(userId: string, dto: CreateProviderProfileDto) {
     const existing = await this.prisma.providerProfile.findUnique({
       where: { userId },
     });
