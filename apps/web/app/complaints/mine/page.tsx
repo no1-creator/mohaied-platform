@@ -55,6 +55,7 @@ export default function MyComplaintsPage() {
     <>
       <style>{CM_CSS}</style>
       <TopBar />
+      <BackBar />
       <div className="cm-wrap">
         <div className="cm-head">
           <h1 className="cm-title">شكاويّ ونزاعاتي</h1>
