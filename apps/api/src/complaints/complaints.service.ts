@@ -10,7 +10,14 @@ import {
   RespondComplaintDto,
   DecideComplaintDto,
 } from './dto/complaint.dto';
-import { ComplaintStatus, ProjectStatus } from '@prisma/client';
+import {
+  ComplaintStatus,
+  ProjectStatus,
+  DecisionType,
+  EscrowStatus,
+  InvoiceType,
+  InvoiceStatus,
+} from '@prisma/client';
 
 @Injectable()
 export class ComplaintsService {
@@ -155,7 +162,7 @@ export class ComplaintsService {
     });
   }
 
-  // قرار إدارة محايد
+  // قرار إدارة محايد (المُحكّم) + تنفيذ التسوية المالية على الضمان
   async decide(
     complaintId: string,
     adminId: string,
@@ -181,6 +188,77 @@ export class ComplaintsService {
         },
       });
 
+      // ===== تنفيذ التسوية المالية على الضمان حسب نوع القرار =====
+      // لصالح العميل → استرجاع الأموال المحجوزة | لصالح مقدّم الخدمة → تحريرها له
+      const settlement: {
+        action: 'REFUNDED' | 'RELEASED' | 'NONE';
+        escrowIds: string[];
+        total: number;
+      } = { action: 'NONE', escrowIds: [], total: 0 };
+
+      if (
+        dto.type === DecisionType.FAVOR_CLIENT ||
+        dto.type === DecisionType.FAVOR_PROVIDER
+      ) {
+        // لو النزاع على مرحلة محددة → ننفّذ على ضمانها فقط،
+        // وإلا ننفّذ على المبالغ المتنازع عليها في المشروع كله.
+        const where = complaint.milestoneId
+          ? {
+              milestoneId: complaint.milestoneId,
+              status: { in: [EscrowStatus.FUNDED, EscrowStatus.DISPUTED] },
+            }
+          : {
+              projectId: complaint.projectId,
+              status: EscrowStatus.DISPUTED,
+            };
+
+        const targets = await tx.escrowTransaction.findMany({
+          where,
+          include: { milestone: { select: { title: true } } },
+        });
+
+        const toClient = dto.type === DecisionType.FAVOR_CLIENT;
+
+        for (const esc of targets) {
+          if (toClient) {
+            await tx.escrowTransaction.update({
+              where: { id: esc.id },
+              data: {
+                status: EscrowStatus.REFUNDED,
+                refundedAt: new Date(),
+              },
+            });
+          } else {
+            await tx.escrowTransaction.update({
+              where: { id: esc.id },
+              data: {
+                status: EscrowStatus.RELEASED,
+                releasedAt: new Date(),
+              },
+            });
+
+            // فاتورة عمولة المنصة عند التحرير لمقدّم الخدمة بقرار تحكيم
+            await tx.invoice.create({
+              data: {
+                code: this.genInvoiceCode(),
+                userId: complaint.project.clientId,
+                type: InvoiceType.COMMISSION,
+                status: InvoiceStatus.PAID,
+                amount: esc.commissionAmount,
+                description: `عمولة المنصة (قرار تحكيم) على مرحلة: ${esc.milestone?.title ?? ''}`,
+                escrowId: esc.id,
+                paidAt: new Date(),
+              },
+            });
+          }
+
+          settlement.escrowIds.push(esc.id);
+          settlement.total += Number(esc.amount);
+        }
+
+        settlement.action = toClient ? 'REFUNDED' : 'RELEASED';
+      }
+
       await tx.complaint.update({
         where: { id: complaintId },
         data: { status: ComplaintStatus.RESOLVED },
@@ -197,11 +275,17 @@ export class ComplaintsService {
           projectId: complaint.projectId,
           actorId: adminId,
           action: 'COMPLAINT_DECIDED',
-          metadata: { complaintId, decisionType: dto.type },
+          metadata: {
+            complaintId,
+            decisionType: dto.type,
+            settlementAction: settlement.action,
+            settledEscrowIds: settlement.escrowIds,
+            settledTotal: settlement.total,
+          },
         },
       });
 
-      return decision;
+      return { ...decision, settlement };
     });
   }
 
@@ -269,5 +353,15 @@ export class ComplaintsService {
   private async generateCode(): Promise<string> {
     const count = await this.prisma.complaint.count();
     return `C-${1000 + count + 1}`;
+  }
+
+  private genInvoiceCode(): string {
+    return (
+      'INV-' +
+      Date.now().toString(36).toUpperCase() +
+      Math.floor(Math.random() * 10000)
+        .toString()
+        .padStart(4, '0')
+    );
   }
 }
