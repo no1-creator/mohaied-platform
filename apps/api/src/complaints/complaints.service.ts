@@ -187,7 +187,21 @@ export class ComplaintsService {
       },
     });
   }
-
+// قائمة الشكاوى الخاصة بالطرف (عميل أو مقدم خدمة)
+async findForUser(userId: string) {
+  return this.prisma.complaint.findMany({
+    where: {
+      project: {
+        OR: [{ clientId: userId }, { providerId: userId }],
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      project: { select: { id: true, title: true } },
+      decision: true,
+    },
+  });
+}
   private async getComplaintWithProject(complaintId: string) {
     const complaint = await this.prisma.complaint.findUnique({
       where: { id: complaintId },
