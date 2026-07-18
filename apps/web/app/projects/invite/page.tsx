@@ -87,12 +87,19 @@ export default function InvitePage() {
       <TopBar />
       <BackBar />
       <div className="iv-wrap">
-        <div className="iv-head">
-          <h1 className="iv-title">ادعُ مقدم خدمة من خارج المنصة</h1>
-          <p className="iv-sub">
-            معاك مهندس أو شركة بتتعامل معاهم؟ ادعوهم يشتغلوا معاك جوه محايد بعقد موثّق وحماية كاملة للحقوق — وفريقنا هيتواصل معاهم ويجهّز التعاقد.
-          </p>
-        </div>
+       <div className="iv-head">
+  <h1 className="iv-title">ادعُ مقدم خدمة من خارج المنصة</h1>
+  <p className="iv-sub">
+    معاك مهندس أو شركة بتتعامل معاهم؟ ادعوهم يشتغلوا معاك جوه محايد بعقد موثّق وحماية كاملة للحقوق — وفريقنا هيتواصل معاهم ويجهّز التعاقد.
+  </p>
+  <button
+    type="button"
+    onClick={() => router.push('/projects/invite/mine')}
+    style={{ background: 'none', border: 'none', padding: 0, marginTop: 10, color: 'var(--green-dark)', fontWeight: 800, fontSize: 13.5, cursor: 'pointer', fontFamily: 'inherit' }}
+  >
+    متابعة دعواتك السابقة ←
+  </button>
+</div>
 
         <div className="iv-card">
           {error && <div className="iv-err">{error}</div>}
