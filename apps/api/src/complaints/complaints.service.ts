@@ -110,16 +110,16 @@ const created = await this.prisma.$transaction(async (tx) => {
       throw new BadRequestException('تم حسم هذا النزاع ولا يمكن إضافة ردود جديدة');
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      const response = await tx.complaintResponse.create({
-        data: {
-          complaintId,
-          responderId: userId,
-          message: dto.message,
-        },
-      });
+  const createdResp = await this.prisma.$transaction(async (tx) => {
+  const response = await tx.complaintResponse.create({
+    data: {
+      complaintId,
+      responderId: userId,
+      message: dto.message,
+    },
+  });
 
-      if (complaint.status === ComplaintStatus.AWAITING_RESPONSE) {
+  if (complaint.status === ComplaintStatus.AWAITING_RESPONSE) {
         await tx.complaint.update({
           where: { id: complaintId },
           data: { status: ComplaintStatus.UNDER_REVIEW },
@@ -135,11 +135,28 @@ const created = await this.prisma.$transaction(async (tx) => {
         },
       });
 
-      return response;
+        return response;
+  });
+
+  // 🔔 إشعار للطرف الآخر بوجود رد جديد
+  const otherId =
+    complaint.project.clientId === userId
+      ? complaint.project.providerId
+      : complaint.project.clientId;
+  if (otherId && otherId !== userId) {
+    await this.notifications.create({
+      userId: otherId,
+      type: 'COMPLAINT',
+      title: 'رد جديد على النزاع',
+      body: `تم إضافة رد جديد على النزاع (${complaint.code}) في مشروع «${complaint.project.title}».`,
+      linkUrl: `/complaints/${complaintId}`,
     });
   }
 
-  // تعيين مشرف كمُحكّم تقني على النزاع (إدارة محايد)
+  return createdResp;
+}
+
+// تعيين مشرف كمُحكّم تقني على النزاع (إدارة محايد)
   async assignArbitrator(
     complaintId: string,
     adminId: string,
@@ -164,14 +181,14 @@ const created = await this.prisma.$transaction(async (tx) => {
       throw new BadRequestException('هذا المشرف غير مُفعّل حاليًا');
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      const updated = await tx.complaint.update({
-        where: { id: complaintId },
-        data: {
-          arbitratorId: dto.supervisorId,
-          status: ComplaintStatus.IN_ARBITRATION,
-        },
-      });
+    const createdAssign = await this.prisma.$transaction(async (tx) => {
+  const updated = await tx.complaint.update({
+    where: { id: complaintId },
+    data: {
+      arbitratorId: dto.supervisorId,
+      status: ComplaintStatus.IN_ARBITRATION,
+    },
+  });
 
       // رسالة نظام داخل سجل النزاع توضّح تعيين المُحكّم
       await tx.complaintResponse.create({
@@ -195,11 +212,22 @@ const created = await this.prisma.$transaction(async (tx) => {
         },
       });
 
-      return updated;
-    });
-  }
+        return updated;
+  });
 
-  // رسالة من المُحكّم (إدارة محايد أو المشرف المُحكّم) وتحويل النزاع لمرحلة التحكيم
+  // 🔔 إشعار للمشرف بتعيينه مُحكّمًا
+  await this.notifications.create({
+    userId: dto.supervisorId,
+    type: 'SUPERVISOR',
+    title: 'تم تعيينك مُحكّمًا على نزاع',
+    body: `تم تعيينك مُحكّمًا تقنيًا على نزاع (${complaint.code}) في مشروع «${complaint.project.title}».`,
+    linkUrl: `/complaints/${complaintId}`,
+  });
+
+  return createdAssign;
+}
+
+// رسالة من المُحكّم (إدارة محايد أو المشرف المُحكّم) وتحويل النزاع لمرحلة التحكيم
   async arbitrate(
     complaintId: string,
     actorId: string,
@@ -260,8 +288,8 @@ const created = await this.prisma.$transaction(async (tx) => {
       throw new BadRequestException('تم حسم هذه الشكوى بالفعل');
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      const decision = await tx.decision.create({
+    const createdDecision = await this.prisma.$transaction(async (tx) => {
+  const decision = await tx.decision.create({
         data: {
           complaintId,
           type: dto.type,
@@ -369,11 +397,25 @@ const created = await this.prisma.$transaction(async (tx) => {
         },
       });
 
-      return { ...decision, settlement };
-    });
-  }
+     return { ...decision, settlement };
+  });
 
-  async findOne(complaintId: string, userId: string, role: string) {
+  // 🔔 إشعار طرفَي النزاع بصدور القرار
+  const parties = [
+    complaint.project.clientId,
+    complaint.project.providerId,
+  ].filter((x): x is string => !!x);
+  await this.notifications.createMany(parties, {
+    type: 'COMPLAINT',
+    title: 'صدر قرار في النزاع',
+    body: `صدر قرار نهائي في النزاع (${complaint.code}) على مشروع «${complaint.project.title}».`,
+    linkUrl: `/complaints/${complaintId}`,
+  });
+
+  return createdDecision;
+}
+
+async findOne(
     const complaint = await this.prisma.complaint.findUnique({
       where: { id: complaintId },
       include: {
