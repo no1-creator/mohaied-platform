@@ -24,6 +24,8 @@ const NAV = [
   { key: 'plans', href: '/admin/plans', label: 'الباقات والعمولة', icon: 'creditCard' },
   { key: 'options', href: '/admin/options', label: 'قوائم الخيارات', icon: 'grid' },
   { key: 'content', href: '/admin/content', label: 'نصوص الواجهات', icon: 'fileText' },
+  { key: 'ads', href: '/admin/ads', label: 'الإعلانات', icon: 'star' },
+];
 ];
 
 
