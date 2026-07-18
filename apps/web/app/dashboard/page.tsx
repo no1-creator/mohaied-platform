@@ -36,7 +36,8 @@ type Tile = {
 const TILES: Tile[] = [
   { href: '/projects', icon: 'folder', title: 'مشاريعي', desc: 'تابع مشاريعك الحالية وحالتها.', roles: [] },
 { href: '/projects/start', icon: 'plus', title: 'مشروع جديد', desc: 'اختار طريقتك في إيجاد مقدم الخدمة.', roles: ['CLIENT'], accent: true },
-  { href: '/projects/open', icon: 'search', title: 'مشاريع مفتوحة', desc: 'تصفّح المشاريع وقدّم عروضك.', roles: ['PROVIDER'] },
+{ href: '/provider', icon: 'briefcase', title: 'بيئة عملي', desc: 'لوحتك: مشاريعك وعروضك واشتراكك.', roles: ['PROVIDER'], accent: true },
+{ href: '/projects/open', icon: 'search', title: 'مشاريع مفتوحة', desc: 'تصفّح المشاريع وقدّم عروضك.', roles: ['PROVIDER'] },
   { href: '/offers/mine', icon: 'fileText', title: 'عروضي', desc: 'تابع حالة العروض اللي قدّمتها.', roles: ['PROVIDER'] },
   { href: '/complaints/mine', icon: 'scale', title: 'شكاويّ ونزاعاتي', desc: 'تابع شكاويك وردود وقرارات إدارة محايد.', roles: ['CLIENT', 'PROVIDER'] },
   { href: '/subscribe', icon: 'creditCard', title: 'الاشتراك والباقات', desc: 'اشترك لتظهر للعملاء وتقلّل العمولة.', roles: ['PROVIDER'], accent: true },
