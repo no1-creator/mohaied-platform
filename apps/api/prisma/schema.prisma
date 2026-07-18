@@ -489,11 +489,20 @@ model SubscriptionPlan {
   commissionRate Decimal      @default(10)
   features       String?
   maxOffers      Int?
-  isFeatured     Boolean      @default(false)
-  isActive       Boolean      @default(true)
-  orderIndex     Int          @default(0)
+isFeatured     Boolean      @default(false)
+isActive       Boolean      @default(true)
+orderIndex     Int          @default(0)
 
-  subscriptions Subscription[]
+// ---- مميزات الباقة القابلة للتفعيل (جديد) ----
+directoryPriority      Int     @default(0)
+badgeLabel             String?
+monthlyAdCredits       Int     @default(0)
+recommendationPriority Int     @default(0)
+teamSeats              Int     @default(1)
+analyticsAccess        Boolean @default(false)
+prioritySupport        Boolean @default(false)
+
+subscriptions Subscription[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
