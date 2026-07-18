@@ -597,3 +597,31 @@ model AdBanner {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 }
+// ==================== NOTIFICATIONS ====================
+
+enum NotificationType {
+  GENERAL
+  OFFER
+  PROJECT
+  COMPLAINT
+  MILESTONE
+  SUPERVISOR
+  SUBSCRIPTION
+  AD
+  SYSTEM
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  type      NotificationType @default(GENERAL)
+  title     String
+  body      String?
+  linkUrl   String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+}
