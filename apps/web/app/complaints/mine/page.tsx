@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import Icon from '@/components/Icon';
+import BackBar from '@/components/BackBar';
 
 type Complaint = {
   id: string;
