@@ -74,9 +74,19 @@ export default function DashboardPage() {
       return;
     }
     api<Me>('/users/me')
-      .then((data) => setMe(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+      .then((data) => {
+        // الأدمن يدخل على لوحة التحكم مباشرة بدون صفحة الترحيب
+        if (data.role === 'ADMIN') {
+          router.replace('/admin');
+          return;
+        }
+        setMe(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, [router]);
 
   if (loading) {
@@ -95,7 +105,7 @@ export default function DashboardPage() {
         <style>{DB_CSS}</style>
         <TopBar />
         <div className="db-error">
-          <div>{error}</div>
+          <p>{error}</p>
           <button className="db-error-btn" onClick={() => router.push('/login')}>
             الرجوع لتسجيل الدخول
           </button>
@@ -114,7 +124,8 @@ export default function DashboardPage() {
       <div className="db-wrap">
         <div className="db-hero">
           <span className="db-badge">
-            <Icon name="shield" size={14} /> {me ? ROLE_LABELS[me.role] : ''}
+            <Icon name="badgeCheck" size={14} />
+            {me ? ROLE_LABELS[me.role] : ''}
           </span>
           <h1 className="db-greet">أهلًا بيك، {me?.fullName}</h1>
           <p className="db-email">
@@ -127,7 +138,7 @@ export default function DashboardPage() {
 
         <div className="db-grid">
           {tiles.map((t) => (
-            <Link key={t.href} href={t.href} className={`db-tile ${t.accent ? 'accent' : ''}`}>
+            <Link href={t.href} key={t.href} className={`db-tile ${t.accent ? 'accent' : ''}`}>
               <div className="db-tile-icon">
                 <Icon name={t.icon} size={24} />
               </div>
