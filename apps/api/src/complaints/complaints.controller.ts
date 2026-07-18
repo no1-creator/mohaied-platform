@@ -15,6 +15,7 @@ import {
   CreateComplaintDto,
   RespondComplaintDto,
   DecideComplaintDto,
+  AssignArbitratorDto,
 } from './dto/complaint.dto';
 
 @Controller('complaints')
@@ -36,31 +37,51 @@ export class ComplaintsController {
     return this.complaintsService.respond(id, userId, dto);
   }
 
-  // رسالة من المُحكّم (إدارة محايد) داخل النزاع
-  @Post(':id/arbitrate')
+  // تعيين مشرف كمُحكّم تقني على النزاع (إدارة محايد فقط)
+  @Post(':id/assign-arbitrator')
   @Roles(UserRole.ADMIN)
-  arbitrate(
+  assignArbitrator(
     @Param('id') id: string,
     @GetUser('id') adminId: string,
+    @Body() dto: AssignArbitratorDto,
+  ) {
+    return this.complaintsService.assignArbitrator(id, adminId, dto);
+  }
+
+  // رسالة من المُحكّم (إدارة محايد أو المشرف المُحكّم) داخل النزاع
+  @Post(':id/arbitrate')
+  @Roles(UserRole.ADMIN, UserRole.SUPERVISOR)
+  arbitrate(
+    @Param('id') id: string,
+    @GetUser('id') userId: string,
+    @GetUser('role') role: string,
     @Body() dto: RespondComplaintDto,
   ) {
-    return this.complaintsService.arbitrate(id, adminId, dto);
+    return this.complaintsService.arbitrate(id, userId, role, dto);
   }
 
   @Post(':id/decide')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.SUPERVISOR)
   decide(
     @Param('id') id: string,
-    @GetUser('id') adminId: string,
+    @GetUser('id') userId: string,
+    @GetUser('role') role: string,
     @Body() dto: DecideComplaintDto,
   ) {
-    return this.complaintsService.decide(id, adminId, dto);
+    return this.complaintsService.decide(id, userId, role, dto);
   }
 
   @Get('admin/all')
   @Roles(UserRole.ADMIN)
   findAllForAdmin() {
     return this.complaintsService.findAllForAdmin();
+  }
+
+  // النزاعات المُسندة للمستخدم الحالي كمُحكّم تقني
+  @Get('arbitrations/mine')
+  @Roles(UserRole.ADMIN, UserRole.SUPERVISOR)
+  findMyArbitrations(@GetUser('id') userId: string) {
+    return this.complaintsService.findForArbitrator(userId);
   }
 
   // شكاوى ونزاعات المستخدم الحالي (عميل/مقدم خدمة)
