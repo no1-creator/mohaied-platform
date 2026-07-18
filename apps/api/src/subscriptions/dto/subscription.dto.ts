@@ -126,9 +126,41 @@ export class UpdatePlanDto {
   @IsBoolean()
   isActive?: boolean;
 
-  @IsOptional()
+   @IsOptional()
   @IsInt()
   orderIndex?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  directoryPriority?: number;
+
+  @IsOptional()
+  @IsString()
+  badgeLabel?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  monthlyAdCredits?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  recommendationPriority?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  teamSeats?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  analyticsAccess?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  prioritySupport?: boolean;
 }
 
 export class SubscribeDto {
