@@ -84,6 +84,7 @@ enum ComplaintType {
   AGREEMENT_VIOLATION
   PAYMENT_ISSUE
   UNPROFESSIONAL
+OTHER
 }
 
 enum ComplaintStatus {
@@ -101,6 +102,7 @@ enum DecisionType {
   FAVOR_CLIENT
   FAVOR_PROVIDER
   AMICABLE
+OTHER
 }
 
 // ---- Monetization enums (جديد) ----
@@ -382,6 +384,7 @@ model Complaint {
   creator     User            @relation("ComplaintCreator", fields: [creatorId], references: [id])
 
   type    ComplaintType
+customType
   status  ComplaintStatus @default(OPEN)
   details String
 
