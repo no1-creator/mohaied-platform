@@ -76,6 +76,13 @@ export class ComplaintsService {
       throw new ForbiddenException('لست طرفًا في هذا المشروع');
     }
 
+    if (
+      complaint.status === ComplaintStatus.RESOLVED ||
+      complaint.status === ComplaintStatus.CLOSED
+    ) {
+      throw new BadRequestException('تم حسم هذا النزاع ولا يمكن إضافة ردود جديدة');
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const response = await tx.complaintResponse.create({
         data: {
@@ -97,6 +104,48 @@ export class ComplaintsService {
           projectId: complaint.projectId,
           actorId: userId,
           action: 'COMPLAINT_RESPONSE',
+          metadata: { complaintId, responseId: response.id },
+        },
+      });
+
+      return response;
+    });
+  }
+
+  // رسالة من المُحكّم (إدارة محايد) وتحويل النزاع لمرحلة التحكيم
+  async arbitrate(
+    complaintId: string,
+    adminId: string,
+    dto: RespondComplaintDto,
+  ) {
+    const complaint = await this.getComplaintWithProject(complaintId);
+
+    if (
+      complaint.status === ComplaintStatus.RESOLVED ||
+      complaint.status === ComplaintStatus.CLOSED
+    ) {
+      throw new BadRequestException('تم حسم هذا النزاع بالفعل');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const response = await tx.complaintResponse.create({
+        data: {
+          complaintId,
+          responderId: adminId,
+          message: dto.message,
+        },
+      });
+
+      await tx.complaint.update({
+        where: { id: complaintId },
+        data: { status: ComplaintStatus.IN_ARBITRATION },
+      });
+
+      await tx.activityLog.create({
+        data: {
+          projectId: complaint.projectId,
+          actorId: adminId,
+          action: 'COMPLAINT_ARBITRATION_MESSAGE',
           metadata: { complaintId, responseId: response.id },
         },
       });
@@ -187,21 +236,23 @@ export class ComplaintsService {
       },
     });
   }
-// قائمة الشكاوى الخاصة بالطرف (عميل أو مقدم خدمة)
-async findForUser(userId: string) {
-  return this.prisma.complaint.findMany({
-    where: {
-      project: {
-        OR: [{ clientId: userId }, { providerId: userId }],
+
+  // شكاوى/نزاعات المستخدم الحالي (كعميل أو مقدم خدمة)
+  async findForUser(userId: string) {
+    return this.prisma.complaint.findMany({
+      where: {
+        project: {
+          OR: [{ clientId: userId }, { providerId: userId }],
+        },
       },
-    },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      project: { select: { id: true, title: true } },
-      decision: true,
-    },
-  });
-}
+      orderBy: { createdAt: 'desc' },
+      include: {
+        project: { select: { id: true, title: true } },
+        decision: true,
+      },
+    });
+  }
+
   private async getComplaintWithProject(complaintId: string) {
     const complaint = await this.prisma.complaint.findUnique({
       where: { id: complaintId },
