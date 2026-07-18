@@ -1,35 +1,101 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { api } from '@/lib/api';
+import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
+import BackBar from '@/components/BackBar';
+import Icon from '@/components/Icon';
 
 const TYPES = [
-  { value: 'DELIVERY_DELAY', label: 'تأخير في التسليم' },
-  { value: 'AGREEMENT_VIOLATION', label: 'مخالفة للاتفاق' },
-  { value: 'PAYMENT_ISSUE', label: 'مشكلة في الدفع' },
-  { value: 'UNPROFESSIONAL', label: 'سلوك غير مهني' },
+  {
+    value: 'DELIVERY_DELAY',
+    label: 'تأخير في التسليم',
+    desc: 'المشروع أو المرحلة اتأخّرت عن الموعد المتفق عليه.',
+  },
+  {
+    value: 'AGREEMENT_VIOLATION',
+    label: 'مخالفة للاتفاق',
+    desc: 'الشغل المسلَّم مخالف لما تم الاتفاق عليه.',
+  },
+  {
+    value: 'PAYMENT_ISSUE',
+    label: 'مشكلة في الدفع',
+    desc: 'خلاف على الدفع أو تحرير المبلغ من الضمان.',
+  },
+  {
+    value: 'UNPROFESSIONAL',
+    label: 'سلوك غير مهني',
+    desc: 'تعامل غير لائق أو غير احترافي من الطرف الآخر.',
+  },
 ];
 
+type Milestone = { id: string; title: string; status?: string };
+
+const NC_CSS = `
+.nc-wrap{max-width:720px;margin:0 auto;padding:24px 20px 60px;}
+.nc-note{color:var(--muted);font-size:14px;padding:16px 0;}
+.nc-head{margin-bottom:18px;}
+.nc-title{display:flex;align-items:center;gap:9px;font-size:24px;font-weight:800;color:var(--ink);}
+.nc-lead{color:var(--muted);font-size:14.5px;line-height:1.9;margin-top:8px;}
+.nc-process{display:flex;gap:10px;align-items:flex-start;background:var(--mint);border:1px solid var(--green-light);border-radius:14px;padding:14px 16px;margin-bottom:22px;color:var(--green-dark);font-size:13.5px;line-height:1.85;}
+.nc-error{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;padding:12px 14px;border-radius:12px;font-size:14px;margin-bottom:16px;}
+.nc-form{display:flex;flex-direction:column;gap:24px;}
+.nc-field{display:flex;flex-direction:column;}
+.nc-label{font-weight:800;font-size:15px;color:var(--ink);margin-bottom:12px;}
+.nc-opt{font-weight:600;font-size:13px;color:var(--muted);}
+.nc-types{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.nc-type{position:relative;text-align:right;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:15px 16px;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;flex-direction:column;gap:5px;}
+.nc-type:hover{border-color:var(--green-light);}
+.nc-type.sel{border-color:var(--green);background:var(--mint);box-shadow:0 0 0 3px rgba(79,162,148,.15);}
+.nc-type-check{position:absolute;top:12px;left:12px;color:var(--green-dark);height:16px;}
+.nc-type-label{font-weight:800;font-size:14.5px;color:var(--ink);}
+.nc-type-desc{font-size:12.5px;color:var(--muted);line-height:1.7;}
+.nc-select,.nc-textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:14.5px;color:var(--ink);background:#fff;box-sizing:border-box;resize:vertical;}
+.nc-select:focus,.nc-textarea:focus{outline:none;border-color:var(--green-light);box-shadow:0 0 0 3px rgba(79,162,148,.15);}
+.nc-hint{font-size:12.5px;color:var(--muted);margin-top:8px;}
+.nc-evidence{display:flex;gap:11px;align-items:flex-start;background:var(--background);border:1px dashed var(--line);border-radius:14px;padding:14px 16px;color:var(--muted);}
+.nc-ev-title{font-weight:800;font-size:13.5px;color:var(--ink);margin-bottom:3px;}
+.nc-ev-desc{font-size:12.5px;line-height:1.8;}
+.nc-submit{background:var(--green);color:#fff;border:none;border-radius:13px;padding:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;transition:all .15s;}
+.nc-submit:hover{background:var(--green-dark);}
+.nc-submit:disabled{opacity:.6;cursor:default;}
+@media(max-width:560px){.nc-types{grid-template-columns:1fr;}}
+`;
+
 function NewComplaintInner() {
-const router = useRouter();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId') || '';
 
   const [type, setType] = useState('DELIVERY_DELAY');
+  const [milestoneId, setMilestoneId] = useState('');
   const [details, setDetails] = useState('');
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!getToken()) {
+      router.push('/login');
+      return;
+    }
+    if (!projectId) return;
+    api<Milestone[]>(`/milestones/project/${projectId}`)
+      .then((data) => setMilestones(data || []))
+      .catch(() => {});
+  }, [projectId, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
+      const body: Record<string, unknown> = { projectId, type, details };
+      if (milestoneId) body.milestoneId = milestoneId;
       const complaint = await api<{ id: string }>('/complaints', {
         method: 'POST',
-        body: { projectId, type, details },
+        body,
       });
       router.push(`/complaints/${complaint.id}`);
     } catch (err: any) {
@@ -41,69 +107,127 @@ const router = useRouter();
 
   if (!projectId) {
     return (
-      <main className="min-h-screen">
-        <TopBar />
-        <div className="max-w-2xl mx-auto px-6 py-20 text-center text-muted">
-          لازم تفتح الشكوى من صفحة المشروع.
-        </div>
-      </main>
+      <div className="nc-wrap">
+        <div className="nc-note">لازم تفتح النزاع من صفحة المشروع.</div>
+      </div>
     );
   }
 
+  const detailsStep = milestones.length > 0 ? '٣' : '٢';
+
   return (
-    <main className="min-h-screen">
-      <TopBar />
-      <div className="max-w-2xl mx-auto px-6 py-10">
-        <h1 className="text-2xl font-black mb-2">فتح شكوى</h1>
-        <p className="text-muted text-sm mb-6">
-          الشكوى بتتوثّق وبتتسجّل، والطرف التاني هيقدر يرد، وإدارة محايد هي اللي
-          بتصدر القرار.
+    <div className="nc-wrap">
+      <div className="nc-head">
+        <h1 className="nc-title">
+          <Icon name="scale" size={22} /> فتح نزاع جديد
+        </h1>
+        <p className="nc-lead">
+          النزاع بيتوثّق ويتسجّل رسميًا، الطرف الآخر هيقدر يرد، وإدارة محايد بتتدخّل
+          كمُحكّم محايد وتصدر القرار النهائي المُلزم.
         </p>
+      </div>
 
-        {error && (
-          <div className="bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3 mb-4">
-            {error}
+      <div className="nc-process">
+        <Icon name="shield" size={18} style={{ flexShrink: 0 }} />
+        <span>
+          بعد التقديم: الطرف الآخر بيتبلّغ ويرد، إدارة محايد بتراجع الأدلة وتتدخّل
+          كمُحكّم، وفي الآخر بيصدر قرار موثّق مُلزم للطرفين.
+        </span>
+      </div>
+
+      {error && <div className="nc-error">{error}</div>}
+
+      <form className="nc-form" onSubmit={handleSubmit}>
+        <div className="nc-field">
+          <label className="nc-label">١. نوع النزاع</label>
+          <div className="nc-types">
+            {TYPES.map((t) => (
+              <button
+                type="button"
+                key={t.value}
+                className={`nc-type ${type === t.value ? 'sel' : ''}`}
+                onClick={() => setType(t.value)}
+              >
+                <span className="nc-type-check">
+                  {type === t.value && <Icon name="badgeCheck" size={16} />}
+                </span>
+                <span className="nc-type-label">{t.label}</span>
+                <span className="nc-type-desc">{t.desc}</span>
+              </button>
+            ))}
           </div>
-        )}
+        </div>
 
-        <form onSubmit={handleSubmit} className="card space-y-4">
-          <div>
-            <label className="label">نوع الشكوى</label>
+        {milestones.length > 0 && (
+          <div className="nc-field">
+            <label className="nc-label">
+              ٢. المرحلة المتعلقة <span className="nc-opt">(اختياري)</span>
+            </label>
             <select
-              className="input-field"
-              value={type}
-              onChange={(e) => setType(e.target.value)}
+              className="nc-select"
+              value={milestoneId}
+              onChange={(e) => setMilestoneId(e.target.value)}
             >
-              {TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
+              <option value="">نزاع عام على المشروع</option>
+              {milestones.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.title}
                 </option>
               ))}
             </select>
           </div>
-          <div>
-            <label className="label">تفاصيل الشكوى</label>
-            <textarea
-              className="input-field min-h-[140px]"
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-              minLength={10}
-              required
-            />
+        )}
+
+        <div className="nc-field">
+          <label className="nc-label">{detailsStep}. تفاصيل النزاع</label>
+          <textarea
+            className="nc-textarea"
+            value={details}
+            onChange={(e) => setDetails(e.target.value)}
+            minLength={10}
+            required
+            rows={6}
+            placeholder="اشرح المشكلة بالتفصيل: إيه اللي حصل، إمتى، وإيه المطلوب. كل ما توضّح أكتر كل ما القرار يكون أدق."
+          />
+          <div className="nc-hint">
+            اكتب ١٠ أحرف على الأقل. اذكر التواريخ والوقائع والاتفاقات بدقة.
           </div>
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'جاري الإرسال...' : 'تقديم الشكوى'}
-          </button>
-        </form>
-      </div>
-    </main>
+        </div>
+
+        <div className="nc-evidence">
+          <Icon name="folder" size={17} style={{ flexShrink: 0 }} />
+          <div>
+            <div className="nc-ev-title">الأدلة والمرفقات</div>
+            <div className="nc-ev-desc">
+              نظام رفع الوثائق والصور قيد التجهيز. مؤقتًا اذكر روابط الأدلة داخل
+              التفاصيل، وهتقدر ترفعها في ملف النزاع قريبًا.
+            </div>
+          </div>
+        </div>
+
+        <button className="nc-submit" type="submit" disabled={loading}>
+          {loading ? 'جاري التقديم…' : 'تقديم النزاع رسميًا'}
+        </button>
+      </form>
+    </div>
   );
 }
 
 export default function NewComplaintPage() {
   return (
-    <Suspense fallback={null}>
-      <NewComplaintInner />
-    </Suspense>
+    <>
+      <style>{NC_CSS}</style>
+      <TopBar />
+      <BackBar />
+      <Suspense
+        fallback={
+          <div className="nc-wrap">
+            <div className="nc-note">جاري التحميل…</div>
+          </div>
+        }
+      >
+        <NewComplaintInner />
+      </Suspense>
+    </>
   );
 }
