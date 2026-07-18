@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import Icon from '@/components/Icon';
+import BackBar from '@/components/BackBar';
 
 type Me = {
   role: string;
@@ -182,6 +183,7 @@ export default function ProfileSetupPage() {
       <>
         <style>{PS_CSS}</style>
         <TopBar />
+        <BackBar />
         <div className="ps-loading">جاري التحميل...</div>
       </>
     );
