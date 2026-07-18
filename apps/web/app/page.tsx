@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect } from 'react';
 import Icon from '@/components/Icon';
+import AdBanners from '@/components/AdBanners';
 
 const STEPS = [
   { t: 'اطرح مشروعك', d: 'اكتب اللي محتاجه بوضوح — المطلوب، الميزانية، والمدة المتوقّعة.' },
@@ -146,6 +147,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <AdBanners placement="HOME_TOP" />
       {/* بانر الإشراف الحكومي */}
       <section id="gov" className="gov-band">
         <div className="gov-inner">
@@ -176,6 +178,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <AdBanners placement="HOME_STRIP" />
       {/* كيف تعمل */}
       <section id="how" className="section">
         <div className="section-inner">
