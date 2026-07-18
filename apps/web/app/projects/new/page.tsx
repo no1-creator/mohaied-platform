@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { useSiteContent } from '@/lib/content';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
 
@@ -20,7 +21,6 @@ const NP_CSS = `
 .np-textarea{resize:vertical;min-height:110px;line-height:1.8;}
 .np-input:focus,.np-select:focus,.np-textarea:focus{border-color:var(--green-light);box-shadow:0 0 0 3px rgba(79,162,148,.15);}
 .np-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.np-hint{color:var(--muted);font-size:12px;margin:-4px 0 14px;line-height:1.6;}
 .np-btn{margin-top:8px;width:100%;padding:12px 22px;border-radius:12px;border:none;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;background:var(--green);color:#fff;transition:background .15s,opacity .15s;}
 .np-btn:hover{background:var(--green-dark);}
 .np-btn:disabled{opacity:.6;cursor:default;}
@@ -29,6 +29,7 @@ const NP_CSS = `
 
 export default function NewProjectPage() {
   const router = useRouter();
+  const { t } = useSiteContent();
   const [title, setTitle] = useState('');
   const [field, setField] = useState('');
   const [customField, setCustomField] = useState('');
@@ -83,8 +84,8 @@ export default function NewProjectPage() {
       <BackBar label="رجوع" />
       <div className="np-wrap">
         <div className="np-card">
-          <h1 className="np-title">مشروع جديد</h1>
-          <p className="np-sub">انشر تفاصيل مشروعك عشان تستقبل عروض من مقدّمي الخدمات المناسبين.</p>
+          <h1 className="np-title">{t('projects.new.title')}</h1>
+          <p className="np-sub">{t('projects.new.subtitle')}</p>
 
           {error && <div className="np-error">{error}</div>}
 
@@ -178,7 +179,7 @@ export default function NewProjectPage() {
             </div>
 
             <button className="np-btn" type="submit" disabled={loading}>
-              {loading ? 'جاري الإنشاء...' : 'إنشاء المشروع'}
+              {loading ? 'جاري الإنشاء...' : t('projects.new.submit')}
             </button>
           </form>
         </div>
