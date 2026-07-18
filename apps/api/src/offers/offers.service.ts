@@ -9,6 +9,10 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { CreateOfferDto } from './dto/offer.dto';
 import { OfferStatus, ProjectStatus } from '@prisma/client';
 
+// الحد الأقصى للعروض النشطة لمقدّم خدمة غير مشترك (الباقة المجانية)
+// غيّر الرقم ده لو عايز تسمح بأكتر/أقل للمجاني.
+const FREE_MAX_ACTIVE_OFFERS = 5;
+
 @Injectable()
 export class OffersService {
   constructor(
@@ -32,6 +36,32 @@ export class OffersService {
       throw new BadRequestException(
         'مجموع قيم المراحل يجب أن يساوي إجمالي العرض',
       );
+    }
+
+    // ===== فرض حد العروض النشطة حسب باقة مقدّم الخدمة (ميزة اشتراك) =====
+    // المشترك: حده = maxOffers بتاع باقته (null = غير محدود).
+    // غير المشترك: حده = FREE_MAX_ACTIVE_OFFERS.
+    const activeSub = await this.prisma.subscription.findFirst({
+      where: {
+        userId: providerId,
+        status: 'ACTIVE',
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { plan: { select: { maxOffers: true } } },
+    });
+    const maxOffers = activeSub
+      ? (activeSub.plan?.maxOffers ?? null)
+      : FREE_MAX_ACTIVE_OFFERS;
+    if (maxOffers !== null && maxOffers !== undefined) {
+      const activeCount = await this.prisma.offer.count({
+        where: { providerId, status: OfferStatus.SUBMITTED },
+      });
+      if (activeCount >= maxOffers) {
+        throw new BadRequestException(
+          `وصلت للحد الأقصى من العروض النشطة (${maxOffers}). رقِّ باقتك أو استنى الرد على عروضك الحالية.`,
+        );
+      }
     }
 
     const offer = await this.prisma.offer.create({
