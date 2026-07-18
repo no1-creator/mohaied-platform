@@ -52,6 +52,11 @@ export class ComplaintsController {
     return this.complaintsService.findAllForAdmin();
   }
 
+  @Get('mine')
+  findMine(@GetUser('id') userId: string) {
+    return this.complaintsService.findForUser(userId);
+  }
+
   @Get(':id')
   findOne(
     @Param('id') id: string,
