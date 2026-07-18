@@ -145,9 +145,22 @@ const DB_CSS = `
 .fade-up.d3 { animation-delay:.18s; }
 
 @media (max-width:560px) {
-  .db-hero { padding:28px 20px; }
-  .db-greet { font-size:23px; }
-  .db-band { padding:26px 20px; }
+  .db-wrap { padding:18px 14px 70px; }
+  .db-hero { padding:26px 18px; border-radius:20px; }
+  .db-greet { font-size:22px; }
+  .db-tag { font-size:14px; line-height:1.8; }
+  .db-hero-actions { flex-direction:column; align-items:stretch; }
+  .db-cta { width:100%; justify-content:center; }
+  .db-grid { grid-template-columns:1fr; gap:12px; }
+  .db-svc-grid { grid-template-columns:1fr; gap:12px; }
+  .db-tile { padding:18px; }
+  .db-svc-card { padding:20px; }
+  .db-section-title { font-size:18px; margin:26px 0 12px; }
+  .db-band { padding:24px 18px; border-radius:18px; }
+  .db-band h3 { font-size:19px; }
+  .db-band p { font-size:13.5px; }
+  .db-band-btn { width:100%; justify-content:center; }
+}
 }
 @media (prefers-reduced-motion: reduce) { .fade-up { animation:none; } }
 `;
