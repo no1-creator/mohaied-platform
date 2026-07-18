@@ -10,6 +10,7 @@ type Complaint = {
   id: string;
   code: string;
   type: string;
+  customType?: string | null;
   status: string;
   project?: { id: string; title: string };
   decision?: { type: string } | null;
@@ -20,6 +21,7 @@ const TYPE_LABELS: Record<string, string> = {
   AGREEMENT_VIOLATION: 'مخالفة للاتفاق',
   PAYMENT_ISSUE: 'مشكلة في الدفع',
   UNPROFESSIONAL: 'سلوك غير مهني',
+  OTHER: 'نوع آخر',
 };
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
@@ -71,10 +73,14 @@ export default function AdminComplaintsPage() {
             <tbody>
               {complaints.map((c) => {
                 const s = STATUS_BADGE[c.status] || { label: c.status, cls: 'muted' };
+                const typeText =
+                  c.type === 'OTHER'
+                    ? c.customType || 'نوع آخر'
+                    : TYPE_LABELS[c.type] || c.type;
                 return (
                   <tr key={c.id}>
                     <td className="ad-mono">#{c.code}</td>
-                    <td>{TYPE_LABELS[c.type] || c.type}</td>
+                    <td>{typeText}</td>
                     <td>{c.project?.title || '—'}</td>
                     <td>
                       <span className={`ad-badge ${s.cls}`}>{s.label}</span>
