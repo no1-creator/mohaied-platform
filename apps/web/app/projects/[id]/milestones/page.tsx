@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import EscrowPanel from '@/components/EscrowPanel';
+import BackBar from '@/components/BackBar';
 
 type Submission = {
   id: string;
@@ -108,6 +109,7 @@ export default function MilestonesPage() {
   return (
     <main className="min-h-screen">
       <TopBar />
+      <BackBar />
       <div className="max-w-3xl mx-auto px-6 py-10">
         <h1 className="text-2xl font-black mb-8">إدارة المراحل</h1>
 <EscrowPanel projectId={projectId} />
