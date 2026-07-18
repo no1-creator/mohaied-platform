@@ -14,6 +14,7 @@ import { SettingsModule } from './settings/settings.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { EscrowModule } from './escrow/escrow.module';
 import { OptionsModule } from './options/options.module';
+import { ContentModule } from './content/content.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { OptionsModule } from './options/options.module';
     SubscriptionsModule,
     EscrowModule,
     OptionsModule,
+    ContentModule,
   ],
   controllers: [],
   providers: [],
