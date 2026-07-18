@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEnum, IsOptional, IsString, MinLength, MaxLength } from 'class-validator';
 import { ComplaintType, DecisionType } from '@prisma/client';
 
 export class CreateComplaintDto {
@@ -11,6 +11,11 @@ export class CreateComplaintDto {
 
   @IsEnum(ComplaintType)
   type: ComplaintType;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  customType?: string;
 
   @IsString()
   @MinLength(10)
@@ -26,6 +31,11 @@ export class RespondComplaintDto {
 export class DecideComplaintDto {
   @IsEnum(DecisionType)
   type: DecisionType;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  customType?: string;
 
   @IsString()
   @MinLength(5)
