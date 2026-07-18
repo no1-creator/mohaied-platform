@@ -28,6 +28,9 @@ type Provider = {
   isVerified: boolean;
   createdAt: string;
   providerProfile: ProviderProfile | null;
+  planBadge?: string | null;
+  planFeatured?: boolean;
+  directoryPriority?: number;
 };
 
 const ICON_CHECK = (
@@ -75,6 +78,9 @@ const PD_CSS = `
 .pd-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:6px;}
 .pd-rate{font-size:12.5px;color:var(--ink);font-weight:700;}
 .pd-view{font-size:13px;font-weight:800;color:var(--green-dark);}
+.pd-card.pd-feat{border-color:var(--green);box-shadow:0 14px 32px rgba(40,125,115,.14);}
+.pd-plan-badge{background:var(--green);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;}
+.pd-feat-tag{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;background:var(--sand);color:#8a6d1e;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;}
 .pd-empty{text-align:center;color:var(--muted);padding:50px 20px;font-size:14.5px;grid-column:1/-1;}
 .pd-state{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px;}
 @media(max-width:560px){.pd-grid{grid-template-columns:1fr;}.pd-title{font-size:21px;}}
@@ -164,8 +170,9 @@ export default function ProvidersPage() {
               const skills = toSkills(pp?.skills).slice(0, 3);
               const rate = ratingText(pp?.rating);
               return (
-                <button key={p.id} className="pd-card" onClick={() => router.push(`/providers/${p.id}`)}>
-                  <div className="pd-top">
+                <button key={p.id} className={`pd-card${p.planFeatured ? ' pd-feat' : ''}`} onClick={() => router.push(`/providers/${p.id}`)}>
+  {p.planFeatured && <span className="pd-feat-tag">★ مقدم مميّز</span>}
+  <div className="pd-top">
                     {p.avatarUrl ? (
                       <img className="pd-av" src={p.avatarUrl} alt={displayName} />
                     ) : (
@@ -173,13 +180,14 @@ export default function ProvidersPage() {
                     )}
                     <div>
                       <h3 className="pd-name">
-                        {displayName}
-                        {p.isVerified && (
-                          <span className="pd-verified" title="موثّق من محايد">
-                            {ICON_CHECK}
-                          </span>
-                        )}
-                      </h3>
+  {displayName}
+  {p.isVerified && (
+    <span className="pd-verified" title="موثّق من محايد">
+      {ICON_CHECK}
+    </span>
+  )}
+  {p.planBadge && <span className="pd-plan-badge">{p.planBadge}</span>}
+</h3>
                       <p className="pd-meta">
                         {[pp?.field, pp?.city].filter(Boolean).join(' · ') || 'مقدم خدمة'}
                       </p>
