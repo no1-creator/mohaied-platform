@@ -6,7 +6,6 @@ import { api } from '@/lib/api';
 
 type Ad = {
   id: string;
-  advertiserId?: string | null;
   title: string;
   subtitle?: string | null;
   imageUrl?: string | null;
@@ -16,7 +15,12 @@ type Ad = {
   status: string;
   amount: number;
   paid: boolean;
-  orderIndex: number;
+  priority: number;
+  dailyImpressionCap: number;
+  impressionsToday: number;
+  impressionDay?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
   clicks: number;
   impressions: number;
 };
@@ -42,9 +46,14 @@ const EMPTY = {
   linkUrl: '',
   ctaLabel: '',
   placement: 'HOME_TOP',
+  startDate: '',
+  endDate: '',
+  priority: '0',
+  dailyImpressionCap: '0',
+  amount: '0',
+  paid: false,
 };
 
-// ===== ضغط الصورة وتحويلها لصيغة تتخزّن جوه المنصة =====
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const i = new Image();
@@ -80,7 +89,7 @@ async function compressImage(file: File): Promise<string> {
     ctx.drawImage(img, 0, 0, w, h);
     return c.toDataURL('image/jpeg', quality);
   };
-  const LIMIT = 3500000; // ~2.6MB — صور بانر كبيرة وواضحة
+  const LIMIT = 3500000;
   let out = render(1920, 0.85);
   let q = 0.85;
   while (out.length > LIMIT && q > 0.5) {
@@ -98,52 +107,75 @@ async function compressImage(file: File): Promise<string> {
   return out;
 }
 
+function toDateInput(iso?: string | null) {
+  return iso ? iso.slice(0, 10) : '';
+}
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+function addDaysStr(n: number) {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+function fmtDate(iso?: string | null) {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleDateString('ar-EG');
+  } catch {
+    return '—';
+  }
+}
+
 const AAD_CSS = `
-.aad-form { background:#fff; border:1px solid var(--line); border-radius:16px; padding:20px; margin-bottom:22px; box-shadow:0 4px 16px rgba(23,33,31,.04); transition:box-shadow .2s,border-color .2s; }
-.aad-form.aad-editing { border-color:var(--green-light); box-shadow:0 6px 22px rgba(40,125,115,.14); }
-.aad-form-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
-.aad-form-title { font-size:16px; font-weight:800; color:var(--ink); }
-.aad-cancel { background:#fff; border:1px solid var(--line); border-radius:9px; padding:7px 14px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; color:var(--muted); }
-.aad-cancel:hover { border-color:var(--green-light); color:var(--ink); }
-.aad-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; margin-bottom:14px; }
-.aad-f { display:flex; flex-direction:column; gap:5px; }
-.aad-f-wide { grid-column:1 / -1; }
+.aad-form { background:#fff; border:1px solid var(--line); border-radius:16px; padding:22px; margin-bottom:24px; box-shadow:0 4px 16px rgba(23,33,31,.04); }
+.aad-form.aad-editing { border-color:var(--green-light); box-shadow:0 0 0 3px rgba(79,162,148,.15); }
+.aad-form-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.aad-form-title { font-size:17px; font-weight:800; color:var(--ink); }
+.aad-cancel { background:none; border:1px solid var(--line); border-radius:9px; padding:7px 14px; font-size:13px; font-weight:700; color:var(--muted); cursor:pointer; font-family:inherit; }
+.aad-cancel:hover { border-color:#d33; color:#d33; }
+.aad-sec { font-size:12.5px; font-weight:800; color:var(--green-dark); margin:18px 0 10px; padding-top:4px; border-top:1px dashed var(--line); }
+.aad-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.aad-f { display:flex; flex-direction:column; gap:6px; }
+.aad-f.aad-wide { grid-column:1 / -1; }
 .aad-f span { font-size:12.5px; font-weight:700; color:var(--muted); }
 .aad-f input, .aad-f select { height:42px; border:1px solid var(--line); border-radius:10px; padding:0 12px; font-family:inherit; font-size:14px; background:#fff; color:var(--ink); }
 .aad-f input:focus, .aad-f select:focus { outline:none; border-color:var(--green-light); }
-.aad-drop { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; border:2px dashed var(--line); border-radius:12px; padding:24px; cursor:pointer; color:var(--muted); font-size:13.5px; font-weight:700; background:#fafcfb; transition:all .16s; text-align:center; }
+.aad-hint { font-size:11px; color:var(--muted); font-weight:600; }
+.aad-quick { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+.aad-chip { background:var(--mint); border:1px solid #d4e8e1; color:var(--green-dark); border-radius:999px; padding:6px 14px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; }
+.aad-chip:hover { background:#dcefe8; }
+.aad-check { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:var(--ink); cursor:pointer; height:42px; }
+.aad-check input { width:18px; height:18px; accent-color:var(--green); }
+.aad-drop { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; border:2px dashed var(--line); border-radius:12px; padding:26px; cursor:pointer; color:var(--muted); font-size:13.5px; font-weight:700; background:#fafcfb; transition:all .16s; text-align:center; }
 .aad-drop:hover { border-color:var(--green-light); color:var(--green-dark); background:var(--mint); }
 .aad-drop-hint { font-size:11.5px; font-weight:600; opacity:.8; }
-.aad-preview { position:relative; width:100%; height:160px; border-radius:12px; background-size:cover; background-position:center; background-color:var(--mint); border:1px solid var(--line); }
-.aad-preview-x { position:absolute; top:8px; inset-inline-start:8px; width:30px; height:30px; border-radius:50%; border:none; background:rgba(0,0,0,.55); color:#fff; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-.aad-preview-x:hover { background:rgba(0,0,0,.78); }
-.aad-create { background:var(--green); color:#fff; border:none; border-radius:10px; padding:12px 22px; font-weight:800; font-size:14px; cursor:pointer; font-family:inherit; transition:background .2s; }
-.aad-create:hover:not(:disabled) { background:var(--green-dark); }
-.aad-create:disabled { opacity:.55; cursor:not-allowed; }
-.aad-state { text-align:center; color:var(--muted); padding:40px 20px; background:#fff; border:1px solid var(--line); border-radius:14px; }
-.aad-err { color:#b91c1c; background:#fef2f2; border-color:#fecaca; }
+.aad-preview { position:relative; width:100%; height:180px; border-radius:12px; background-size:cover; background-position:center; background-color:var(--mint); border:1px solid var(--line); }
+.aad-preview-x { position:absolute; top:8px; inset-inline-start:8px; width:30px; height:30px; border-radius:50%; border:none; background:rgba(0,0,0,.55); color:#fff; font-size:14px; cursor:pointer; }
+.aad-submit { margin-top:18px; width:100%; background:var(--green); color:#fff; border:none; border-radius:11px; padding:14px; font-weight:800; font-size:15px; cursor:pointer; font-family:inherit; transition:background .2s; }
+.aad-submit:hover:not(:disabled) { background:var(--green-dark); }
+.aad-submit:disabled { opacity:.55; cursor:not-allowed; }
 .aad-list { display:flex; flex-direction:column; gap:12px; }
-.aad-item { display:flex; gap:14px; align-items:center; background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; }
-.aad-item.aad-active-edit { border-color:var(--green-light); background:#f6fbf9; }
-.aad-thumb { width:70px; height:70px; border-radius:11px; background:var(--mint); background-size:cover; background-position:center; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--muted); text-align:center; }
-.aad-info { flex:1; min-width:0; }
-.aad-item-title { font-size:15px; font-weight:800; color:var(--ink); margin-bottom:3px; }
-.aad-item-sub { font-size:12.5px; color:var(--muted); margin-bottom:8px; }
-.aad-meta { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-.aad-badge { font-size:11.5px; font-weight:800; padding:3px 10px; border-radius:999px; }
+.aad-row { display:flex; gap:14px; align-items:flex-start; background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; }
+.aad-row.aad-active-edit { border-color:var(--green-light); box-shadow:0 0 0 3px rgba(79,162,148,.15); }
+.aad-thumb { width:96px; height:64px; border-radius:10px; background:var(--mint); background-size:cover; background-position:center; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10.5px; color:var(--muted); text-align:center; }
+.aad-row-main { flex:1; min-width:0; }
+.aad-row-top { display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+.aad-row-title { font-size:15px; font-weight:800; color:var(--ink); }
+.aad-meta { display:flex; flex-wrap:wrap; gap:12px; font-size:12.5px; color:var(--muted); margin-bottom:4px; }
+.aad-badge { font-size:11px; font-weight:800; padding:2px 10px; border-radius:999px; }
 .aad-s-ACTIVE { background:#e7f6ef; color:#1f8f5f; }
 .aad-s-PENDING { background:#fef6e0; color:#92640a; }
 .aad-s-PAUSED { background:#eef1f0; color:#70807b; }
 .aad-s-REJECTED { background:#fef2f2; color:#b91c1c; }
 .aad-s-EXPIRED { background:#eef1f0; color:#70807b; }
-.aad-chip { font-size:11.5px; color:var(--muted); background:#f4f7f5; border:1px solid var(--line); padding:3px 9px; border-radius:999px; }
-.aad-actions { display:flex; flex-wrap:wrap; gap:6px; }
-.aad-actions button { background:#fff; border:1px solid var(--line); border-radius:9px; padding:7px 13px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; color:var(--ink); transition:all .16s; }
-.aad-actions button:hover { border-color:var(--green-light); }
-.aad-actions .aad-edit { color:var(--green-dark); border-color:#cfe4dd; }
-.aad-actions .aad-edit:hover { background:var(--mint); }
-.aad-actions .aad-del { color:#b91c1c; border-color:#fecaca; }
-.aad-actions .aad-del:hover { background:#fef2f2; }
+.aad-actions { display:flex; flex-direction:column; gap:7px; flex-shrink:0; }
+.aad-btn { background:#fff; border:1px solid var(--line); border-radius:9px; padding:7px 14px; font-size:12.5px; font-weight:700; color:var(--ink); cursor:pointer; font-family:inherit; transition:all .14s; white-space:nowrap; }
+.aad-btn:hover { border-color:var(--green-light); color:var(--green-dark); }
+.aad-btn.aad-danger { color:#b91c1c; }
+.aad-btn.aad-danger:hover { border-color:#b91c1c; background:#fef2f2; }
+.aad-empty { text-align:center; color:var(--muted); padding:40px; font-size:14px; }
+@media (max-width:640px) { .aad-grid { grid-template-columns:1fr; } .aad-row { flex-direction:column; } .aad-actions { flex-direction:row; flex-wrap:wrap; } }
 `;
 
 export default function AdminAdsPage() {
@@ -158,12 +190,12 @@ export default function AdminAdsPage() {
   const load = () => {
     setLoading(true);
     api<Ad[]>('/ads/admin/list')
-      .then((data) => {
-        setAds(Array.isArray(data) ? data : []);
+      .then((d) => {
+        setAds(Array.isArray(d) ? d : []);
         setLoading(false);
       })
-      .catch((err) => {
-        setError(err.message);
+      .catch((e) => {
+        setError(e.message);
         setLoading(false);
       });
   };
@@ -186,9 +218,18 @@ export default function AdminAdsPage() {
       linkUrl: ad.linkUrl || '',
       ctaLabel: ad.ctaLabel || '',
       placement: ad.placement || 'HOME_TOP',
+      startDate: toDateInput(ad.startDate),
+      endDate: toDateInput(ad.endDate),
+      priority: String(ad.priority ?? 0),
+      dailyImpressionCap: String(ad.dailyImpressionCap ?? 0),
+      amount: String(ad.amount ?? 0),
+      paid: !!ad.paid,
     });
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const setDuration = (n: number) =>
+    setForm((f) => ({ ...f, startDate: todayStr(), endDate: addDaysStr(n) }));
 
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -219,13 +260,16 @@ export default function AdminAdsPage() {
       ctaLabel: form.ctaLabel,
       imageUrl: form.imageUrl,
       placement: form.placement,
+      startDate: form.startDate ? `${form.startDate}T00:00:00` : '',
+      endDate: form.endDate ? `${form.endDate}T23:59:59` : '',
+      priority: Number(form.priority) || 0,
+      dailyImpressionCap: Number(form.dailyImpressionCap) || 0,
+      amount: Number(form.amount) || 0,
+      paid: form.paid,
     };
     try {
-      if (editingId) {
-        await api(`/ads/${editingId}`, { method: 'PATCH', body: payload });
-      } else {
-        await api('/ads', { method: 'POST', body: payload });
-      }
+      if (editingId) await api(`/ads/${editingId}`, { method: 'PATCH', body: payload });
+      else await api('/ads', { method: 'POST', body: payload });
       resetForm();
       load();
     } catch (err: any) {
@@ -239,19 +283,19 @@ export default function AdminAdsPage() {
     try {
       await api(`/ads/${id}/status`, { method: 'PATCH', body: { status } });
       load();
-    } catch (err: any) {
-      alert('فشل التحديث: ' + err.message);
+    } catch (e: any) {
+      alert(e.message);
     }
   };
 
   const remove = async (id: string) => {
-    if (!confirm('حذف هذا الإعلان نهائيًا؟')) return;
+    if (!confirm('متأكد من حذف الإعلان؟')) return;
     try {
       await api(`/ads/${id}`, { method: 'DELETE' });
       if (editingId === id) resetForm();
       load();
-    } catch (err: any) {
-      alert('فشل الحذف: ' + err.message);
+    } catch (e: any) {
+      alert(e.message);
     }
   };
 
@@ -263,15 +307,16 @@ export default function AdminAdsPage() {
         <div className="aad-form-head">
           <div className="aad-form-title">{editingId ? '✏️ تعديل الإعلان' : 'إضافة إعلان جديد'}</div>
           {editingId && (
-            <button type="button" className="aad-cancel" onClick={resetForm}>إلغاء التعديل</button>
+            <button className="aad-cancel" onClick={resetForm}>إلغاء التعديل</button>
           )}
         </div>
+
         <div className="aad-grid">
-          <label className="aad-f">
+          <label className="aad-f aad-wide">
             <span>العنوان *</span>
             <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="مثال: خصم 20% على تصميم المواقع" />
           </label>
-          <label className="aad-f">
+          <label className="aad-f aad-wide">
             <span>الوصف</span>
             <input value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} placeholder="سطر وصف قصير" />
           </label>
@@ -291,55 +336,107 @@ export default function AdminAdsPage() {
               ))}
             </select>
           </label>
+        </div>
 
-          <label className="aad-f aad-f-wide">
-            <span>صورة الإعلان</span>
-            {form.imageUrl ? (
-              <div className="aad-preview" style={{ backgroundImage: `url(${form.imageUrl})` }}>
-                <button type="button" className="aad-preview-x" onClick={() => setForm({ ...form, imageUrl: '' })}>✕</button>
-              </div>
-            ) : (
-              <label className="aad-drop">
-                <span>🖼️ {uploading ? 'جاري المعالجة...' : 'ارفع صورة من جهازك'}</span>
-                <span className="aad-drop-hint">هتتضغط وتتصغّر تلقائيًا قبل الحفظ</span>
-                <input type="file" accept="image/*" onChange={onFile} hidden />
-              </label>
-            )}
+        <label className="aad-f aad-wide" style={{ marginTop: 14 }}>
+          <span>صورة الإعلان</span>
+          {form.imageUrl ? (
+            <div className="aad-preview" style={{ backgroundImage: `url(${form.imageUrl})` }}>
+              <button type="button" className="aad-preview-x" onClick={() => setForm({ ...form, imageUrl: '' })}>✕</button>
+            </div>
+          ) : (
+            <label className="aad-drop">
+              <span>🖼️ {uploading ? 'جاري المعالجة...' : 'ارفع صورة من جهازك'}</span>
+              <span className="aad-drop-hint">يفضّل صورة عريضة (مثال 1600×600) — بتتصغّر تلقائيًا</span>
+              <input type="file" accept="image/*" onChange={onFile} hidden />
+            </label>
+          )}
+        </label>
+
+        <div className="aad-sec">⏱️ مدة العرض</div>
+        <div className="aad-quick">
+          <button type="button" className="aad-chip" onClick={() => setDuration(7)}>7 أيام</button>
+          <button type="button" className="aad-chip" onClick={() => setDuration(30)}>30 يوم</button>
+          <button type="button" className="aad-chip" onClick={() => setDuration(90)}>90 يوم</button>
+          <button type="button" className="aad-chip" onClick={() => setForm({ ...form, startDate: '', endDate: '' })}>بدون مدة (دائم)</button>
+        </div>
+        <div className="aad-grid">
+          <label className="aad-f">
+            <span>من تاريخ</span>
+            <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
+          </label>
+          <label className="aad-f">
+            <span>إلى تاريخ</span>
+            <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
           </label>
         </div>
-        <button className="aad-create" onClick={submit} disabled={saving || uploading || !form.title.trim()}>
+
+        <div className="aad-sec">🎯 التحكم في الظهور</div>
+        <div className="aad-grid">
+          <label className="aad-f">
+            <span>الأولوية (أعلى = يظهر أول وأكتر)</span>
+            <input type="number" min={0} value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} />
+          </label>
+          <label className="aad-f">
+            <span>حد الظهور في اليوم (0 = مفتوح)</span>
+            <input type="number" min={0} value={form.dailyImpressionCap} onChange={(e) => setForm({ ...form, dailyImpressionCap: e.target.value })} />
+            <span className="aad-hint">لما يوصل العدد ده في اليوم، الإعلان يوقف لبكرة تلقائيًا.</span>
+          </label>
+        </div>
+
+        <div className="aad-sec">💰 التسعير</div>
+        <div className="aad-grid">
+          <label className="aad-f">
+            <span>السعر (جنيه)</span>
+            <input type="number" min={0} value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
+          </label>
+          <label className="aad-check">
+            <input type="checkbox" checked={form.paid} onChange={(e) => setForm({ ...form, paid: e.target.checked })} />
+            تم دفع قيمة الإعلان
+          </label>
+        </div>
+
+        <button className="aad-submit" onClick={submit} disabled={saving || uploading || !form.title.trim()}>
           {saving ? 'جاري الحفظ...' : editingId ? 'حفظ التعديلات' : 'إضافة الإعلان (مفعّل مباشرة)'}
         </button>
       </div>
 
       {loading ? (
-        <div className="aad-state">جاري التحميل...</div>
+        <div className="aad-empty">جاري التحميل...</div>
       ) : error ? (
-        <div className="aad-state aad-err">{error}</div>
+        <div className="aad-empty">{error}</div>
       ) : ads.length === 0 ? (
-        <div className="aad-state">لا توجد إعلانات بعد. أضف أول إعلان من الفورم فوق.</div>
+        <div className="aad-empty">لا توجد إعلانات بعد. أضف أول إعلان من الأعلى.</div>
       ) : (
         <div className="aad-list">
           {ads.map((ad) => (
-            <div className={`aad-item${editingId === ad.id ? ' aad-active-edit' : ''}`} key={ad.id}>
+            <div className={`aad-row${editingId === ad.id ? ' aad-active-edit' : ''}`} key={ad.id}>
               <div className="aad-thumb" style={ad.imageUrl ? { backgroundImage: `url(${ad.imageUrl})` } : undefined}>
                 {!ad.imageUrl && 'بدون صورة'}
               </div>
-              <div className="aad-info">
-                <div className="aad-item-title">{ad.title}</div>
-                {ad.subtitle && <div className="aad-item-sub">{ad.subtitle}</div>}
-                <div className="aad-meta">
+              <div className="aad-row-main">
+                <div className="aad-row-top">
+                  <span className="aad-row-title">{ad.title}</span>
                   <span className={`aad-badge aad-s-${ad.status}`}>{STATUS_LABELS[ad.status] || ad.status}</span>
-                  <span className="aad-chip">{PLACEMENTS.find((p) => p.value === ad.placement)?.label || ad.placement}</span>
-                  <span className="aad-chip">👁 {ad.impressions} · 🖱 {ad.clicks}</span>
+                </div>
+                <div className="aad-meta">
+                  <span>{PLACEMENTS.find((p) => p.value === ad.placement)?.label || ad.placement}</span>
+                  <span>الأولوية: {ad.priority}</span>
+                  <span>السعر: {ad.amount > 0 ? `${ad.amount} ج` : '—'}{ad.paid ? ' ✓ مدفوع' : ''}</span>
+                </div>
+                <div className="aad-meta">
+                  <span>👁 {ad.impressions}</span>
+                  <span>👆 {ad.clicks}</span>
+                  <span>اليوم: {ad.impressionsToday}/{ad.dailyImpressionCap > 0 ? ad.dailyImpressionCap : '∞'}</span>
+                  <span>المدة: {fmtDate(ad.startDate)} ← {fmtDate(ad.endDate)}</span>
                 </div>
               </div>
               <div className="aad-actions">
-                <button className="aad-edit" onClick={() => startEdit(ad)}>تعديل</button>
-                {ad.status !== 'ACTIVE' && <button onClick={() => setStatus(ad.id, 'ACTIVE')}>تفعيل</button>}
-                {ad.status === 'ACTIVE' && <button onClick={() => setStatus(ad.id, 'PAUSED')}>إيقاف</button>}
-                {ad.status !== 'REJECTED' && <button onClick={() => setStatus(ad.id, 'REJECTED')}>رفض</button>}
-                <button className="aad-del" onClick={() => remove(ad.id)}>حذف</button>
+                <button className="aad-btn" onClick={() => startEdit(ad)}>تعديل</button>
+                {ad.status !== 'ACTIVE' && <button className="aad-btn" onClick={() => setStatus(ad.id, 'ACTIVE')}>تفعيل</button>}
+                {ad.status === 'ACTIVE' && <button className="aad-btn" onClick={() => setStatus(ad.id, 'PAUSED')}>إيقاف</button>}
+                {ad.status !== 'REJECTED' && <button className="aad-btn" onClick={() => setStatus(ad.id, 'REJECTED')}>رفض</button>}
+                <button className="aad-btn aad-danger" onClick={() => remove(ad.id)}>حذف</button>
               </div>
             </div>
           ))}
