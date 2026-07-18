@@ -47,7 +47,7 @@ export default function ProjectsPage() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-black">مشاريعي</h1>
           <Link
-            href="/projects/new"
+            href="/projects/start"
             className="bg-brand text-white px-4 py-2 rounded-xl text-sm font-extrabold"
           >
             + مشروع جديد
@@ -61,7 +61,7 @@ export default function ProjectsPage() {
           <div className="card text-center py-16">
             <p className="text-muted mb-4">لسه مفيش مشاريع.</p>
             <Link
-              href="/projects/new"
+              href="/projects/start"
               className="text-brand font-extrabold"
             >
               ابدأ أول مشروع
