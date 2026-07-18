@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 import { api } from '@/lib/api';
+import { toast } from '@/components/Toast';
 import { CONTENT_REGISTRY, contentGroups, ContentEntry } from '@/lib/content';
 
 type DbItem = { id: string; key: string; value: string; groupKey?: string; label?: string; type?: string };
@@ -80,9 +81,11 @@ export default function AdminContentPage() {
         },
       });
       setInitial((prev) => ({ ...prev, [entry.key]: values[entry.key] }));
+      toast.success('اتحفظ ✅');
       hydrate();
     } catch (err: any) {
       setError(err.message);
+      toast.error(err.message);
     } finally {
       setSavingKey('');
     }
@@ -101,8 +104,10 @@ export default function AdminContentPage() {
         delete next[entry.key];
         return next;
       });
+      toast.info('رجع للنص الافتراضي');
     } catch (err: any) {
       setError(err.message);
+      toast.error(err.message);
     } finally {
       setSavingKey('');
     }
@@ -126,9 +131,11 @@ export default function AdminContentPage() {
         });
       }
       setInitial({ ...values });
+      toast.success(`اتحفظت التعديلات (${dirty.length}) ✅`);
       hydrate();
     } catch (err: any) {
       setError(err.message);
+      toast.error(err.message);
     } finally {
       setSavingAll(false);
     }
