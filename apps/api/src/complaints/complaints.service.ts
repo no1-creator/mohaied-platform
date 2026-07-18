@@ -9,6 +9,7 @@ import {
   CreateComplaintDto,
   RespondComplaintDto,
   DecideComplaintDto,
+  AssignArbitratorDto,
 } from './dto/complaint.dto';
 import {
   ComplaintStatus,
@@ -120,13 +121,75 @@ export class ComplaintsService {
     });
   }
 
-  // رسالة من المُحكّم (إدارة محايد) وتحويل النزاع لمرحلة التحكيم
-  async arbitrate(
+  // تعيين مشرف كمُحكّم تقني على النزاع (إدارة محايد)
+  async assignArbitrator(
     complaintId: string,
     adminId: string,
+    dto: AssignArbitratorDto,
+  ) {
+    const complaint = await this.getComplaintWithProject(complaintId);
+
+    if (
+      complaint.status === ComplaintStatus.RESOLVED ||
+      complaint.status === ComplaintStatus.CLOSED
+    ) {
+      throw new BadRequestException('تم حسم هذا النزاع بالفعل');
+    }
+
+    const supervisor = await this.prisma.user.findUnique({
+      where: { id: dto.supervisorId },
+    });
+    if (!supervisor || supervisor.role !== 'SUPERVISOR') {
+      throw new BadRequestException('المستخدم المختار ليس مشرفًا على المنصة');
+    }
+    if (!supervisor.isActive) {
+      throw new BadRequestException('هذا المشرف غير مُفعّل حاليًا');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.complaint.update({
+        where: { id: complaintId },
+        data: {
+          arbitratorId: dto.supervisorId,
+          status: ComplaintStatus.IN_ARBITRATION,
+        },
+      });
+
+      // رسالة نظام داخل سجل النزاع توضّح تعيين المُحكّم
+      await tx.complaintResponse.create({
+        data: {
+          complaintId,
+          responderId: adminId,
+          message: `تم تعيين المشرف «${supervisor.fullName}» مُحكّمًا تقنيًا على هذا النزاع من قِبل إدارة محايد.`,
+        },
+      });
+
+      await tx.activityLog.create({
+        data: {
+          projectId: complaint.projectId,
+          actorId: adminId,
+          action: 'COMPLAINT_ARBITRATOR_ASSIGNED',
+          metadata: {
+            complaintId,
+            arbitratorId: dto.supervisorId,
+            arbitratorName: supervisor.fullName,
+          },
+        },
+      });
+
+      return updated;
+    });
+  }
+
+  // رسالة من المُحكّم (إدارة محايد أو المشرف المُحكّم) وتحويل النزاع لمرحلة التحكيم
+  async arbitrate(
+    complaintId: string,
+    actorId: string,
+    role: string,
     dto: RespondComplaintDto,
   ) {
     const complaint = await this.getComplaintWithProject(complaintId);
+    this.assertCanArbitrate(complaint, actorId, role);
 
     if (
       complaint.status === ComplaintStatus.RESOLVED ||
@@ -139,7 +202,7 @@ export class ComplaintsService {
       const response = await tx.complaintResponse.create({
         data: {
           complaintId,
-          responderId: adminId,
+          responderId: actorId,
           message: dto.message,
         },
       });
@@ -152,7 +215,7 @@ export class ComplaintsService {
       await tx.activityLog.create({
         data: {
           projectId: complaint.projectId,
-          actorId: adminId,
+          actorId: actorId,
           action: 'COMPLAINT_ARBITRATION_MESSAGE',
           metadata: { complaintId, responseId: response.id },
         },
@@ -162,13 +225,15 @@ export class ComplaintsService {
     });
   }
 
-  // قرار إدارة محايد (المُحكّم) + تنفيذ التسوية المالية على الضمان
+  // قرار المُحكّم (إدارة محايد أو المشرف المُحكّم) + تنفيذ التسوية المالية على الضمان
   async decide(
     complaintId: string,
-    adminId: string,
+    actorId: string,
+    role: string,
     dto: DecideComplaintDto,
   ) {
     const complaint = await this.getComplaintWithProject(complaintId);
+    this.assertCanArbitrate(complaint, actorId, role);
 
     if (
       complaint.status === ComplaintStatus.RESOLVED ||
@@ -184,7 +249,7 @@ export class ComplaintsService {
           type: dto.type,
           customType: dto.customType,
           reason: dto.reason,
-          decidedById: adminId,
+          decidedById: actorId,
         },
       });
 
@@ -273,11 +338,12 @@ export class ComplaintsService {
       await tx.activityLog.create({
         data: {
           projectId: complaint.projectId,
-          actorId: adminId,
+          actorId: actorId,
           action: 'COMPLAINT_DECIDED',
           metadata: {
             complaintId,
             decisionType: dto.type,
+            decidedByRole: role,
             settlementAction: settlement.action,
             settledEscrowIds: settlement.escrowIds,
             settledTotal: settlement.total,
@@ -306,7 +372,9 @@ export class ComplaintsService {
     const isParty =
       complaint.project.clientId === userId ||
       complaint.project.providerId === userId;
-    if (!isParty && role !== 'ADMIN') {
+    const isArbiter =
+      !!complaint.arbitratorId && complaint.arbitratorId === userId;
+    if (!isParty && role !== 'ADMIN' && !isArbiter) {
       throw new ForbiddenException('ليس لديك صلاحية لعرض هذه الشكوى');
     }
 
@@ -315,6 +383,18 @@ export class ComplaintsService {
 
   async findAllForAdmin() {
     return this.prisma.complaint.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        project: { select: { id: true, title: true } },
+        decision: true,
+      },
+    });
+  }
+
+  // النزاعات المُسندة للمستخدم الحالي كمُحكّم تقني
+  async findForArbitrator(userId: string) {
+    return this.prisma.complaint.findMany({
+      where: { arbitratorId: userId },
       orderBy: { createdAt: 'desc' },
       include: {
         project: { select: { id: true, title: true } },
@@ -348,6 +428,20 @@ export class ComplaintsService {
       throw new NotFoundException('الشكوى غير موجودة');
     }
     return complaint;
+  }
+
+  // صلاحية التحكيم: الأدمن دائمًا، أو المشرف المُعيَّن مُحكّمًا على هذا النزاع تحديدًا
+  private assertCanArbitrate(
+    complaint: { arbitratorId: string | null },
+    actorId: string,
+    role: string,
+  ) {
+    const isAdmin = role === 'ADMIN';
+    const isAssignedArbiter =
+      !!complaint.arbitratorId && complaint.arbitratorId === actorId;
+    if (!isAdmin && !isAssignedArbiter) {
+      throw new ForbiddenException('غير مصرح لك بالتحكيم في هذا النزاع');
+    }
   }
 
   private async generateCode(): Promise<string> {
