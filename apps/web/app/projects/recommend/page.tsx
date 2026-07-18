@@ -95,11 +95,18 @@ export default function RecommendPage() {
       <BackBar />
       <div className="rc-wrap">
         <div className="rc-head">
-          <h1 className="rc-title">محايد ترشّح لك الأفضل</h1>
-          <p className="rc-sub">
-            قوللنا تفاصيل مشروعك، وخبراؤنا التقنيون وفريقنا القانوني هيرشّحولك أنسب مقدم خدمة لطبيعة مشروعك وميزانيتك.
-          </p>
-        </div>
+  <h1 className="rc-title">محايد ترشّح لك الأفضل</h1>
+  <p className="rc-sub">
+    قوللنا تفاصيل مشروعك، وخبراؤنا التقنيون وفريقنا القانوني هيرشّحولك أنسب مقدم خدمة لطبيعة مشروعك وميزانيتك.
+  </p>
+  <button
+    type="button"
+    onClick={() => router.push('/projects/recommend/mine')}
+    style={{ background: 'none', border: 'none', padding: 0, marginTop: 10, color: 'var(--green-dark)', fontWeight: 800, fontSize: 13.5, cursor: 'pointer', fontFamily: 'inherit' }}
+  >
+    متابعة طلباتك السابقة ←
+  </button>
+</div>
 
         <div className="rc-card">
           {error && <div className="rc-err">{error}</div>}
