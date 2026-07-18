@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '@/lib/api';
 
 type Ad = {
@@ -13,76 +13,113 @@ type Ad = {
   placement: string;
 };
 
-const AB_CSS = `
-.ab-wrap { max-width:1000px; margin:26px auto 0; padding:0 20px; }
-.ab-label { font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.04em; margin-bottom:8px; text-transform:uppercase; }
-.ab-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
-.ab-card { display:flex; gap:14px; align-items:center; background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; text-decoration:none; transition:all .16s; box-shadow:0 4px 16px rgba(23,33,31,.04); overflow:hidden; }
-.ab-card:hover { border-color:var(--green-light); transform:translateY(-2px); box-shadow:0 10px 26px rgba(40,125,115,.12); }
-.ab-card-static { cursor:default; }
-.ab-img { width:66px; height:66px; border-radius:12px; background-size:cover; background-position:center; background-color:var(--mint); flex-shrink:0; }
-.ab-img-fallback { display:flex; align-items:center; justify-content:center; color:var(--green-dark); font-weight:900; font-size:15px; background:linear-gradient(140deg,var(--mint),#dcefe8); }
-.ab-body { min-width:0; }
-.ab-title { font-size:15px; font-weight:800; color:var(--ink); margin-bottom:3px; }
-.ab-sub { font-size:12.5px; color:var(--muted); line-height:1.55; margin-bottom:6px; }
-.ab-cta { display:inline-block; font-size:12.5px; font-weight:800; color:var(--green-dark); background:var(--mint); padding:4px 12px; border-radius:999px; }
+const ADB_CSS = `
+.adb-wrap { position:relative; width:100%; max-width:1100px; margin:26px auto; height:var(--adb-h); border-radius:22px; overflow:hidden; box-shadow:0 18px 44px rgba(23,33,31,.15); background:var(--mint); }
+.adb-track { position:absolute; inset:0; }
+.adb-slide { position:absolute; inset:0; opacity:0; transition:opacity .8s ease; pointer-events:none; text-decoration:none; display:block; }
+.adb-slide.active { opacity:1; pointer-events:auto; }
+.adb-bg { position:absolute; inset:0; background-size:cover; background-position:center; transform:scale(1.04); transition:transform 7s ease; }
+.adb-slide.active .adb-bg { transform:scale(1.12); }
+.adb-bg.fallback { background:linear-gradient(135deg,var(--green),var(--green-dark)); }
+.adb-overlay { position:absolute; inset:0; background:linear-gradient(to left, rgba(0,0,0,.62), rgba(0,0,0,.28) 55%, rgba(0,0,0,.08)); }
+.adb-content { position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:12px; padding:0 52px; color:#fff; max-width:660px; }
+.adb-title { font-size:34px; font-weight:900; margin:0; line-height:1.25; text-shadow:0 2px 14px rgba(0,0,0,.35); }
+.adb-sub { font-size:17px; margin:0; line-height:1.7; opacity:.96; text-shadow:0 2px 10px rgba(0,0,0,.35); }
+.adb-cta { display:inline-flex; align-items:center; width:fit-content; background:#fff; color:var(--green-dark); padding:12px 28px; border-radius:12px; font-weight:900; font-size:15px; margin-top:6px; box-shadow:0 12px 26px rgba(0,0,0,.22); }
+.adb-arrow { position:absolute; top:50%; transform:translateY(-50%); z-index:3; width:44px; height:44px; border-radius:50%; border:none; background:rgba(255,255,255,.9); color:var(--ink); font-size:26px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 16px rgba(0,0,0,.18); transition:background .16s; }
+.adb-arrow:hover { background:#fff; }
+.adb-prev { inset-inline-start:16px; }
+.adb-next { inset-inline-end:16px; }
+.adb-dots { position:absolute; bottom:16px; inset-inline-start:0; inset-inline-end:0; display:flex; justify-content:center; gap:8px; z-index:3; }
+.adb-dot { width:9px; height:9px; border-radius:999px; border:none; background:rgba(255,255,255,.5); cursor:pointer; padding:0; transition:all .18s; }
+.adb-dot.on { background:#fff; width:26px; }
+@media (max-width:640px) {
+  .adb-wrap { height:calc(var(--adb-h) - 90px); border-radius:16px; }
+  .adb-content { padding:0 24px; }
+  .adb-title { font-size:22px; }
+  .adb-sub { font-size:14px; }
+  .adb-arrow { width:38px; height:38px; font-size:22px; }
+}
 `;
 
-export default function AdBanners({ placement }: { placement: string }) {
+export default function AdBanners({ placement, height }: { placement: string; height?: number }) {
   const [ads, setAds] = useState<Ad[]>([]);
+  const [idx, setIdx] = useState(0);
+  const tracked = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     api<Ad[]>(`/ads/active?placement=${encodeURIComponent(placement)}`, { auth: false })
-      .then((data) => setAds(Array.isArray(data) ? data : []))
+      .then((d) => setAds(Array.isArray(d) ? d : []))
       .catch(() => setAds([]));
   }, [placement]);
 
+  // تقليب أوتوماتيك
+  useEffect(() => {
+    if (ads.length <= 1) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % ads.length), 5000);
+    return () => clearInterval(t);
+  }, [ads.length]);
+
+  // ضبط المؤشر لو قلّ عدد الإعلانات
+  useEffect(() => {
+    if (idx >= ads.length && ads.length > 0) setIdx(0);
+  }, [ads.length, idx]);
+
+  // تسجيل المشاهدة للإعلان الظاهر
+  useEffect(() => {
+    const ad = ads[idx];
+    if (ad && !tracked.current.has(ad.id)) {
+      tracked.current.add(ad.id);
+      api(`/ads/${ad.id}/impression`, { method: 'POST', auth: false }).catch(() => {});
+    }
+  }, [ads, idx]);
+
   if (!ads.length) return null;
 
-  const onClick = (ad: Ad) => {
-    // تتبّع النقر (ما يعطّلش الانتقال لو فشل)
+  const h = height || 360;
+  const go = (n: number) => setIdx((n + ads.length) % ads.length);
+  const onAdClick = (ad: Ad) => {
     api(`/ads/${ad.id}/click`, { method: 'POST', auth: false }).catch(() => {});
   };
 
   return (
     <>
-      <style>{AB_CSS}</style>
-      <div className="ab-wrap">
-        <div className="ab-label">إعلانات</div>
-        <div className="ab-grid">
-          {ads.map((ad) => {
-            const inner = (
-              <>
-                {ad.imageUrl ? (
-                  <div className="ab-img" style={{ backgroundImage: `url(${ad.imageUrl})` }} />
-                ) : (
-                  <div className="ab-img ab-img-fallback">محايد</div>
-                )}
-                <div className="ab-body">
-                  <div className="ab-title">{ad.title}</div>
-                  {ad.subtitle && <div className="ab-sub">{ad.subtitle}</div>}
-                  {ad.linkUrl && <span className="ab-cta">{ad.ctaLabel || 'اعرف أكثر'}</span>}
+      <style>{ADB_CSS}</style>
+      <div className="adb-wrap" style={{ ['--adb-h' as any]: `${h}px` }}>
+        <div className="adb-track">
+          {ads.map((ad, i) => {
+            const Wrapper: any = ad.linkUrl ? 'a' : 'div';
+            const wrapperProps = ad.linkUrl
+              ? { href: ad.linkUrl, target: '_blank', rel: 'noopener noreferrer', onClick: () => onAdClick(ad) }
+              : {};
+            return (
+              <Wrapper key={ad.id} className={`adb-slide${i === idx ? ' active' : ''}`} {...wrapperProps}>
+                <div
+                  className={`adb-bg${ad.imageUrl ? '' : ' fallback'}`}
+                  style={ad.imageUrl ? { backgroundImage: `url(${ad.imageUrl})` } : undefined}
+                />
+                <div className="adb-overlay" />
+                <div className="adb-content">
+                  <h3 className="adb-title">{ad.title}</h3>
+                  {ad.subtitle && <p className="adb-sub">{ad.subtitle}</p>}
+                  {ad.linkUrl && <span className="adb-cta">{ad.ctaLabel || 'اعرف أكثر'}</span>}
                 </div>
-              </>
-            );
-            return ad.linkUrl ? (
-              <a
-                key={ad.id}
-                className="ab-card"
-                href={ad.linkUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => onClick(ad)}
-              >
-                {inner}
-              </a>
-            ) : (
-              <div key={ad.id} className="ab-card ab-card-static">
-                {inner}
-              </div>
+              </Wrapper>
             );
           })}
         </div>
+
+        {ads.length > 1 && (
+          <>
+            <button className="adb-arrow adb-prev" onClick={() => go(idx - 1)} aria-label="السابق">‹</button>
+            <button className="adb-arrow adb-next" onClick={() => go(idx + 1)} aria-label="التالي">›</button>
+            <div className="adb-dots">
+              {ads.map((_, i) => (
+                <button key={i} className={`adb-dot${i === idx ? ' on' : ''}`} onClick={() => setIdx(i)} aria-label={`إعلان ${i + 1}`} />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </>
   );
