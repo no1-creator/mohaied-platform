@@ -147,6 +147,17 @@ const ADV_CSS = `
   .advp-content { padding:0 24px; }
   .advp-title { font-size:22px; }
 }
+@media (max-width:480px) {
+  .adv-wrap { padding:18px 14px 70px; }
+  .adv-hero { padding:24px 18px; border-radius:18px; }
+  .adv-hero h1 { font-size:21px; }
+  .adv-hero p { font-size:13.5px; }
+  .advp-banner { height:190px; border-radius:16px; }
+  .advp-content { padding:0 18px; gap:8px; }
+  .advp-title { font-size:19px; }
+  .advp-sub { font-size:13.5px; }
+  .adv-form, .adv-side { padding:18px; }
+}
 `;
 
 export default function AdvertisePage() {
