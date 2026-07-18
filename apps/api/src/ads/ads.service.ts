@@ -3,14 +3,18 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateAdDto } from './dto/create-ad.dto';
 import { UpdateAdDto } from './dto/update-ad.dto';
 
+function todayKey(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 @Injectable()
 export class AdsService {
   constructor(private prisma: PrismaService) {}
 
-  // الإعلانات النشطة للعامة حسب المكان (ضمن النافذة الزمنية)
+  // الإعلانات النشطة للعامة (ضمن المدة + مع احترام الحد اليومي + مرتّبة بالأولوية)
   async publicActive(placement?: string) {
     const now = new Date();
-    return this.prisma.adBanner.findMany({
+    const ads = await this.prisma.adBanner.findMany({
       where: {
         status: 'ACTIVE',
         ...(placement ? { placement } : {}),
@@ -19,22 +23,29 @@ export class AdsService {
           { OR: [{ endDate: null }, { endDate: { gte: now } }] },
         ],
       },
-      orderBy: [{ orderIndex: 'asc' }, { createdAt: 'desc' }],
+      orderBy: [{ priority: 'desc' }, { orderIndex: 'asc' }, { createdAt: 'desc' }],
     });
+    const today = todayKey();
+    return ads.filter(
+      (ad) =>
+        !(
+          ad.dailyImpressionCap > 0 &&
+          ad.impressionDay === today &&
+          ad.impressionsToday >= ad.dailyImpressionCap
+        ),
+    );
   }
 
-  // كل الإعلانات (أدمن)
   async listAll(status?: string, placement?: string) {
     return this.prisma.adBanner.findMany({
       where: {
         ...(status ? { status } : {}),
         ...(placement ? { placement } : {}),
       },
-      orderBy: [{ createdAt: 'desc' }],
+      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
     });
   }
 
-  // إعلانات مقدم الخدمة نفسه
   async listMine(advertiserId: string) {
     return this.prisma.adBanner.findMany({
       where: { advertiserId },
@@ -48,7 +59,7 @@ export class AdsService {
     return ad;
   }
 
-  // إنشاء: الأدمن ينشئ مفعّل مباشرة، غيره ينشئ PENDING بانتظار المراجعة
+  // إنشاء: الأدمن ينشئ مفعّل مباشرة، غيره PENDING بانتظار المراجعة
   async create(dto: CreateAdDto, advertiserId: string, isAdmin: boolean) {
     return this.prisma.adBanner.create({
       data: {
@@ -62,11 +73,14 @@ export class AdsService {
         status: isAdmin ? 'ACTIVE' : 'PENDING',
         startDate: dto.startDate ? new Date(dto.startDate) : null,
         endDate: dto.endDate ? new Date(dto.endDate) : null,
+        amount: isAdmin ? dto.amount ?? 0 : 0,
+        paid: isAdmin ? dto.paid ?? false : false,
+        priority: isAdmin ? dto.priority ?? 0 : 0,
+        dailyImpressionCap: isAdmin ? dto.dailyImpressionCap ?? 0 : 0,
       },
     });
   }
 
-  // تحديث (أدمن)
   async update(id: string, dto: UpdateAdDto) {
     await this.getOne(id);
     return this.prisma.adBanner.update({
@@ -82,6 +96,10 @@ export class AdsService {
         ...(dto.amount !== undefined ? { amount: dto.amount } : {}),
         ...(dto.paid !== undefined ? { paid: dto.paid } : {}),
         ...(dto.orderIndex !== undefined ? { orderIndex: dto.orderIndex } : {}),
+        ...(dto.priority !== undefined ? { priority: dto.priority } : {}),
+        ...(dto.dailyImpressionCap !== undefined
+          ? { dailyImpressionCap: dto.dailyImpressionCap }
+          : {}),
         ...(dto.startDate !== undefined
           ? { startDate: dto.startDate ? new Date(dto.startDate) : null }
           : {}),
@@ -103,7 +121,6 @@ export class AdsService {
     return { ok: true };
   }
 
-  // تتبّع النقر (عام)
   async trackClick(id: string) {
     await this.prisma.adBanner.updateMany({
       where: { id },
@@ -112,11 +129,19 @@ export class AdsService {
     return { ok: true };
   }
 
-  // تتبّع الظهور (عام)
+  // تتبّع الظهور مع عدّاد يومي بيتصفّر تلقائيًا كل يوم
   async trackImpression(id: string) {
-    await this.prisma.adBanner.updateMany({
+    const ad = await this.prisma.adBanner.findUnique({ where: { id } });
+    if (!ad) return { ok: true };
+    const today = todayKey();
+    const sameDay = ad.impressionDay === today;
+    await this.prisma.adBanner.update({
       where: { id },
-      data: { impressions: { increment: 1 } },
+      data: {
+        impressions: { increment: 1 },
+        impressionsToday: sameDay ? { increment: 1 } : 1,
+        impressionDay: today,
+      },
     });
     return { ok: true };
   }
