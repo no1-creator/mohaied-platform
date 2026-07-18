@@ -80,16 +80,62 @@ export class UsersService {
   } as const;
 
   async listProviders() {
-    return this.prisma.user.findMany({
-      where: {
-        role: 'PROVIDER',
-        isActive: true,
-        providerProfile: { isNot: null },
-      },
-      select: this.providerPublicSelect,
-      orderBy: [{ isVerified: 'desc' }, { createdAt: 'desc' }],
-    });
+  const providers = await this.prisma.user.findMany({
+    where: {
+      role: 'PROVIDER',
+      isActive: true,
+      providerProfile: { isNot: null },
+    },
+    select: this.providerPublicSelect,
+    orderBy: [{ isVerified: 'desc' }, { createdAt: 'desc' }],
+  });
+
+  // نجيب مميزات الباقة النشِطة لكل مقدم خدمة (استعلام منفصل آمن)
+  const ids = providers.map((p) => p.id);
+  const subs = ids.length
+    ? await this.prisma.subscription.findMany({
+        where: { userId: { in: ids }, status: 'ACTIVE', expiresAt: { gt: new Date() } },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          userId: true,
+          plan: { select: { badgeLabel: true, directoryPriority: true, isFeatured: true } },
+        },
+      })
+    : [];
+
+  const byUser = new Map<
+    string,
+    { badgeLabel: string | null; directoryPriority: number; isFeatured: boolean }
+  >();
+  for (const s of subs) {
+    if (!byUser.has(s.userId)) {
+      byUser.set(s.userId, {
+        badgeLabel: s.plan?.badgeLabel ?? null,
+        directoryPriority: s.plan?.directoryPriority ?? 0,
+        isFeatured: !!s.plan?.isFeatured,
+      });
+    }
   }
+
+  return providers
+    .map((p) => {
+      const perk = byUser.get(p.id);
+      return {
+        ...p,
+        planBadge: perk?.badgeLabel ?? null,
+        planFeatured: perk?.isFeatured ?? false,
+        directoryPriority: perk?.directoryPriority ?? 0,
+      };
+    })
+    .sort((a, b) => {
+      if (b.directoryPriority !== a.directoryPriority)
+        return b.directoryPriority - a.directoryPriority;
+      const av = a.isVerified ? 1 : 0;
+      const bv = b.isVerified ? 1 : 0;
+      if (bv !== av) return bv - av;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+}
 
   async getProvider(id: string) {
     const provider = await this.prisma.user.findFirst({
