@@ -7,6 +7,7 @@ import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import Icon from '@/components/Icon';
 import { LoadingState, ErrorState } from '@/components/PageState';
+import AdBanners from '@/components/AdBanners';
 
 type Me = {
   id: string;
@@ -192,6 +193,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        <AdBanners placement="CLIENT_DASHBOARD" />
         <h2 className="db-section-title">اختصاراتك</h2>
         <div className="db-grid">
           {tiles.map((t) => (
