@@ -26,6 +26,10 @@ const NP_CSS = `
 .np-btn:hover{background:var(--green-dark);}
 .np-btn:disabled{opacity:.6;cursor:default;}
 @media(max-width:520px){.np-row{grid-template-columns:1fr;}}
+.np-direct{display:flex;gap:12px;align-items:flex-start;background:var(--mint);border:1px solid var(--green-light);border-radius:14px;padding:13px 15px;margin-bottom:20px;}
+.np-direct-ic{width:34px;height:34px;border-radius:10px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;}
+.np-direct-t{font-size:14px;font-weight:800;color:var(--ink);margin:0 0 2px;}
+.np-direct-s{font-size:12.5px;color:var(--muted);margin:0;line-height:1.7;}
 `;
 
 export default function NewProjectPage() {
@@ -38,16 +42,33 @@ export default function NewProjectPage() {
   const [budgetMin, setBudgetMin] = useState('');
   const [budgetMax, setBudgetMax] = useState('');
   const [durationDays, setDurationDays] = useState('');
-  const [dynFields, setDynFields] = useState<OptionItem[]>([]);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+ const [dynFields, setDynFields] = useState<OptionItem[]>([]);
+const [preferredId, setPreferredId] = useState('');
+const [preferredName, setPreferredName] = useState('');
+const [error, setError] = useState('');
+const [loading, setLoading] = useState(false);
 
-  // تصنيفات المشاريع المُدارة من لوحة التحكم
-  useEffect(() => {
-    api<OptionItem[]>('/options/PROJECT_FIELD')
-      .then((data) => setDynFields(Array.isArray(data) ? data : []))
-      .catch(() => setDynFields([]));
-  }, []);
+// تصنيفات المشاريع المُدارة من لوحة التحكم
+useEffect(() => {
+  api<OptionItem[]>('/options/PROJECT_FIELD')
+    .then((data) => setDynFields(Array.isArray(data) ? data : []))
+    .catch(() => setDynFields([]));
+}, []);
+
+// لو العميل جاي من صفحة مقدم خدمة معيّن (طلب مباشر)
+useEffect(() => {
+  const pid =
+    typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('provider')
+      : null;
+  if (!pid) return;
+  setPreferredId(pid);
+  api<{ id: string; fullName: string; providerProfile?: { companyName?: string | null } | null }>(
+    `/users/providers/${pid}`,
+  )
+    .then((p) => setPreferredName(p?.providerProfile?.companyName || p?.fullName || ''))
+    .catch(() => setPreferredName(''));
+}, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,18 +82,19 @@ export default function NewProjectPage() {
     }
     setLoading(true);
     try {
-      const project = await api<{ id: string }>('/projects', {
-        method: 'POST',
-        body: {
-          title,
-          field: finalField,
-          description,
-          budgetMin: budgetMin ? Number(budgetMin) : undefined,
-          budgetMax: budgetMax ? Number(budgetMax) : undefined,
-          durationDays: durationDays ? Number(durationDays) : undefined,
-        },
-      });
-      toast.success('تم إنشاء المشروع بنجاح ✅');
+     const project = await api<{ id: string }>('/projects', {
+  method: 'POST',
+  body: {
+    title,
+    field: finalField,
+    description,
+    budgetMin: budgetMin ? Number(budgetMin) : undefined,
+    budgetMax: budgetMax ? Number(budgetMax) : undefined,
+    durationDays: durationDays ? Number(durationDays) : undefined,
+    preferredProviderId: preferredId || undefined,
+  },
+});
+toast.success(preferredId ? 'تم إرسال طلبك لمقدم الخدمة ✅' : 'تم إنشاء المشروع بنجاح ✅');
       router.push(`/projects/${project.id}`);
     } catch (err: any) {
       setError(err.message);
@@ -89,11 +111,22 @@ export default function NewProjectPage() {
       <BackBar label="رجوع" />
       <div className="np-wrap">
         <div className="np-card">
-          <h1 className="np-title">{t('projects.new.title')}</h1>
-          <p className="np-sub">{t('projects.new.subtitle')}</p>
+         <h1 className="np-title">{t('projects.new.title')}</h1>
+<p className="np-sub">{t('projects.new.subtitle')}</p>
 
-          {error && <div className="np-error">{error}</div>}
+{preferredId && (
+  <div className="np-direct">
+    <span className="np-direct-ic">★</span>
+    <div>
+      <p className="np-direct-t">طلب مباشر لـ {preferredName || 'مقدم الخدمة المختار'}</p>
+      <p className="np-direct-s">
+        هننشر مشروعك ونبعت إشعار مباشر لمقدم الخدمة ده إنك اخترته، عشان يراجع تفاصيلك ويقدّم لك عرضه.
+      </p>
+    </div>
+  </div>
+)}
 
+{error && <div className="np-error">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="np-field">
               <label className="np-label">عنوان المشروع</label>
