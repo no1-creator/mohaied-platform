@@ -14,7 +14,7 @@ type Ad = {
 };
 
 const ADB_CSS = `
-.adb-wrap { position:relative; width:100%; max-width:1100px; margin:26px auto; height:var(--adb-h); border-radius:22px; overflow:hidden; box-shadow:0 18px 44px rgba(23,33,31,.15); background:var(--mint); }
+.adb-wrap { position:relative; width:100%; max-width:1100px; margin:30px auto; min-height:200px; border-radius:22px; overflow:hidden; box-shadow:0 18px 44px rgba(23,33,31,.15); background:var(--mint); }
 .adb-track { position:absolute; inset:0; }
 .adb-slide { position:absolute; inset:0; opacity:0; transition:opacity .8s ease; pointer-events:none; text-decoration:none; display:block; }
 .adb-slide.active { opacity:1; pointer-events:auto; }
@@ -34,7 +34,7 @@ const ADB_CSS = `
 .adb-dot { width:9px; height:9px; border-radius:999px; border:none; background:rgba(255,255,255,.5); cursor:pointer; padding:0; transition:all .18s; }
 .adb-dot.on { background:#fff; width:26px; }
 @media (max-width:640px) {
-  .adb-wrap { height:calc(var(--adb-h) - 90px); border-radius:16px; }
+  .adb-wrap { height:230px !important; border-radius:16px; }
   .adb-content { padding:0 24px; }
   .adb-title { font-size:22px; }
   .adb-sub { font-size:14px; }
@@ -83,44 +83,47 @@ export default function AdBanners({ placement, height }: { placement: string; he
   };
 
   return (
-    <>
+    <div className="adb-wrap" style={{ height: h }}>
       <style>{ADB_CSS}</style>
-      <div className="adb-wrap" style={{ ['--adb-h' as any]: `${h}px` }}>
-        <div className="adb-track">
-          {ads.map((ad, i) => {
-            const Wrapper: any = ad.linkUrl ? 'a' : 'div';
-            const wrapperProps = ad.linkUrl
-              ? { href: ad.linkUrl, target: '_blank', rel: 'noopener noreferrer', onClick: () => onAdClick(ad) }
-              : {};
-            return (
-              <Wrapper key={ad.id} className={`adb-slide${i === idx ? ' active' : ''}`} {...wrapperProps}>
-                <div
-                  className={`adb-bg${ad.imageUrl ? '' : ' fallback'}`}
-                  style={ad.imageUrl ? { backgroundImage: `url(${ad.imageUrl})` } : undefined}
-                />
-                <div className="adb-overlay" />
-                <div className="adb-content">
-                  <h3 className="adb-title">{ad.title}</h3>
-                  {ad.subtitle && <p className="adb-sub">{ad.subtitle}</p>}
-                  {ad.linkUrl && <span className="adb-cta">{ad.ctaLabel || 'اعرف أكثر'}</span>}
-                </div>
-              </Wrapper>
-            );
-          })}
-        </div>
-
-        {ads.length > 1 && (
-          <>
-            <button className="adb-arrow adb-prev" onClick={() => go(idx - 1)} aria-label="السابق">‹</button>
-            <button className="adb-arrow adb-next" onClick={() => go(idx + 1)} aria-label="التالي">›</button>
-            <div className="adb-dots">
-              {ads.map((_, i) => (
-                <button key={i} className={`adb-dot${i === idx ? ' on' : ''}`} onClick={() => setIdx(i)} aria-label={`إعلان ${i + 1}`} />
-              ))}
-            </div>
-          </>
-        )}
+      <div className="adb-track">
+        {ads.map((ad, i) => {
+          const Wrapper: any = ad.linkUrl ? 'a' : 'div';
+          const wrapperProps = ad.linkUrl
+            ? { href: ad.linkUrl, target: '_blank', rel: 'noopener noreferrer', onClick: () => onAdClick(ad) }
+            : {};
+          return (
+            <Wrapper key={ad.id} className={`adb-slide ${i === idx ? 'active' : ''}`} {...wrapperProps}>
+              <div
+                className={`adb-bg ${ad.imageUrl ? '' : 'fallback'}`}
+                style={ad.imageUrl ? { backgroundImage: `url(${ad.imageUrl})` } : {}}
+              />
+              <div className="adb-overlay" />
+              <div className="adb-content">
+                <h3 className="adb-title">{ad.title}</h3>
+                {ad.subtitle && <p className="adb-sub">{ad.subtitle}</p>}
+                {ad.linkUrl && <span className="adb-cta">{ad.ctaLabel || 'اعرف أكثر'}</span>}
+              </div>
+            </Wrapper>
+          );
+        })}
       </div>
-    </>
+
+      {ads.length > 1 && (
+        <>
+          <button className="adb-arrow adb-prev" onClick={() => go(idx - 1)} aria-label="السابق">‹</button>
+          <button className="adb-arrow adb-next" onClick={() => go(idx + 1)} aria-label="التالي">›</button>
+          <div className="adb-dots">
+            {ads.map((_, i) => (
+              <button
+                key={i}
+                className={`adb-dot ${i === idx ? 'on' : ''}`}
+                onClick={() => setIdx(i)}
+                aria-label={`إعلان ${i + 1}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
