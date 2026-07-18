@@ -14,7 +14,7 @@ type Ad = {
 };
 
 const ADB_CSS = `
-.adb-wrap { position:relative; width:100%; max-width:1100px; margin:30px auto; min-height:200px; border-radius:22px; overflow:hidden; box-shadow:0 18px 44px rgba(23,33,31,.15); background:var(--mint); }
+.adb-wrap { position:relative; width:100%; max-width:1100px; height:340px; margin:30px auto; border-radius:22px; overflow:hidden; box-shadow:0 18px 44px rgba(23,33,31,.15); background:var(--mint); }
 .adb-track { position:absolute; inset:0; }
 .adb-slide { position:absolute; inset:0; opacity:0; transition:opacity .8s ease; pointer-events:none; text-decoration:none; display:block; }
 .adb-slide.active { opacity:1; pointer-events:auto; }
