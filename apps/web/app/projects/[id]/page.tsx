@@ -116,12 +116,13 @@ export default function ProjectDetailPage() {
               className="bg-white border border-line text-red-600 px-4 py-2 rounded-xl text-sm font-extrabold"
             >
               فتح شكوى
-           <Link
-  href={`/projects/${id}/supervisors`}
-  className="bg-white border border-line text-brand px-4 py-2 rounded-xl text-sm font-extrabold"
->
-  المشرفون
-</Link>
+            </Link>
+            <Link
+              href={`/projects/${id}/supervisors`}
+              className="bg-white border border-line text-brand px-4 py-2 rounded-xl text-sm font-extrabold"
+            >
+              المشرفون
+            </Link>
           </div>
         </div>
 
