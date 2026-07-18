@@ -383,9 +383,9 @@ model Complaint {
   creatorId   String
   creator     User            @relation("ComplaintCreator", fields: [creatorId], references: [id])
 
-  type    ComplaintType
-customType
-  status  ComplaintStatus @default(OPEN)
+type       ComplaintType
+customType String?
+status     ComplaintStatus @default(OPEN)
   details String
 
   evidences ComplaintEvidence[]
@@ -418,8 +418,9 @@ model Decision {
   id          String       @id @default(uuid())
   complaintId String       @unique
   complaint   Complaint    @relation(fields: [complaintId], references: [id])
-  type        DecisionType
-  reason      String
+ type        DecisionType
+customType  String?
+reason      String
   decidedById String
   createdAt   DateTime     @default(now())
 }
