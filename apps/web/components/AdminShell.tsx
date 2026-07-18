@@ -24,7 +24,9 @@ const NAV = [
   { key: 'plans', href: '/admin/plans', label: 'الباقات والعمولة', icon: 'creditCard' },
   { key: 'options', href: '/admin/options', label: 'قوائم الخيارات', icon: 'grid' },
   { key: 'content', href: '/admin/content', label: 'نصوص الواجهات', icon: 'fileText' },
-  { key: 'ads', href: '/admin/ads', label: 'الإعلانات', icon: 'star' },
+   { key: 'ads', href: '/admin/ads', label: 'الإعلانات', icon: 'star' },
+  { key: 'recommendations', href: '/admin/recommendations', label: 'طلبات الترشيح', icon: 'sparkles' },
+  { key: 'invitations', href: '/admin/invitations', label: 'دعوات خارجية', icon: 'users' },
 ];
 
 
