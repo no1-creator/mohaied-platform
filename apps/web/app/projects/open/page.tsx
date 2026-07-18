@@ -14,12 +14,14 @@ type Project = {
   description: string;
   budgetMin?: number;
   budgetMax?: number;
+  preferredProviderId?: string | null;
   client?: { fullName: string };
 };
 
 export default function OpenProjectsPage() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [myId, setMyId] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -29,11 +31,22 @@ export default function OpenProjectsPage() {
       return;
     }
 
+    api<{ id: string }>('/users/me')
+      .then((u) => setMyId(u?.id || ''))
+      .catch(() => setMyId(''));
+
     api<Project[]>('/projects/open')
-      .then((data) => setProjects(data))
+      .then((data) => setProjects(Array.isArray(data) ? data : []))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [router]);
+
+  // المشاريع اللي العميل اختار المقدم الحالي فيها مباشرة تظهر الأول
+  const sorted = [...projects].sort((a, b) => {
+    const am = myId && a.preferredProviderId === myId ? 1 : 0;
+    const bm = myId && b.preferredProviderId === myId ? 1 : 0;
+    return bm - am;
+  });
 
   return (
     <main className="min-h-screen">
@@ -52,28 +65,55 @@ export default function OpenProjectsPage() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {projects.map((p) => (
-            <div key={p.id} className="card">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-muted">{p.field}</span>
-                {(p.budgetMin || p.budgetMax) && (
-                  <span className="text-xs font-extrabold text-brand">
-                    {p.budgetMin ?? '—'} : {p.budgetMax ?? '—'} ج.م
-                  </span>
-                )}
-              </div>
-              <h3 className="font-black text-lg mb-2">{p.title}</h3>
-              <p className="text-sm text-muted line-clamp-3 mb-4">
-                {p.description}
-              </p>
-              <Link
-                href={`/offers/new?projectId=${p.id}`}
-                className="bg-brand text-white px-4 py-2 rounded-xl text-sm font-extrabold inline-block"
+          {sorted.map((p) => {
+            const direct = !!myId && p.preferredProviderId === myId;
+            return (
+              <div
+                key={p.id}
+                className="card"
+                style={
+                  direct
+                    ? { borderColor: 'var(--green)', boxShadow: '0 10px 26px rgba(40,125,115,.12)' }
+                    : undefined
+                }
               >
-                قدّم عرض
-              </Link>
-            </div>
-          ))}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-muted">{p.field}</span>
+                  {(p.budgetMin || p.budgetMax) && (
+                    <span className="text-xs font-extrabold text-brand">
+                      {p.budgetMin ?? '—'} : {p.budgetMax ?? '—'} ج.م
+                    </span>
+                  )}
+                </div>
+
+                {direct && (
+                  <div
+                    style={{
+                      display: 'inline-block',
+                      background: 'var(--green)',
+                      color: '#fff',
+                      fontSize: 12,
+                      fontWeight: 800,
+                      padding: '3px 10px',
+                      borderRadius: 999,
+                      marginBottom: 8,
+                    }}
+                  >
+                    ★ طلب مباشر ليك
+                  </div>
+                )}
+
+                <h3 className="font-black text-lg mb-2">{p.title}</h3>
+                <p className="text-sm text-muted line-clamp-3 mb-4">{p.description}</p>
+                <Link
+                  href={`/offers/new?projectId=${p.id}`}
+                  className="bg-brand text-white px-4 py-2 rounded-xl text-sm font-extrabold inline-block"
+                >
+                  قدّم عرض
+                </Link>
+              </div>
+            );
+          })}
         </div>
       </div>
     </main>
