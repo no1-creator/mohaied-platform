@@ -28,6 +28,11 @@ const TYPES = [
     label: 'سلوك غير مهني',
     desc: 'تعامل غير لائق أو غير احترافي من الطرف الآخر.',
   },
+  {
+    value: 'OTHER',
+    label: 'نوع آخر',
+    desc: 'اكتب نوع النزاع بنفسك لو مش موجود فوق.',
+  },
 ];
 
 type Milestone = { id: string; title: string; status?: string };
@@ -51,8 +56,9 @@ const NC_CSS = `
 .nc-type-check{position:absolute;top:12px;left:12px;color:var(--green-dark);height:16px;}
 .nc-type-label{font-weight:800;font-size:14.5px;color:var(--ink);}
 .nc-type-desc{font-size:12.5px;color:var(--muted);line-height:1.7;}
-.nc-select,.nc-textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:14.5px;color:var(--ink);background:#fff;box-sizing:border-box;resize:vertical;}
-.nc-select:focus,.nc-textarea:focus{outline:none;border-color:var(--green-light);box-shadow:0 0 0 3px rgba(79,162,148,.15);}
+.nc-custom{margin-top:12px;}
+.nc-input,.nc-select,.nc-textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:14.5px;color:var(--ink);background:#fff;box-sizing:border-box;resize:vertical;}
+.nc-input:focus,.nc-select:focus,.nc-textarea:focus{outline:none;border-color:var(--green-light);box-shadow:0 0 0 3px rgba(79,162,148,.15);}
 .nc-hint{font-size:12.5px;color:var(--muted);margin-top:8px;}
 .nc-evidence{display:flex;gap:11px;align-items:flex-start;background:var(--background);border:1px dashed var(--line);border-radius:14px;padding:14px 16px;color:var(--muted);}
 .nc-ev-title{font-weight:800;font-size:13.5px;color:var(--ink);margin-bottom:3px;}
@@ -69,6 +75,7 @@ function NewComplaintInner() {
   const projectId = searchParams.get('projectId') || '';
 
   const [type, setType] = useState('DELIVERY_DELAY');
+  const [customType, setCustomType] = useState('');
   const [milestoneId, setMilestoneId] = useState('');
   const [details, setDetails] = useState('');
   const [milestones, setMilestones] = useState<Milestone[]>([]);
@@ -89,10 +96,15 @@ function NewComplaintInner() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    if (type === 'OTHER' && !customType.trim()) {
+      setError('اكتب نوع النزاع في الخانة المخصصة.');
+      return;
+    }
     setLoading(true);
     try {
       const body: Record<string, unknown> = { projectId, type, details };
       if (milestoneId) body.milestoneId = milestoneId;
+      if (type === 'OTHER' && customType.trim()) body.customType = customType.trim();
       const complaint = await api<{ id: string }>('/complaints', {
         method: 'POST',
         body,
@@ -156,6 +168,18 @@ function NewComplaintInner() {
               </button>
             ))}
           </div>
+          {type === 'OTHER' && (
+            <div className="nc-custom">
+              <input
+                className="nc-input"
+                value={customType}
+                onChange={(e) => setCustomType(e.target.value)}
+                placeholder="اكتب نوع النزاع (مثال: خلاف على حقوق الملكية الفكرية)"
+                maxLength={120}
+                required
+              />
+            </div>
+          )}
         </div>
 
         {milestones.length > 0 && (
