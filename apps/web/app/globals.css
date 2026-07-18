@@ -344,7 +344,7 @@ a { color: inherit; text-decoration: none; }
 .float-badge.two { bottom: 10px; left: -6px; color: var(--green-dark); animation: floatY 6s ease-in-out .6s infinite; }
 
 /* بانر الإشراف الحكومي */
-.gov-band { margin: 0 auto; max-width: 1120px; padding: 0 30px; transform: translateY(-40px); }
+.gov-band { margin: 44px auto 0; max-width: 1120px; padding: 0 30px; }
 .gov-inner {
   position: relative;
   overflow: hidden;
