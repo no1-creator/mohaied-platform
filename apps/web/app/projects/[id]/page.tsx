@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
+import BackBar from '@/components/BackBar';
 
 type Milestone = {
   id: string;
@@ -83,6 +84,7 @@ export default function ProjectDetailPage() {
   return (
     <main className="min-h-screen">
       <TopBar />
+      <BackBar />
       <div className="max-w-3xl mx-auto px-6 py-10">
         <div className="card mb-6">
           <div className="flex items-center justify-between mb-3">
