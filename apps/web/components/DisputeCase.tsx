@@ -8,6 +8,14 @@ type Party = { id: string; title: string; clientId?: string; providerId?: string
 type Response = { id: string; message: string; responderId: string; createdAt: string };
 type Decision = { id: string; type: string; customType?: string | null; reason: string; createdAt: string };
 type Evidence = { id: string; [key: string]: unknown };
+type EscrowTx = {
+  id: string;
+  status: string;
+  amount: number | string;
+  commissionAmount?: number | string;
+  netAmount?: number | string;
+  milestone?: { id?: string; title?: string; status?: string } | null;
+};
 type Complaint = {
   id: string;
   code: string;
@@ -17,6 +25,7 @@ type Complaint = {
   details: string;
   creatorId?: string;
   createdAt?: string;
+  milestoneId?: string | null;
   project?: Party;
   responses?: Response[];
   evidences?: Evidence[];
@@ -40,6 +49,14 @@ const STATUS_META: Record<string, { label: string; cls: string }> = {
   RESOLVED: { label: 'تم الحل', cls: 'ok' },
   REJECTED: { label: 'مرفوضة', cls: 'red' },
   CLOSED: { label: 'مغلقة', cls: 'muted' },
+};
+
+const ESCROW_META: Record<string, { label: string; cls: string }> = {
+  PENDING: { label: 'بانتظار التمويل', cls: 'muted' },
+  FUNDED: { label: 'محجوز في الضمان', cls: 'blue' },
+  RELEASED: { label: 'حُرِّر لمقدّم الخدمة', cls: 'ok' },
+  REFUNDED: { label: 'استُرجع للعميل', cls: 'amber' },
+  DISPUTED: { label: 'متنازَع عليه', cls: 'red' },
 };
 
 const DECISION_TYPES = [
@@ -81,6 +98,11 @@ function stepIndex(status: string): number {
     default:
       return 0;
   }
+}
+
+function money(v: number | string | undefined): string {
+  const n = Number(v || 0);
+  return n.toLocaleString('ar-EG');
 }
 
 const DC_CSS = `
@@ -153,6 +175,19 @@ const DC_CSS = `
 .dc-ev-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:9px;}
 .dc-ev{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-size:14px;color:var(--text);}
 .dc-ev-ic{color:var(--muted);flex-shrink:0;}
+.dc-esc-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;}
+.dc-esc{border:1px solid var(--line);border-radius:12px;padding:11px 13px;}
+.dc-esc-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.dc-esc-title{font-weight:700;font-size:13.5px;color:var(--ink);}
+.dc-esc-badge{padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:800;white-space:nowrap;}
+.dc-esc-badge.blue{background:#eff6ff;color:#1d4ed8;}
+.dc-esc-badge.ok{background:#ecfdf5;color:#047857;}
+.dc-esc-badge.amber{background:#fffbeb;color:#b45309;}
+.dc-esc-badge.red{background:#fef2f2;color:#b91c1c;}
+.dc-esc-badge.muted{background:#f3f4f6;color:#6b7280;}
+.dc-esc-amt{font-weight:800;font-size:14px;color:var(--green-dark);direction:ltr;}
+.dc-esc-note{color:var(--muted);font-size:12.5px;margin-top:6px;}
+.dc-hint{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:11px;padding:10px 12px;font-size:12.5px;line-height:1.7;margin-bottom:14px;}
 @media(max-width:820px){
 .dc-grid{grid-template-columns:1fr;}
 .dc-step-label{font-size:11px;}
@@ -161,6 +196,7 @@ const DC_CSS = `
 
 export default function DisputeCase({ id }: { id: string }) {
   const [complaint, setComplaint] = useState<Complaint | null>(null);
+  const [escrows, setEscrows] = useState<EscrowTx[]>([]);
   const [me, setMe] = useState<Me>({});
   const [message, setMessage] = useState('');
   const [decisionType, setDecisionType] = useState('FAVOR_CLIENT');
@@ -171,16 +207,25 @@ export default function DisputeCase({ id }: { id: string }) {
   const [sending, setSending] = useState(false);
   const [deciding, setDeciding] = useState(false);
 
+  function loadEscrows(projectId: string) {
+    api<EscrowTx[]>(`/escrow/project/${projectId}`)
+      .then((data) => setEscrows(Array.isArray(data) ? data : []))
+      .catch(() => setEscrows([]));
+  }
+
   function load() {
     api<Complaint>(`/complaints/${id}`)
-      .then((data) => setComplaint(data))
+      .then((data) => {
+        setComplaint(data);
+        if (data?.project?.id) loadEscrows(data.project.id);
+      })
       .catch((err: any) => setError(err.message))
       .finally(() => setLoading(false));
   }
 
   useEffect(() => {
     if (!getToken()) return;
-    api<Me>('/users/me')
+    api<any>('/users/me')
       .then((data) => setMe({ id: data.id, role: data.role, fullName: data.fullName }))
       .catch(() => {});
     load();
@@ -307,10 +352,10 @@ export default function DisputeCase({ id }: { id: string }) {
 
         <div className="dc-head">
           <div className="dc-head-top">
-            <div className="dc-code">
-              <Icon name="scale" size={20} />
-              ملف نزاع <span className="dc-num">#{complaint.code}</span>
-            </div>
+            <span className="dc-code">
+              <Icon name="scale" size={22} />
+              ملف نزاع #<span className="dc-num">{complaint.code}</span>
+            </span>
             <span className={`dc-status ${status.cls}`}>{status.label}</span>
           </div>
           <div className="dc-sub">
@@ -333,10 +378,10 @@ export default function DisputeCase({ id }: { id: string }) {
               const cls = i < active ? 'done' : i === active ? (decided ? 'done' : 'active') : '';
               return (
                 <div key={s.key} className={`dc-step ${cls}`}>
-                  <span className="dc-step-dot">
+                  <div className="dc-step-dot">
                     {i < active || (i === active && decided) ? '✓' : i + 1}
-                  </span>
-                  <span className="dc-step-label">{s.label}</span>
+                  </div>
+                  <div className="dc-step-label">{s.label}</div>
                 </div>
               );
             })}
@@ -347,10 +392,10 @@ export default function DisputeCase({ id }: { id: string }) {
           <div className="dc-main">
             {complaint.decision && (
               <div className="dc-decision">
-                <div className="dc-decision-h">
-                  <Icon name="shield" size={18} />
+                <span className="dc-decision-h">
+                  <Icon name="badgeCheck" size={17} />
                   قرار إدارة محايد
-                </div>
+                </span>
                 <div className="dc-decision-type">{decisionLabel(complaint.decision)}</div>
                 <div className="dc-decision-reason">{complaint.decision.reason}</div>
                 <div className="dc-decision-date">{fmt(complaint.decision.createdAt)}</div>
@@ -358,7 +403,10 @@ export default function DisputeCase({ id }: { id: string }) {
             )}
 
             <div className="dc-card">
-              <div className="dc-card-h">سجل النزاع والتحكيم</div>
+              <div className="dc-card-h">
+                <Icon name="fileText" size={17} />
+                سجل النزاع والتحكيم
+              </div>
               <div className="dc-thread">
                 {conversation.map((m) => {
                   const r = roleOf(m.responderId as string | undefined);
@@ -408,12 +456,13 @@ export default function DisputeCase({ id }: { id: string }) {
 
             <div className="dc-card">
               <div className="dc-card-h">
-                <Icon name="folder" size={17} /> مركز الأدلة والمرفقات
+                <Icon name="folder" size={17} />
+                مركز الأدلة والمرفقات
               </div>
               {complaint.evidences && complaint.evidences.length > 0 ? (
                 <ul className="dc-ev-list">
                   {complaint.evidences.map((ev, i) => (
-                    <li key={ev.id || i} className="dc-ev">
+                    <li key={(ev as any).id || i} className="dc-ev">
                       <Icon name="fileText" size={16} className="dc-ev-ic" />
                       {String(
                         (ev as any).description ||
@@ -460,10 +509,36 @@ export default function DisputeCase({ id }: { id: string }) {
               </ul>
             </div>
 
+            {escrows.length > 0 && (
+              <div className="dc-card">
+                <div className="dc-card-h">
+                  <Icon name="lock" size={17} />
+                  الضمان المرتبط بالنزاع
+                </div>
+                <ul className="dc-esc-list">
+                  {escrows.map((esc) => {
+                    const em = ESCROW_META[esc.status] || { label: esc.status, cls: 'muted' };
+                    return (
+                      <li key={esc.id} className="dc-esc">
+                        <div className="dc-esc-top">
+                          <span className="dc-esc-title">{esc.milestone?.title || 'مرحلة'}</span>
+                          <span className={`dc-esc-badge ${em.cls}`}>{em.label}</span>
+                        </div>
+                        <div className="dc-esc-note">
+                          المبلغ: <span className="dc-esc-amt">{money(esc.amount)}</span> ج.م
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
             {isAdmin && isOpen && !complaint.decision && (
               <div className="dc-card">
                 <div className="dc-card-h">
-                  <Icon name="scale" size={17} /> إصدار قرار التحكيم
+                  <Icon name="scale" size={17} />
+                  إصدار قرار التحكيم
                 </div>
                 <form onSubmit={submitDecision}>
                   <label className="dc-label">نوع القرار</label>
@@ -487,6 +562,13 @@ export default function DisputeCase({ id }: { id: string }) {
                       maxLength={120}
                       required
                     />
+                  )}
+                  {(decisionType === 'FAVOR_CLIENT' || decisionType === 'FAVOR_PROVIDER') && (
+                    <div className="dc-hint">
+                      {decisionType === 'FAVOR_CLIENT'
+                        ? '⚠ عند إصدار القرار سيتم استرجاع المبالغ المحجوزة في الضمان للعميل تلقائيًا.'
+                        : '⚠ عند إصدار القرار سيتم تحرير المبالغ المحجوزة في الضمان لمقدّم الخدمة تلقائيًا (مع احتساب عمولة المنصة).'}
+                    </div>
                   )}
                   <label className="dc-label">حيثيات القرار</label>
                   <textarea
