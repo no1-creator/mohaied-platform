@@ -23,6 +23,7 @@ const NAV = [
   { key: 'complaints', href: '/admin/complaints', label: 'الشكاوى', icon: 'scale' },
   { key: 'plans', href: '/admin/plans', label: 'الباقات والعمولة', icon: 'creditCard' },
   { key: 'options', href: '/admin/options', label: 'قوائم الخيارات', icon: 'grid' },
+  { key: 'content', href: '/admin/content', label: 'نصوص الواجهات', icon: 'fileText' },
 ];
 
 
