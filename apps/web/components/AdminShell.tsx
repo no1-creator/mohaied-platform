@@ -26,7 +26,7 @@ const NAV = [
   { key: 'content', href: '/admin/content', label: 'نصوص الواجهات', icon: 'fileText' },
   { key: 'ads', href: '/admin/ads', label: 'الإعلانات', icon: 'star' },
 ];
-];
+
 
 
 export default function AdminShell({
