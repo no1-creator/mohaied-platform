@@ -171,7 +171,9 @@ model User {
   subscriptions Subscription[]
   invoices      Invoice[]
 
-  notifications Notification[]
+    notifications Notification[]
+
+  recommendationRequests RecommendationRequest[] @relation("ClientRecommendations")
 }
 
 model ProviderProfile {
@@ -626,4 +628,34 @@ model Notification {
 
   @@index([userId, isRead])
   @@index([userId, createdAt])
+}
+// ==================== RECOMMENDATION REQUESTS (رشّحلي الأفضل) ====================
+
+enum RecommendationStatus {
+  PENDING
+  IN_REVIEW
+  RESPONDED
+  CLOSED
+}
+
+model RecommendationRequest {
+  id           String               @id @default(uuid())
+  clientId     String
+  client       User                 @relation("ClientRecommendations", fields: [clientId], references: [id])
+  title        String
+  field        String
+  description  String
+  budgetMin    Decimal?
+  budgetMax    Decimal?
+  durationDays Int?
+  status       RecommendationStatus @default(PENDING)
+  adminNote    String?
+  recommendedProviderIds String[]   @default([])
+  respondedById String?
+  respondedAt  DateTime?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([clientId])
+  @@index([status])
 }
