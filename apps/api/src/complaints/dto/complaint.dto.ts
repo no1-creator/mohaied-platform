@@ -41,3 +41,8 @@ export class DecideComplaintDto {
   @MinLength(5)
   reason: string;
 }
+
+export class AssignArbitratorDto {
+  @IsString()
+  supervisorId: string;
+}
