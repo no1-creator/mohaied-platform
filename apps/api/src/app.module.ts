@@ -13,6 +13,7 @@ import { AdminModule } from './admin/admin.module';
 import { SettingsModule } from './settings/settings.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { EscrowModule } from './escrow/escrow.module';
+import { OptionsModule } from './options/options.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { EscrowModule } from './escrow/escrow.module';
     SettingsModule,
     SubscriptionsModule,
     EscrowModule,
+    OptionsModule,
   ],
   controllers: [],
   providers: [],
