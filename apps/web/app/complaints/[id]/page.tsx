@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
+import BackBar from '@/components/BackBar';
 
 type Response = {
   id: string;
@@ -110,6 +111,7 @@ export default function ComplaintDetailPage() {
   return (
     <main className="min-h-screen">
       <TopBar />
+      <BackBar />
       <div className="max-w-3xl mx-auto px-6 py-10">
         {error && <p className="text-red-600 mb-4">{error}</p>}
 
