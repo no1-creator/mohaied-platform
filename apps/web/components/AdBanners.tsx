@@ -87,11 +87,18 @@ const ADB_CSS = `
 @keyframes adbSlideBar { to { background-position:200% 0; } }
 
 @media (max-width:640px) {
-  .adb-wrap { border-radius:16px; }
-  .adb-content { padding:0 24px !important; }
-  .adb-title { font-size:20px !important; }
-  .adb-sub { font-size:13px !important; }
-  .adb-arrow { width:38px; height:38px; font-size:22px; opacity:1; }
+  .adb-wrap { aspect-ratio:auto; height:150px; width:auto; margin:20px 14px; border-radius:16px; }
+  .adb-bg { background-size:contain; background-repeat:no-repeat; background-position:center; }
+  .adb-content { padding:0 22px !important; max-width:100%; }
+  .adb-title { font-size:19px !important; }
+  .adb-sub { font-size:12.5px !important; }
+  .adb-cta { padding:10px 20px; font-size:13px; }
+  .adb-arrow { width:34px; height:34px; font-size:20px; opacity:1; }
+  .adb-prev { inset-inline-start:10px; }
+  .adb-next { inset-inline-end:10px; }
+  .adb-dots { bottom:12px; }
+  .adb-dot { width:22px; height:5px; }
+  .adb-wrap.v-strip::after { height:3px; }
 }
 `;
 
