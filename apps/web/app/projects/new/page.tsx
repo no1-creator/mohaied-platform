@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useSiteContent } from '@/lib/content';
+import { toast } from '@/components/Toast';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
 
@@ -53,7 +54,9 @@ export default function NewProjectPage() {
     setError('');
     const finalField = field === '__OTHER__' ? customField.trim() : field.trim();
     if (!finalField) {
-      setError('اختر مجال المشروع أو اكتبه في خانة «أخرى».');
+      const msg = 'اختر مجال المشروع أو اكتبه في خانة «أخرى».';
+      setError(msg);
+      toast.error(msg);
       return;
     }
     setLoading(true);
@@ -69,9 +72,11 @@ export default function NewProjectPage() {
           durationDays: durationDays ? Number(durationDays) : undefined,
         },
       });
+      toast.success('تم إنشاء المشروع بنجاح ✅');
       router.push(`/projects/${project.id}`);
     } catch (err: any) {
       setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
