@@ -39,6 +39,7 @@ type Supervisor = {
   isActive: boolean;
   supervisorProfile?: { field?: string; title?: string } | null;
 };
+type OptionItem = { id: string; value: string; label: string };
 
 const TYPE_LABELS: Record<string, string> = {
   DELIVERY_DELAY: 'تأخير في التسليم',
@@ -208,6 +209,7 @@ export default function DisputeCase({ id }: { id: string }) {
   const [escrows, setEscrows] = useState<EscrowTx[]>([]);
   const [me, setMe] = useState<Me>({});
   const [supervisors, setSupervisors] = useState<Supervisor[]>([]);
+  const [dynDecisions, setDynDecisions] = useState<OptionItem[]>([]);
   const [selectedSup, setSelectedSup] = useState('');
   const [message, setMessage] = useState('');
   const [decisionType, setDecisionType] = useState('FAVOR_CLIENT');
@@ -244,6 +246,13 @@ export default function DisputeCase({ id }: { id: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  // تحميل أنواع القرار الديناميكية المُدارة من لوحة التحكم
+  useEffect(() => {
+    api<OptionItem[]>('/options/DECISION_TYPE')
+      .then((data) => setDynDecisions(Array.isArray(data) ? data : []))
+      .catch(() => setDynDecisions([]));
+  }, []);
+
   // تحميل قائمة المشرفين (للأدمن فقط) لاختيار مُحكّم تقني
   useEffect(() => {
     if (me.role !== 'ADMIN') return;
@@ -267,6 +276,16 @@ export default function DisputeCase({ id }: { id: string }) {
   const arbitratorName = arbitratorId
     ? supervisors.find((s) => s.id === arbitratorId)?.fullName || null
     : null;
+
+  // دمج الأنواع المدمجة + الديناميكية (من لوحة التحكم) + خيار "قرار آخر"
+  const builtinDecisions = DECISION_TYPES.filter((d) => d.value !== 'OTHER');
+  const otherDecision =
+    DECISION_TYPES.find((d) => d.value === 'OTHER') || { value: 'OTHER', label: 'قرار آخر (اكتبه)' };
+  const allDecisionTypes = [
+    ...builtinDecisions,
+    ...dynDecisions.map((o) => ({ value: `DYN::${o.label}`, label: o.label })),
+    otherDecision,
+  ];
 
   function roleOf(userId?: string): { label: string; kind: string } {
     if (userId && userId === clientId) return { label: 'العميل', kind: 'client' };
@@ -317,6 +336,7 @@ export default function DisputeCase({ id }: { id: string }) {
 
   async function submitDecision(e: React.FormEvent) {
     e.preventDefault();
+    const isDyn = decisionType.startsWith('DYN::');
     if (decisionType === 'OTHER' && !decisionCustom.trim()) {
       setError('اكتب نوع القرار في الخانة المخصصة.');
       return;
@@ -324,9 +344,15 @@ export default function DisputeCase({ id }: { id: string }) {
     setDeciding(true);
     setError('');
     try {
-      const body: Record<string, unknown> = { type: decisionType, reason: decisionReason };
-      if (decisionType === 'OTHER' && decisionCustom.trim()) {
+      const body: Record<string, unknown> = { reason: decisionReason };
+      if (isDyn) {
+        body.type = 'OTHER';
+        body.customType = decisionType.slice(5);
+      } else if (decisionType === 'OTHER') {
+        body.type = 'OTHER';
         body.customType = decisionCustom.trim();
+      } else {
+        body.type = decisionType;
       }
       await api(`/complaints/${id}/decide`, { method: 'POST', body });
       setDecisionReason('');
@@ -408,7 +434,7 @@ export default function DisputeCase({ id }: { id: string }) {
           <div className="dc-head-top">
             <div className="dc-code">
               <Icon name="scale" size={22} />
-              <span>ملف نزاع #</span>
+              ملف نزاع #
               <span className="dc-num">{complaint.code}</span>
             </div>
             <span className={`dc-status ${status.cls}`}>{status.label}</span>
@@ -432,11 +458,11 @@ export default function DisputeCase({ id }: { id: string }) {
             {STEPS.map((s, i) => {
               const cls = i < active ? 'done' : i === active ? (decided ? 'done' : 'active') : '';
               return (
-                <div key={s.key} className={`dc-step ${cls}`}>
+                <div className={`dc-step ${cls}`} key={s.key}>
                   <div className="dc-step-dot">
                     {i < active || (i === active && decided) ? '✓' : i + 1}
                   </div>
-                  <span className="dc-step-label">{s.label}</span>
+                  <div className="dc-step-label">{s.label}</div>
                 </div>
               );
             })}
@@ -467,7 +493,7 @@ export default function DisputeCase({ id }: { id: string }) {
                   const r = roleOf(m.responderId as string | undefined);
                   const mine = !!me.id && m.responderId === me.id;
                   return (
-                    <div key={m.id} className={`dc-entry ${r.kind}`}>
+                    <div className={`dc-entry ${r.kind}`} key={m.id}>
                       <div className={`dc-av ${r.kind}`}>
                         <Icon name={avatarIcon(r.kind)} size={18} />
                       </div>
@@ -597,7 +623,7 @@ export default function DisputeCase({ id }: { id: string }) {
                 </div>
                 {arbitratorId ? (
                   <div className="dc-arb-current">
-                    المُحكّم المُعيَّن: <strong>{arbitratorName || 'مشرف مُعيَّن'}</strong>
+                    المُحكّم المُعيَّن: {arbitratorName || 'مشرف مُعيَّن'}
                   </div>
                 ) : (
                   <div className="dc-arb-note">
@@ -614,7 +640,7 @@ export default function DisputeCase({ id }: { id: string }) {
                   {supervisors
                     .filter((s) => s.isActive)
                     .map((s) => (
-                      <option key={s.id} value={s.id}>
+                      <option value={s.id} key={s.id}>
                         {s.fullName}
                         {s.supervisorProfile?.field ? ` — ${s.supervisorProfile.field}` : ''}
                       </option>
@@ -622,9 +648,8 @@ export default function DisputeCase({ id }: { id: string }) {
                 </select>
                 <button
                   className="dc-btn dark"
-                  type="button"
                   onClick={assignArbitrator}
-                  disabled={!selectedSup || assigning}
+                  disabled={assigning || !selectedSup}
                 >
                   {assigning ? 'جاري التعيين…' : arbitratorId ? 'تغيير المُحكّم' : 'تعيين كمُحكّم تقني'}
                 </button>
@@ -634,7 +659,7 @@ export default function DisputeCase({ id }: { id: string }) {
             {canArbitrate && isOpen && !complaint.decision && (
               <div className="dc-card">
                 <div className="dc-card-h">
-                  <Icon name="badgeCheck" size={17} />
+                  <Icon name="scale" size={17} />
                   إصدار قرار التحكيم
                 </div>
                 <form onSubmit={submitDecision}>
@@ -644,8 +669,8 @@ export default function DisputeCase({ id }: { id: string }) {
                     value={decisionType}
                     onChange={(e) => setDecisionType(e.target.value)}
                   >
-                    {DECISION_TYPES.map((d) => (
-                      <option key={d.value} value={d.value}>
+                    {allDecisionTypes.map((d) => (
+                      <option value={d.value} key={d.value}>
                         {d.label}
                       </option>
                     ))}
@@ -677,7 +702,7 @@ export default function DisputeCase({ id }: { id: string }) {
                     minLength={5}
                     required
                   />
-                  <button className="dc-btn dark" type="submit" disabled={deciding}>
+                  <button className="dc-btn primary" type="submit" disabled={deciding}>
                     {deciding ? 'جاري الإصدار…' : 'إصدار القرار النهائي'}
                   </button>
                 </form>
