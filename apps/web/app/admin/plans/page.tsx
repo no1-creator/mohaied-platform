@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 import { api } from '@/lib/api';
 import Icon from '@/components/Icon';
+import BackBar from '@/components/BackBar';
 
 type Plan = {
   id: string;
