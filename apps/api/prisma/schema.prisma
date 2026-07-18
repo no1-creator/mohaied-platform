@@ -562,3 +562,14 @@ model OptionItem {
 
   @@unique([groupKey, value])
 }
+model SiteContent {
+  id         String   @id @default(uuid())
+  key        String   @unique
+  value      String
+  groupKey   String   @default("general")
+  label      String?
+  type       String   @default("text")
+  orderIndex Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
