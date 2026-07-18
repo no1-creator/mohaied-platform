@@ -6,12 +6,13 @@ import Icon from '@/components/Icon';
 
 type Party = { id: string; title: string; clientId?: string; providerId?: string };
 type Response = { id: string; message: string; responderId: string; createdAt: string };
-type Decision = { id: string; type: string; reason: string; createdAt: string };
+type Decision = { id: string; type: string; customType?: string | null; reason: string; createdAt: string };
 type Evidence = { id: string; [key: string]: unknown };
 type Complaint = {
   id: string;
   code: string;
   type: string;
+  customType?: string | null;
   status: string;
   details: string;
   creatorId?: string;
@@ -28,6 +29,7 @@ const TYPE_LABELS: Record<string, string> = {
   AGREEMENT_VIOLATION: 'مخالفة للاتفاق',
   PAYMENT_ISSUE: 'مشكلة في الدفع',
   UNPROFESSIONAL: 'سلوك غير مهني',
+  OTHER: 'نوع آخر',
 };
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
@@ -45,6 +47,7 @@ const DECISION_TYPES = [
   { value: 'FAVOR_PROVIDER', label: 'لصالح مقدم الخدمة' },
   { value: 'EXTEND_DURATION', label: 'تمديد المدة' },
   { value: 'AMICABLE', label: 'تسوية ودّية' },
+  { value: 'OTHER', label: 'قرار آخر (اكتبه)' },
 ];
 
 const DECISION_LABELS: Record<string, string> = {
@@ -52,6 +55,7 @@ const DECISION_LABELS: Record<string, string> = {
   FAVOR_CLIENT: 'لصالح العميل',
   FAVOR_PROVIDER: 'لصالح مقدم الخدمة',
   AMICABLE: 'تسوية ودّية',
+  OTHER: 'قرار آخر',
 };
 
 const STEPS = [
@@ -132,9 +136,9 @@ const DC_CSS = `
 .dc-bubble-body{color:var(--text);font-size:14.5px;line-height:1.9;white-space:pre-wrap;word-break:break-word;}
 .dc-form{margin-top:18px;padding-top:18px;border-top:1px solid var(--line);}
 .dc-label{display:block;font-weight:700;font-size:13.5px;color:var(--ink);margin-bottom:8px;}
-.dc-textarea,.dc-select{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 13px;font-family:inherit;font-size:14px;color:var(--ink);background:#fff;resize:vertical;box-sizing:border-box;}
-.dc-textarea:focus,.dc-select:focus{outline:none;border-color:var(--green-light);box-shadow:0 0 0 3px rgba(79,162,148,.15);}
-.dc-select{margin-bottom:14px;}
+.dc-textarea,.dc-select,.dc-input{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 13px;font-family:inherit;font-size:14px;color:var(--ink);background:#fff;resize:vertical;box-sizing:border-box;}
+.dc-textarea:focus,.dc-select:focus,.dc-input:focus{outline:none;border-color:var(--green-light);box-shadow:0 0 0 3px rgba(79,162,148,.15);}
+.dc-select,.dc-input{margin-bottom:14px;}
 .dc-btn{margin-top:12px;padding:11px 22px;border-radius:12px;border:none;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;transition:all .15s;width:100%;}
 .dc-btn.primary{background:var(--green);color:#fff;}
 .dc-btn.primary:hover{background:var(--green-dark);}
@@ -160,6 +164,7 @@ export default function DisputeCase({ id }: { id: string }) {
   const [me, setMe] = useState<Me>({});
   const [message, setMessage] = useState('');
   const [decisionType, setDecisionType] = useState('FAVOR_CLIENT');
+  const [decisionCustom, setDecisionCustom] = useState('');
   const [decisionReason, setDecisionReason] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -198,6 +203,11 @@ export default function DisputeCase({ id }: { id: string }) {
     return { label: 'إدارة محايد · مُحكّم', kind: 'admin' };
   }
 
+  function decisionLabel(d: Decision): string {
+    if (d.type === 'OTHER') return d.customType || 'قرار آخر';
+    return DECISION_LABELS[d.type] || d.type;
+  }
+
   function fmt(d?: string) {
     if (!d) return '';
     try {
@@ -226,14 +236,20 @@ export default function DisputeCase({ id }: { id: string }) {
 
   async function submitDecision(e: React.FormEvent) {
     e.preventDefault();
+    if (decisionType === 'OTHER' && !decisionCustom.trim()) {
+      setError('اكتب نوع القرار في الخانة المخصصة.');
+      return;
+    }
     setDeciding(true);
     setError('');
     try {
-      await api(`/complaints/${id}/decide`, {
-        method: 'POST',
-        body: { type: decisionType, reason: decisionReason },
-      });
+      const body: Record<string, unknown> = { type: decisionType, reason: decisionReason };
+      if (decisionType === 'OTHER' && decisionCustom.trim()) {
+        body.customType = decisionCustom.trim();
+      }
+      await api(`/complaints/${id}/decide`, { method: 'POST', body });
       setDecisionReason('');
+      setDecisionCustom('');
       load();
     } catch (err: any) {
       setError(err.message);
@@ -268,6 +284,10 @@ export default function DisputeCase({ id }: { id: string }) {
   const status = STATUS_META[complaint.status] || { label: complaint.status, cls: 'muted' };
   const active = stepIndex(complaint.status);
   const opener = roleOf(complaint.creatorId);
+  const typeText =
+    complaint.type === 'OTHER'
+      ? complaint.customType || 'نوع آخر'
+      : TYPE_LABELS[complaint.type] || complaint.type;
   const conversation = [
     {
       id: 'opening',
@@ -285,7 +305,6 @@ export default function DisputeCase({ id }: { id: string }) {
       <div className="dc-wrap">
         {error && <div className="dc-error">{error}</div>}
 
-        {/* رأس القضية + الخط الزمني */}
         <div className="dc-head">
           <div className="dc-head-top">
             <div className="dc-code">
@@ -295,7 +314,7 @@ export default function DisputeCase({ id }: { id: string }) {
             <span className={`dc-status ${status.cls}`}>{status.label}</span>
           </div>
           <div className="dc-sub">
-            <span className="dc-type">{TYPE_LABELS[complaint.type] || complaint.type}</span>
+            <span className="dc-type">{typeText}</span>
             {complaint.project && (
               <>
                 <span className="dc-sep">·</span>
@@ -314,7 +333,9 @@ export default function DisputeCase({ id }: { id: string }) {
               const cls = i < active ? 'done' : i === active ? (decided ? 'done' : 'active') : '';
               return (
                 <div key={s.key} className={`dc-step ${cls}`}>
-                  <span className="dc-step-dot">{i < active || (i === active && decided) ? '✓' : i + 1}</span>
+                  <span className="dc-step-dot">
+                    {i < active || (i === active && decided) ? '✓' : i + 1}
+                  </span>
                   <span className="dc-step-label">{s.label}</span>
                 </div>
               );
@@ -323,7 +344,6 @@ export default function DisputeCase({ id }: { id: string }) {
         </div>
 
         <div className="dc-grid">
-          {/* العمود الرئيسي */}
           <div className="dc-main">
             {complaint.decision && (
               <div className="dc-decision">
@@ -331,9 +351,7 @@ export default function DisputeCase({ id }: { id: string }) {
                   <Icon name="shield" size={18} />
                   قرار إدارة محايد
                 </div>
-                <div className="dc-decision-type">
-                  {DECISION_LABELS[complaint.decision.type] || complaint.decision.type}
-                </div>
+                <div className="dc-decision-type">{decisionLabel(complaint.decision)}</div>
                 <div className="dc-decision-reason">{complaint.decision.reason}</div>
                 <div className="dc-decision-date">{fmt(complaint.decision.createdAt)}</div>
               </div>
@@ -415,7 +433,6 @@ export default function DisputeCase({ id }: { id: string }) {
             </div>
           </div>
 
-          {/* العمود الجانبي */}
           <div className="dc-aside">
             <div className="dc-card">
               <div className="dc-card-h">ملخص القضية</div>
@@ -426,7 +443,7 @@ export default function DisputeCase({ id }: { id: string }) {
                 </li>
                 <li>
                   <span className="dc-k">نوع النزاع</span>
-                  <span className="dc-v">{TYPE_LABELS[complaint.type] || complaint.type}</span>
+                  <span className="dc-v">{typeText}</span>
                 </li>
                 <li>
                   <span className="dc-k">المشروع</span>
@@ -461,6 +478,16 @@ export default function DisputeCase({ id }: { id: string }) {
                       </option>
                     ))}
                   </select>
+                  {decisionType === 'OTHER' && (
+                    <input
+                      className="dc-input"
+                      value={decisionCustom}
+                      onChange={(e) => setDecisionCustom(e.target.value)}
+                      placeholder="اكتب نوع القرار…"
+                      maxLength={120}
+                      required
+                    />
+                  )}
                   <label className="dc-label">حيثيات القرار</label>
                   <textarea
                     className="dc-textarea"
