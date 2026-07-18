@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
+import BackBar from '@/components/BackBar';
 
 type Project = {
   id: string;
@@ -37,6 +38,7 @@ export default function OpenProjectsPage() {
   return (
     <main className="min-h-screen">
       <TopBar />
+      <BackBar />
       <div className="max-w-5xl mx-auto px-6 py-10">
         <h1 className="text-2xl font-black mb-8">مشاريع مفتوحة</h1>
 
