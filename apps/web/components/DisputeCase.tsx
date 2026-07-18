@@ -26,12 +26,19 @@ type Complaint = {
   creatorId?: string;
   createdAt?: string;
   milestoneId?: string | null;
+  arbitratorId?: string | null;
   project?: Party;
   responses?: Response[];
   evidences?: Evidence[];
   decision?: Decision | null;
 };
 type Me = { id?: string; role?: string; fullName?: string };
+type Supervisor = {
+  id: string;
+  fullName: string;
+  isActive: boolean;
+  supervisorProfile?: { field?: string; title?: string } | null;
+};
 
 const TYPE_LABELS: Record<string, string> = {
   DELIVERY_DELAY: 'تأخير في التسليم',
@@ -188,6 +195,8 @@ const DC_CSS = `
 .dc-esc-amt{font-weight:800;font-size:14px;color:var(--green-dark);direction:ltr;}
 .dc-esc-note{color:var(--muted);font-size:12.5px;margin-top:6px;}
 .dc-hint{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:11px;padding:10px 12px;font-size:12.5px;line-height:1.7;margin-bottom:14px;}
+.dc-arb-current{background:var(--mint);border:1px solid var(--green-light);border-radius:11px;padding:10px 12px;font-size:13.5px;color:var(--ink);margin-bottom:12px;}
+.dc-arb-note{color:var(--muted);font-size:12.5px;line-height:1.7;margin-bottom:12px;}
 @media(max-width:820px){
 .dc-grid{grid-template-columns:1fr;}
 .dc-step-label{font-size:11px;}
@@ -198,6 +207,8 @@ export default function DisputeCase({ id }: { id: string }) {
   const [complaint, setComplaint] = useState<Complaint | null>(null);
   const [escrows, setEscrows] = useState<EscrowTx[]>([]);
   const [me, setMe] = useState<Me>({});
+  const [supervisors, setSupervisors] = useState<Supervisor[]>([]);
+  const [selectedSup, setSelectedSup] = useState('');
   const [message, setMessage] = useState('');
   const [decisionType, setDecisionType] = useState('FAVOR_CLIENT');
   const [decisionCustom, setDecisionCustom] = useState('');
@@ -206,6 +217,7 @@ export default function DisputeCase({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [deciding, setDeciding] = useState(false);
+  const [assigning, setAssigning] = useState(false);
 
   function loadEscrows(projectId: string) {
     api<EscrowTx[]>(`/escrow/project/${projectId}`)
@@ -225,27 +237,49 @@ export default function DisputeCase({ id }: { id: string }) {
 
   useEffect(() => {
     if (!getToken()) return;
-    api<any>('/users/me')
+    api<Me>('/users/me')
       .then((data) => setMe({ id: data.id, role: data.role, fullName: data.fullName }))
       .catch(() => {});
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  // تحميل قائمة المشرفين (للأدمن فقط) لاختيار مُحكّم تقني
+  useEffect(() => {
+    if (me.role !== 'ADMIN') return;
+    api<Supervisor[]>('/admin/supervisors')
+      .then((data) => setSupervisors(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, [me.role]);
+
   const clientId = complaint?.project?.clientId;
   const providerId = complaint?.project?.providerId;
+  const arbitratorId = complaint?.arbitratorId || null;
   const isAdmin = me.role === 'ADMIN';
   const isParty = !!me.id && (me.id === clientId || me.id === providerId);
+  const isArbiter = !!me.id && !!arbitratorId && me.id === arbitratorId;
+  const canArbitrate = isAdmin || isArbiter;
   const isOpen =
     complaint != null &&
     !['RESOLVED', 'CLOSED', 'REJECTED'].includes(complaint.status);
   const decided = !!complaint?.decision;
-  const canReply = isOpen && (isParty || isAdmin);
+  const canReply = isOpen && (isParty || canArbitrate);
+  const arbitratorName = arbitratorId
+    ? supervisors.find((s) => s.id === arbitratorId)?.fullName || null
+    : null;
 
   function roleOf(userId?: string): { label: string; kind: string } {
     if (userId && userId === clientId) return { label: 'العميل', kind: 'client' };
     if (userId && userId === providerId) return { label: 'مقدم الخدمة', kind: 'provider' };
+    if (userId && arbitratorId && userId === arbitratorId)
+      return { label: 'المُحكّم التقني', kind: 'admin' };
     return { label: 'إدارة محايد · مُحكّم', kind: 'admin' };
+  }
+
+  function avatarIcon(kind: string): string {
+    if (kind === 'client') return 'users';
+    if (kind === 'provider') return 'folder';
+    return 'shield';
   }
 
   function decisionLabel(d: Decision): string {
@@ -267,7 +301,9 @@ export default function DisputeCase({ id }: { id: string }) {
     if (!message.trim()) return;
     setSending(true);
     setError('');
-    const endpoint = isAdmin ? `/complaints/${id}/arbitrate` : `/complaints/${id}/respond`;
+    const endpoint = canArbitrate
+      ? `/complaints/${id}/arbitrate`
+      : `/complaints/${id}/respond`;
     try {
       await api(endpoint, { method: 'POST', body: { message } });
       setMessage('');
@@ -300,6 +336,24 @@ export default function DisputeCase({ id }: { id: string }) {
       setError(err.message);
     } finally {
       setDeciding(false);
+    }
+  }
+
+  async function assignArbitrator() {
+    if (!selectedSup) return;
+    setAssigning(true);
+    setError('');
+    try {
+      await api(`/complaints/${id}/assign-arbitrator`, {
+        method: 'POST',
+        body: { supervisorId: selectedSup },
+      });
+      setSelectedSup('');
+      load();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setAssigning(false);
     }
   }
 
@@ -352,10 +406,11 @@ export default function DisputeCase({ id }: { id: string }) {
 
         <div className="dc-head">
           <div className="dc-head-top">
-            <span className="dc-code">
+            <div className="dc-code">
               <Icon name="scale" size={22} />
-              ملف نزاع #<span className="dc-num">{complaint.code}</span>
-            </span>
+              <span>ملف نزاع #</span>
+              <span className="dc-num">{complaint.code}</span>
+            </div>
             <span className={`dc-status ${status.cls}`}>{status.label}</span>
           </div>
           <div className="dc-sub">
@@ -381,7 +436,7 @@ export default function DisputeCase({ id }: { id: string }) {
                   <div className="dc-step-dot">
                     {i < active || (i === active && decided) ? '✓' : i + 1}
                   </div>
-                  <div className="dc-step-label">{s.label}</div>
+                  <span className="dc-step-label">{s.label}</span>
                 </div>
               );
             })}
@@ -414,14 +469,14 @@ export default function DisputeCase({ id }: { id: string }) {
                   return (
                     <div key={m.id} className={`dc-entry ${r.kind}`}>
                       <div className={`dc-av ${r.kind}`}>
-                        <Icon name={r.kind === 'admin' ? 'shield' : 'users'} size={18} />
+                        <Icon name={avatarIcon(r.kind)} size={18} />
                       </div>
                       <div className="dc-bubble">
                         <div className="dc-bubble-head">
                           <span className="dc-who">
                             {r.label} {mine && <em>(أنت)</em>}
                           </span>
-                          {m.opening && <span className="dc-openchip">فتح النزاع</span>}
+                          {(m as any).opening && <span className="dc-openchip">فتح النزاع</span>}
                           <span className="dc-time">{fmt(m.createdAt as string)}</span>
                         </div>
                         <div className="dc-bubble-body">{m.message}</div>
@@ -434,18 +489,18 @@ export default function DisputeCase({ id }: { id: string }) {
               {canReply && (
                 <form className="dc-form" onSubmit={sendMessage}>
                   <label className="dc-label">
-                    {isAdmin ? 'رسالة كمُحكّم (إدارة محايد)' : 'أضف ردّك على النزاع'}
+                    {canArbitrate ? 'رسالة كمُحكّم (تحكيم)' : 'أضف ردّك على النزاع'}
                   </label>
                   <textarea
                     className="dc-textarea"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder={isAdmin ? 'اكتب توجيه أو استيضاح للطرفين…' : 'اكتب ردّك ووضّح موقفك…'}
+                    placeholder={canArbitrate ? 'اكتب توجيه أو استيضاح للطرفين…' : 'اكتب ردّك ووضّح موقفك…'}
                     rows={3}
                     required
                   />
                   <button className="dc-btn primary" type="submit" disabled={sending}>
-                    {sending ? 'جاري الإرسال…' : isAdmin ? 'إرسال كمُحكّم' : 'إرسال الرد'}
+                    {sending ? 'جاري الإرسال…' : canArbitrate ? 'إرسال كمُحكّم' : 'إرسال الرد'}
                   </button>
                 </form>
               )}
@@ -462,7 +517,7 @@ export default function DisputeCase({ id }: { id: string }) {
               {complaint.evidences && complaint.evidences.length > 0 ? (
                 <ul className="dc-ev-list">
                   {complaint.evidences.map((ev, i) => (
-                    <li key={(ev as any).id || i} className="dc-ev">
+                    <li className="dc-ev" key={(ev as any).id || i}>
                       <Icon name="fileText" size={16} className="dc-ev-ic" />
                       {String(
                         (ev as any).description ||
@@ -519,13 +574,13 @@ export default function DisputeCase({ id }: { id: string }) {
                   {escrows.map((esc) => {
                     const em = ESCROW_META[esc.status] || { label: esc.status, cls: 'muted' };
                     return (
-                      <li key={esc.id} className="dc-esc">
+                      <li className="dc-esc" key={esc.id}>
                         <div className="dc-esc-top">
                           <span className="dc-esc-title">{esc.milestone?.title || 'مرحلة'}</span>
                           <span className={`dc-esc-badge ${em.cls}`}>{em.label}</span>
                         </div>
                         <div className="dc-esc-note">
-                          المبلغ: <span className="dc-esc-amt">{money(esc.amount)}</span> ج.م
+                          المبلغ: <span className="dc-esc-amt">{money(esc.amount)} ج.م</span>
                         </div>
                       </li>
                     );
@@ -537,7 +592,49 @@ export default function DisputeCase({ id }: { id: string }) {
             {isAdmin && isOpen && !complaint.decision && (
               <div className="dc-card">
                 <div className="dc-card-h">
-                  <Icon name="scale" size={17} />
+                  <Icon name="shield" size={17} />
+                  المُحكّم التقني
+                </div>
+                {arbitratorId ? (
+                  <div className="dc-arb-current">
+                    المُحكّم المُعيَّن: <strong>{arbitratorName || 'مشرف مُعيَّن'}</strong>
+                  </div>
+                ) : (
+                  <div className="dc-arb-note">
+                    لم يُعيَّن مُحكّم تقني بعد. تقدر تسيب التحكيم للإدارة، أو تعيّن مشرفًا مختصًا ليحكم في هذا النزاع.
+                  </div>
+                )}
+                <label className="dc-label">اختر مشرفًا مُحكّمًا</label>
+                <select
+                  className="dc-select"
+                  value={selectedSup}
+                  onChange={(e) => setSelectedSup(e.target.value)}
+                >
+                  <option value="">— اختر مشرف —</option>
+                  {supervisors
+                    .filter((s) => s.isActive)
+                    .map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.fullName}
+                        {s.supervisorProfile?.field ? ` — ${s.supervisorProfile.field}` : ''}
+                      </option>
+                    ))}
+                </select>
+                <button
+                  className="dc-btn dark"
+                  type="button"
+                  onClick={assignArbitrator}
+                  disabled={!selectedSup || assigning}
+                >
+                  {assigning ? 'جاري التعيين…' : arbitratorId ? 'تغيير المُحكّم' : 'تعيين كمُحكّم تقني'}
+                </button>
+              </div>
+            )}
+
+            {canArbitrate && isOpen && !complaint.decision && (
+              <div className="dc-card">
+                <div className="dc-card-h">
+                  <Icon name="badgeCheck" size={17} />
                   إصدار قرار التحكيم
                 </div>
                 <form onSubmit={submitDecision}>
