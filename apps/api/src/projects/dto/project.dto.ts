@@ -29,8 +29,12 @@ export class CreateProjectDto {
   @Min(0)
   budgetMax?: number;
 
-  @IsOptional()
+    @IsOptional()
   @IsInt()
   @Min(1)
   durationDays?: number;
+
+  @IsOptional()
+  @IsString()
+  preferredProviderId?: string;
 }
