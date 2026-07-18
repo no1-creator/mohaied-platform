@@ -18,6 +18,7 @@ import { ContentModule } from './content/content.module';
 import { AdsModule } from './ads/ads.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
+import { InvitationsModule } from './invitations/invitations.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -42,6 +43,7 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
      AdsModule,
   NotificationsModule,
   RecommendationsModule,
+  InvitationsModule,
 ],
   controllers: [],
   providers: [],
