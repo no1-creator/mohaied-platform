@@ -574,22 +574,26 @@ model SiteContent {
   updatedAt  DateTime @updatedAt
 }
 model AdBanner {
-  id           String    @id @default(uuid())
-  advertiserId String?
-  title        String
-  subtitle     String?
-  imageUrl     String?
-  linkUrl      String?
-  ctaLabel     String?
-  placement    String    @default("HOME_TOP")
-  status       String    @default("PENDING")
-  amount       Float     @default(0)
-  paid         Boolean   @default(false)
-  startDate    DateTime?
-  endDate      DateTime?
-  orderIndex   Int       @default(0)
-  clicks       Int       @default(0)
-  impressions  Int       @default(0)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id                 String    @id @default(uuid())
+  advertiserId       String?
+  title              String
+  subtitle           String?
+  imageUrl           String?
+  linkUrl            String?
+  ctaLabel           String?
+  placement          String    @default("HOME_TOP")
+  status             String    @default("PENDING")
+  amount             Float     @default(0)
+  paid               Boolean   @default(false)
+  priority           Int       @default(0)
+  dailyImpressionCap Int       @default(0)
+  impressionsToday   Int       @default(0)
+  impressionDay      String?
+  startDate          DateTime?
+  endDate            DateTime?
+  orderIndex         Int       @default(0)
+  clicks             Int       @default(0)
+  impressions        Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 }
