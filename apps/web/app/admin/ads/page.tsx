@@ -433,7 +433,7 @@ if (!form.imageUrl && !form.title.trim()) { alert('ضيف صورة أو عنوا
           </label>
         </div>
 
-        <button className="aad-submit" onClick={submit} disabled={saving || !form.title.trim()}>
+        <button className="aad-submit" onClick={submit} disabled={saving}
           {saving ? 'جاري الحفظ...' : editingId ? 'حفظ التعديلات' : 'إضافة الإعلان (مفعّل مباشرة)'}
         </button>
       </div>
