@@ -89,8 +89,9 @@ export default function LandingPage() {
           <nav className="main-nav">
             <a href="#how">كيف تعمل</a>
             <a href="#services">المجالات</a>
-            <a href="#roles">لكل الأطراف</a>
-            <a href="#gov">الإشراف الحكومي</a>
+           <a href="#roles">لكل الأطراف</a>
+<a href="#find">اختيار مقدم الخدمة</a>
+<a href="#gov">الإشراف الحكومي</a>
           </nav>
           <div className="nav-actions">
             <Link href="/login" className="nav-login">تسجيل الدخول</Link>
@@ -239,6 +240,92 @@ export default function LandingPage() {
                 </ul>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+          {/* منصة تقنية وقانونية + طرق اختيار مقدم الخدمة */}
+      <section id="find" className="section alt">
+        <style>{`
+.mh-tl{max-width:1080px;margin:0 auto;padding:0 20px;}
+.mh-duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px;}
+.mh-dcard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px;display:flex;flex-direction:column;gap:12px;}
+.mh-dic{width:54px;height:54px;border-radius:15px;background:var(--mint);color:var(--green-dark);display:flex;align-items:center;justify-content:center;}
+.mh-dcard h3{font-size:19px;font-weight:800;color:var(--ink);margin:0;}
+.mh-dcard p{font-size:14px;color:var(--muted);line-height:1.9;margin:0;}
+.mh-ways{margin-top:34px;}
+.mh-ways-h{text-align:center;font-size:20px;font-weight:800;color:var(--ink);margin:0 0 6px;}
+.mh-ways-s{text-align:center;font-size:14px;color:var(--muted);margin:0 0 22px;}
+.mh-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.mh-wc{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;gap:14px;align-items:flex-start;}
+.mh-wn{width:34px;height:34px;border-radius:10px;background:var(--green);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;}
+.mh-wc h4{font-size:15.5px;font-weight:800;color:var(--ink);margin:0 0 4px;}
+.mh-wc p{font-size:13px;color:var(--muted);line-height:1.8;margin:0;}
+.mh-cta{text-align:center;margin-top:26px;}
+@media(max-width:720px){.mh-duo{grid-template-columns:1fr;}.mh-grid{grid-template-columns:1fr;}}
+        `}</style>
+        <div className="section-inner">
+          <h2 className="section-title">منصة تقنية وقانونية في مكان واحد</h2>
+          <p className="section-sub">
+            مش بس بنوصّلك بمقدم الخدمة — بنحمي مشروعك تقنيًا وقانونيًا من أول خطوة لآخر تسليم
+          </p>
+          <div className="mh-tl">
+            <div className="mh-duo">
+              <div className="mh-dcard reveal">
+                <div className="mh-dic"><Icon name="laptop" size={28} /></div>
+                <h3>خبرة تقنية</h3>
+                <p>
+                  خبراء في التقنيات والبرمجيات والهندسة بيراجعوا جودة الشغل والتسليمات
+                  في كل مرحلة، عشان اللي بيتنفّذ يبقى مطابق للمتفق عليه.
+                </p>
+              </div>
+              <div className="mh-dcard reveal">
+                <div className="mh-dic"><Icon name="scale" size={28} /></div>
+                <h3>سند قانوني</h3>
+                <p>
+                  مستشارون قانونيون من فريق محايد بيصيغوا ويوثّقوا العقود، ويحموا حقوق
+                  كل الأطراف، ويتدخّلوا بالحياد لو حصل أي خلاف — بقرارات عادلة وموثّقة.
+                </p>
+              </div>
+            </div>
+
+            <div className="mh-ways">
+              <h3 className="mh-ways-h">اختار مقدم الخدمة بالطريقة اللي تناسبك</h3>
+              <p className="mh-ways-s">أربع طرق مرنة، وكلها تحت نفس الحماية التقنية والقانونية</p>
+              <div className="mh-grid">
+                <div className="mh-wc reveal">
+                  <span className="mh-wn">1</span>
+                  <div>
+                    <h4>اعرض مشروعك واستقبل عروض</h4>
+                    <p>انشر مشروعك وخلّي مقدمي الخدمة المعتمدين يقدّموا عروضهم وتقارن بينهم.</p>
+                  </div>
+                </div>
+                <div className="mh-wc reveal">
+                  <span className="mh-wn">2</span>
+                  <div>
+                    <h4>اختار من المنصة بنفسك</h4>
+                    <p>اتصفّح مقدمي الخدمة المعتمدين، شوف تقييماتهم وأعمالهم واختار الأنسب.</p>
+                  </div>
+                </div>
+                <div className="mh-wc reveal">
+                  <span className="mh-wn">3</span>
+                  <div>
+                    <h4>محايد ترشّحلك الأفضل</h4>
+                    <p>قوللنا احتياجك وخبراؤنا يرشّحولك أنسب مقدم خدمة لطبيعة مشروعك وميزانيتك.</p>
+                  </div>
+                </div>
+                <div className="mh-wc reveal">
+                  <span className="mh-wn">4</span>
+                  <div>
+                    <h4>ادعُ طرف من خارج المنصة</h4>
+                    <p>معاك مهندس أو شركة بتتعامل معاهم؟ ادعوهم يشتغلوا معاك بعقد موثّق وحماية كاملة.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="mh-cta">
+                <Link href="/register" className="lp-btn-primary">ابدأ واختار طريقتك</Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
