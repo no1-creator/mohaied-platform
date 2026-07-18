@@ -14,10 +14,17 @@ type Plan = {
   billingCycle: 'MONTHLY' | 'YEARLY';
   commissionRate: string | number;
   features?: string | null;
-  maxOffers?: number | null;
+   maxOffers?: number | null;
   isFeatured: boolean;
   isActive: boolean;
   orderIndex: number;
+  directoryPriority?: number | null;
+  badgeLabel?: string | null;
+  monthlyAdCredits?: number | null;
+  recommendationPriority?: number | null;
+  teamSeats?: number | null;
+  analyticsAccess?: boolean;
+  prioritySupport?: boolean;
 };
 
 type Settings = {
@@ -35,12 +42,18 @@ type PlanForm = {
   billingCycle: 'MONTHLY' | 'YEARLY';
   commissionRate: string;
   features: string;
-  maxOffers: string;
+    maxOffers: string;
   isFeatured: boolean;
   isActive: boolean;
   orderIndex: string;
+  directoryPriority: string;
+  badgeLabel: string;
+  monthlyAdCredits: string;
+  recommendationPriority: string;
+  teamSeats: string;
+  analyticsAccess: boolean;
+  prioritySupport: boolean;
 };
-
 const EMPTY_FORM: PlanForm = {
   name: '',
   description: '',
@@ -48,10 +61,17 @@ const EMPTY_FORM: PlanForm = {
   billingCycle: 'MONTHLY',
   commissionRate: '10',
   features: '',
-  maxOffers: '',
+    maxOffers: '',
   isFeatured: false,
   isActive: true,
   orderIndex: '0',
+  directoryPriority: '0',
+  badgeLabel: '',
+  monthlyAdCredits: '0',
+  recommendationPriority: '0',
+  teamSeats: '1',
+  analyticsAccess: false,
+  prioritySupport: false,
 };
 
 export default function AdminPlansPage() {
@@ -128,11 +148,18 @@ export default function AdminPlansPage() {
       billingCycle: p.billingCycle,
       commissionRate: String(Number(p.commissionRate)),
       features: p.features ?? '',
-      maxOffers: p.maxOffers != null ? String(p.maxOffers) : '',
-      isFeatured: p.isFeatured,
-      isActive: p.isActive,
-      orderIndex: String(p.orderIndex ?? 0),
-    });
+    maxOffers: p.maxOffers != null ? String(p.maxOffers) : '',
+  isFeatured: p.isFeatured,
+  isActive: p.isActive,
+  orderIndex: String(p.orderIndex ?? 0),
+  directoryPriority: String(p.directoryPriority ?? 0),
+  badgeLabel: p.badgeLabel ?? '',
+  monthlyAdCredits: String(p.monthlyAdCredits ?? 0),
+  recommendationPriority: String(p.recommendationPriority ?? 0),
+  teamSeats: String(p.teamSeats ?? 1),
+  analyticsAccess: !!p.analyticsAccess,
+  prioritySupport: !!p.prioritySupport,
+});
     setEditingId(p.id);
     setMsg('');
   }
@@ -146,18 +173,25 @@ export default function AdminPlansPage() {
     setError('');
     setMsg('');
     try {
-      const payload: any = {
-        name: form.name.trim(),
-        price: Number(form.price) || 0,
-        billingCycle: form.billingCycle,
-        commissionRate: Number(form.commissionRate) || 0,
-        isFeatured: form.isFeatured,
-        isActive: form.isActive,
-        orderIndex: Number(form.orderIndex) || 0,
-      };
-      if (form.description.trim()) payload.description = form.description.trim();
-      if (form.features.trim()) payload.features = form.features.trim();
-      if (form.maxOffers.trim() !== '') payload.maxOffers = Number(form.maxOffers);
+const payload: any = {
+  name: form.name.trim(),
+  price: Number(form.price) || 0,
+  billingCycle: form.billingCycle,
+  commissionRate: Number(form.commissionRate) || 0,
+  isFeatured: form.isFeatured,
+  isActive: form.isActive,
+  orderIndex: Number(form.orderIndex) || 0,
+  directoryPriority: Number(form.directoryPriority) || 0,
+  recommendationPriority: Number(form.recommendationPriority) || 0,
+  monthlyAdCredits: Number(form.monthlyAdCredits) || 0,
+  teamSeats: Number(form.teamSeats) || 1,
+  analyticsAccess: form.analyticsAccess,
+  prioritySupport: form.prioritySupport,
+};
+if (form.description.trim()) payload.description = form.description.trim();
+if (form.features.trim()) payload.features = form.features.trim();
+if (form.maxOffers.trim() !== '') payload.maxOffers = Number(form.maxOffers);
+if (form.badgeLabel.trim()) payload.badgeLabel = form.badgeLabel.trim();
 
       if (editingId === 'new') {
         await api('/subscriptions/plans', { method: 'POST', body: payload });
@@ -316,15 +350,60 @@ export default function AdminPlansPage() {
                   />
                   <span className="pl-hint">سيبها فاضية = غير محدود.</span>
                 </div>
-                <div className="pl-field">
-                  <label>ترتيب العرض</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={form.orderIndex}
-                    onChange={(e) => setForm({ ...form, orderIndex: e.target.value })}
-                  />
-                </div>
+               <div className="pl-field">
+  <label>ترتيب العرض</label>
+  <input
+    type="number"
+    min="0"
+    value={form.orderIndex}
+    onChange={(e) => setForm({ ...form, orderIndex: e.target.value })}
+  />
+</div>
+<div className="pl-field">
+  <label>أولوية الظهور في الدليل</label>
+  <input
+    type="number"
+    min="0"
+    value={form.directoryPriority}
+    onChange={(e) => setForm({ ...form, directoryPriority: e.target.value })}
+  />
+  <span className="pl-hint">أعلى رقم = مقدّم الخدمة يظهر أوّل في الدليل.</span>
+</div>
+<div className="pl-field">
+  <label>أولوية في «رشّحلي الأفضل»</label>
+  <input
+    type="number"
+    min="0"
+    value={form.recommendationPriority}
+    onChange={(e) => setForm({ ...form, recommendationPriority: e.target.value })}
+  />
+</div>
+<div className="pl-field">
+  <label>رصيد إعلانات شهري</label>
+  <input
+    type="number"
+    min="0"
+    value={form.monthlyAdCredits}
+    onChange={(e) => setForm({ ...form, monthlyAdCredits: e.target.value })}
+  />
+</div>
+<div className="pl-field">
+  <label>عدد أعضاء الفريق</label>
+  <input
+    type="number"
+    min="1"
+    value={form.teamSeats}
+    onChange={(e) => setForm({ ...form, teamSeats: e.target.value })}
+  />
+</div>
+<div className="pl-field">
+  <label>شارة البروفايل (اختياري)</label>
+  <input
+    value={form.badgeLabel}
+    onChange={(e) => setForm({ ...form, badgeLabel: e.target.value })}
+    placeholder="مثال: Pro / شريك موثّق"
+  />
+</div>
                 <div className="pl-field pl-full">
                   <label>الوصف</label>
                   <input
@@ -347,14 +426,30 @@ export default function AdminPlansPage() {
                   />
                   باقة مميّزة (تظهر بشكل بارز)
                 </label>
-                <label className="pl-check">
-                  <input
-                    type="checkbox"
-                    checked={form.isActive}
-                    onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                  />
-                  مُفعّلة (تظهر لمقدّمي الخدمة)
-                </label>
+              <label className="pl-check">
+  <input
+    type="checkbox"
+    checked={form.isActive}
+    onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+  />
+  مُفعّلة (تظهر لمقدّمي الخدمة)
+</label>
+<label className="pl-check">
+  <input
+    type="checkbox"
+    checked={form.analyticsAccess}
+    onChange={(e) => setForm({ ...form, analyticsAccess: e.target.checked })}
+  />
+  تحليلات أداء مفصّلة
+</label>
+<label className="pl-check">
+  <input
+    type="checkbox"
+    checked={form.prioritySupport}
+    onChange={(e) => setForm({ ...form, prioritySupport: e.target.checked })}
+  />
+  دعم أولوية / مدير حساب
+</label>
               </div>
               <div className="pl-form-actions">
                 <button className="ad-btn" onClick={savePlan} disabled={busy}>
