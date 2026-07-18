@@ -288,7 +288,7 @@ export default function AdminAdsPage() {
   };
 
   const submit = async () => {
-    if (!form.title.trim()) return;
+if (!form.imageUrl && !form.title.trim()) { alert('ضيف صورة أو عنوان على الأقل'); return; }
     setSaving(true);
     const payload = {
       title: form.title,
@@ -350,7 +350,7 @@ export default function AdminAdsPage() {
 
         <div className="aad-grid">
           <div className="aad-f aad-wide">
-            <span>العنوان *</span>
+            <span>العنوان </span>
             <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="مثال: خصم 20% على تصميم المواقع" />
           </div>
           <div className="aad-f">
