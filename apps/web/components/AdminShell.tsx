@@ -22,6 +22,7 @@ const NAV = [
   { key: 'supervisors', href: '/admin/supervisors', label: 'المشرفون', icon: 'shield' },
   { key: 'complaints', href: '/admin/complaints', label: 'الشكاوى', icon: 'scale' },
   { key: 'plans', href: '/admin/plans', label: 'الباقات والعمولة', icon: 'creditCard' },
+  { key: 'options', href: '/admin/options', label: 'قوائم الخيارات', icon: 'grid' },
 ];
 
 
