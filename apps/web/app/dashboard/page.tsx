@@ -39,6 +39,7 @@ const TILES: Tile[] = [
   { href: '/complaints/mine', icon: 'scale', title: 'شكاويّ ونزاعاتي', desc: 'تابع شكاويك وردود وقرارات إدارة محايد.', roles: ['CLIENT', 'PROVIDER'] },
   { href: '/subscribe', icon: 'creditCard', title: 'الاشتراك والباقات', desc: 'اشترك لتظهر للعملاء وتقلّل العمولة.', roles: ['PROVIDER'], accent: true },
   { href: '/supervisor/assignments', icon: 'shield', title: 'تكليفاتي', desc: 'المشاريع اللي بتشرف عليها.', roles: ['SUPERVISOR'] },
+  { href: '/supervisor/arbitrations', icon: 'scale', title: 'النزاعات المُسندة لي', desc: 'النزاعات اللي عُيّنت فيها مُحكّمًا تقنيًا.', roles: ['SUPERVISOR'] },
   { href: '/admin', icon: 'shield', title: 'لوحة التحكم', desc: 'تحكم كامل في المنصة والمستخدمين.', roles: ['ADMIN'], accent: true },
 ];
 
