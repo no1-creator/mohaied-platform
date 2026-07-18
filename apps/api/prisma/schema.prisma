@@ -237,9 +237,10 @@ model Project {
   clientId String
   client   User   @relation("ClientProjects", fields: [clientId], references: [id])
 
-  providerId String?
-  provider   User?   @relation("ProviderProjects", fields: [providerId], references: [id])
+providerId String?
+provider   User?   @relation("ProviderProjects", fields: [providerId], references: [id])
 
+preferredProviderId String?
   budgetMin    Decimal?
   budgetMax    Decimal?
   durationDays Int?
