@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/roles.guard';
@@ -8,6 +8,7 @@ import {
   CreateProviderProfileDto,
   CreateSupervisorProfileDto,
 } from './dto/profile.dto';
+import { UpdateMeDto } from './dto/update-me.dto';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -15,9 +16,14 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get('me')
-  getMe(@GetUser('id') userId: string) {
-    return this.usersService.getMe(userId);
-  }
+getMe(@GetUser('id') userId: string) {
+  return this.usersService.getMe(userId);
+}
+
+@Patch('me')
+updateMe(@GetUser('id') userId: string, @Body() dto: UpdateMeDto) {
+  return this.usersService.updateMe(userId, dto);
+}
 
   @Post('provider-profile')
   @Roles(UserRole.PROVIDER)
