@@ -6,6 +6,7 @@ import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
 import Icon from '@/components/Icon';
+import { toast } from '@/components/Toast';
 
 const TYPES = [
   {
@@ -113,7 +114,9 @@ function NewComplaintInner() {
     setError('');
     const isDyn = type.startsWith('DYN::');
     if (type === 'OTHER' && !customType.trim()) {
-      setError('اكتب نوع النزاع في الخانة المخصصة.');
+      const msg = 'اكتب نوع النزاع في الخانة المخصصة.';
+      setError(msg);
+      toast.error(msg);
       return;
     }
     setLoading(true);
@@ -133,9 +136,11 @@ function NewComplaintInner() {
         method: 'POST',
         body,
       });
+      toast.success('تم تقديم النزاع رسميًا ✅');
       router.push(`/complaints/${complaint.id}`);
     } catch (err: any) {
       setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -144,7 +149,7 @@ function NewComplaintInner() {
   if (!projectId) {
     return (
       <div className="nc-wrap">
-        <div className="nc-note">لازم تفتح النزاع من صفحة المشروع.</div>
+        <p className="nc-note">لازم تفتح النزاع من صفحة المشروع.</p>
       </div>
     );
   }
@@ -155,32 +160,32 @@ function NewComplaintInner() {
     <div className="nc-wrap">
       <div className="nc-head">
         <div className="nc-title">
-          <Icon name="scale" size={24} />
+          <Icon name="scale" size={26} />
           فتح نزاع جديد
         </div>
-        <div className="nc-lead">
+        <p className="nc-lead">
           النزاع بيتوثّق ويتسجّل رسميًا، الطرف الآخر هيقدر يرد، وإدارة محايد بتتدخّل كمُحكّم محايد وتصدر القرار النهائي المُلزم.
-        </div>
+        </p>
       </div>
 
       <div className="nc-process">
         <Icon name="shield" size={18} />
-        <div>
+        <span>
           بعد التقديم: الطرف الآخر بيتبلّغ ويرد، إدارة محايد بتراجع الأدلة وتتدخّل كمُحكّم، وفي الآخر بيصدر قرار موثّق مُلزم للطرفين.
-        </div>
+        </span>
       </div>
 
       {error && <div className="nc-error">{error}</div>}
 
       <form className="nc-form" onSubmit={handleSubmit}>
         <div className="nc-field">
-          <div className="nc-label">١. نوع النزاع</div>
+          <label className="nc-label">١. نوع النزاع</label>
           <div className="nc-types">
             {allTypes.map((t) => (
               <button
                 type="button"
                 key={t.value}
-                className={`nc-type ${type === t.value ? 'sel' : ''}`}
+                className={`nc-type${type === t.value ? ' sel' : ''}`}
                 onClick={() => setType(t.value)}
               >
                 {type === t.value && (
@@ -207,9 +212,7 @@ function NewComplaintInner() {
 
         {milestones.length > 0 && (
           <div className="nc-field">
-            <div className="nc-label">
-              ٢. المرحلة المتعلقة <span className="nc-opt">(اختياري)</span>
-            </div>
+            <label className="nc-label">٢. المرحلة المتعلقة (اختياري)</label>
             <select
               className="nc-select"
               value={milestoneId}
@@ -217,7 +220,7 @@ function NewComplaintInner() {
             >
               <option value="">نزاع عام على المشروع</option>
               {milestones.map((m) => (
-                <option key={m.id} value={m.id}>
+                <option value={m.id} key={m.id}>
                   {m.title}
                 </option>
               ))}
@@ -226,7 +229,7 @@ function NewComplaintInner() {
         )}
 
         <div className="nc-field">
-          <div className="nc-label">{detailsStep}. تفاصيل النزاع</div>
+          <label className="nc-label">{detailsStep}. تفاصيل النزاع</label>
           <textarea
             className="nc-textarea"
             value={details}
@@ -236,13 +239,13 @@ function NewComplaintInner() {
             rows={6}
             placeholder="اشرح المشكلة بالتفصيل: إيه اللي حصل، إمتى، وإيه المطلوب. كل ما توضّح أكتر كل ما القرار يكون أدق."
           />
-          <div className="nc-hint">
+          <p className="nc-hint">
             اكتب ١٠ أحرف على الأقل. اذكر التواريخ والوقائع والاتفاقات بدقة.
-          </div>
+          </p>
         </div>
 
         <div className="nc-evidence">
-          <Icon name="folder" size={18} />
+          <Icon name="fileText" size={20} />
           <div>
             <div className="nc-ev-title">الأدلة والمرفقات</div>
             <div className="nc-ev-desc">
@@ -268,7 +271,7 @@ export default function NewComplaintPage() {
       <Suspense
         fallback={
           <div className="nc-wrap">
-            <div className="nc-note">جاري التحميل…</div>
+            <p className="nc-note">جاري التحميل…</p>
           </div>
         }
       >
