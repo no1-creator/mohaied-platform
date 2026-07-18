@@ -7,6 +7,13 @@ function todayKey(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function monthStart(): Date {
+  const d = new Date();
+  d.setDate(1);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 @Injectable()
 export class AdsService {
   constructor(private prisma: PrismaService) {}
@@ -59,8 +66,53 @@ export class AdsService {
     return ad;
   }
 
-  // إنشاء: الأدمن ينشئ مفعّل مباشرة، غيره PENDING بانتظار المراجعة
+  // رصيد الإعلانات الشهري لمقدّم الخدمة حسب باقته (المستخدَم/الإجمالي/المتبقّي)
+  async myAdCredits(advertiserId: string) {
+    const activeSub = await this.prisma.subscription.findFirst({
+      where: {
+        userId: advertiserId,
+        status: 'ACTIVE',
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { plan: { select: { monthlyAdCredits: true } } },
+    });
+    const total = activeSub?.plan?.monthlyAdCredits ?? 0;
+    const used = await this.prisma.adBanner.count({
+      where: { advertiserId, createdAt: { gte: monthStart() } },
+    });
+    const remaining = Math.max(0, total - used);
+    return { total, used, remaining };
+  }
+
+  // إنشاء: الأدمن ينشئ مفعّل مباشرة.
+  // مقدّم الخدمة: لو عنده رصيد إعلانات شهري في باقته → الإعلان يتفعّل تلقائيًا
+  // ويُحتسب مدفوعًا برصيد الباقة، وإلا PENDING بانتظار المراجعة/الدفع.
   async create(dto: CreateAdDto, advertiserId: string, isAdmin: boolean) {
+    if (isAdmin) {
+      return this.prisma.adBanner.create({
+        data: {
+          advertiserId,
+          title: dto.title,
+          subtitle: dto.subtitle,
+          imageUrl: dto.imageUrl,
+          linkUrl: dto.linkUrl,
+          ctaLabel: dto.ctaLabel,
+          placement: dto.placement || 'HOME_TOP',
+          status: 'ACTIVE',
+          startDate: dto.startDate ? new Date(dto.startDate) : null,
+          endDate: dto.endDate ? new Date(dto.endDate) : null,
+          amount: dto.amount ?? 0,
+          paid: dto.paid ?? false,
+          priority: dto.priority ?? 0,
+          dailyImpressionCap: dto.dailyImpressionCap ?? 0,
+        },
+      });
+    }
+
+    const { remaining } = await this.myAdCredits(advertiserId);
+    const coveredByCredit = remaining > 0;
+
     return this.prisma.adBanner.create({
       data: {
         advertiserId,
@@ -70,13 +122,13 @@ export class AdsService {
         linkUrl: dto.linkUrl,
         ctaLabel: dto.ctaLabel,
         placement: dto.placement || 'HOME_TOP',
-        status: isAdmin ? 'ACTIVE' : 'PENDING',
+        status: coveredByCredit ? 'ACTIVE' : 'PENDING',
         startDate: dto.startDate ? new Date(dto.startDate) : null,
         endDate: dto.endDate ? new Date(dto.endDate) : null,
-        amount: isAdmin ? dto.amount ?? 0 : 0,
-        paid: isAdmin ? dto.paid ?? false : false,
-        priority: isAdmin ? dto.priority ?? 0 : 0,
-        dailyImpressionCap: isAdmin ? dto.dailyImpressionCap ?? 0 : 0,
+        amount: 0,
+        paid: coveredByCredit,
+        priority: 0,
+        dailyImpressionCap: 0,
       },
     });
   }
