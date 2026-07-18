@@ -4,37 +4,71 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateProjectDto } from './dto/project.dto';
-import { ProjectStatus } from '@prisma/client';
+import { ProjectStatus, UserRole } from '@prisma/client';
 
 @Injectable()
 export class ProjectsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notifications: NotificationsService,
+  ) {}
 
-  async create(clientId: string, dto: CreateProjectDto) {
-    const project = await this.prisma.project.create({
-      data: {
-        title: dto.title,
-        field: dto.field,
-        description: dto.description,
-        budgetMin: dto.budgetMin,
-        budgetMax: dto.budgetMax,
-        durationDays: dto.durationDays,
-        status: ProjectStatus.OPEN,
-        clientId,
+async create(clientId: string, dto: CreateProjectDto) {
+  // لو العميل اختار مقدم خدمة معيّن من المنصة (طلب مباشر)
+  let preferredProviderId: string | null = null;
+  if (dto.preferredProviderId) {
+    const provider = await this.prisma.user.findFirst({
+      where: {
+        id: dto.preferredProviderId,
+        role: UserRole.PROVIDER,
+        isActive: true,
       },
+      select: { id: true },
     });
-
-    await this.prisma.activityLog.create({
-      data: {
-        projectId: project.id,
-        actorId: clientId,
-        action: 'PROJECT_CREATED',
-      },
-    });
-
-    return project;
+    if (provider) preferredProviderId = provider.id;
   }
+
+  const project = await this.prisma.project.create({
+    data: {
+      title: dto.title,
+      field: dto.field,
+      description: dto.description,
+      budgetMin: dto.budgetMin,
+      budgetMax: dto.budgetMax,
+      durationDays: dto.durationDays,
+      status: ProjectStatus.OPEN,
+      clientId,
+      preferredProviderId,
+    },
+  });
+
+  await this.prisma.activityLog.create({
+    data: {
+      projectId: project.id,
+      actorId: clientId,
+      action: 'PROJECT_CREATED',
+    },
+  });
+
+  // إشعار مباشر لمقدم الخدمة اللي العميل اختاره
+  if (preferredProviderId) {
+    const client = await this.prisma.user.findUnique({
+      where: { id: clientId },
+      select: { fullName: true },
+    });
+    await this.notifications.create({
+      userId: preferredProviderId,
+      type: 'PROJECT',
+      title: 'عميل اختارك مباشرة لمشروع جديد',
+      body: `${client?.fullName || 'عميل'} اختارك لمشروع «${project.title}». راجع تفاصيله من المشاريع المتاحة وقدّم عرضك.`,
+      linkUrl: '/projects/open',
+    });
+  }
+
+  return project;
+}
 
   async findMine(userId: string) {
     return this.prisma.project.findMany({
