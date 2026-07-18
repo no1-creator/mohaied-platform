@@ -174,6 +174,8 @@ model User {
     notifications Notification[]
 
   recommendationRequests RecommendationRequest[] @relation("ClientRecommendations")
+
+  externalInvitations ExternalInvitation[] @relation("ClientInvitations")
 }
 
 model ProviderProfile {
@@ -655,6 +657,40 @@ model RecommendationRequest {
   respondedAt  DateTime?
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
+
+  @@index([clientId])
+  @@index([status])
+}
+// ==================== EXTERNAL INVITATIONS (دعوة طرف خارجي) ====================
+
+enum InvitationStatus {
+  PENDING
+  CONTACTED
+  ACCEPTED
+  DECLINED
+  CLOSED
+}
+
+model ExternalInvitation {
+  id                 String           @id @default(uuid())
+  clientId           String
+  client             User             @relation("ClientInvitations", fields: [clientId], references: [id])
+  inviteeName        String
+  inviteeEmail       String?
+  inviteePhone       String?
+  inviteeType        String?
+  projectTitle       String
+  field              String?
+  projectDescription String
+  budgetMin          Decimal?
+  budgetMax          Decimal?
+  durationDays       Int?
+  message            String?
+  status             InvitationStatus @default(PENDING)
+  adminNote          String?
+  token              String           @unique @default(uuid())
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
   @@index([clientId])
   @@index([status])
