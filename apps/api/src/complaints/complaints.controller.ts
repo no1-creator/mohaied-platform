@@ -36,6 +36,17 @@ export class ComplaintsController {
     return this.complaintsService.respond(id, userId, dto);
   }
 
+  // رسالة من المُحكّم (إدارة محايد) داخل النزاع
+  @Post(':id/arbitrate')
+  @Roles(UserRole.ADMIN)
+  arbitrate(
+    @Param('id') id: string,
+    @GetUser('id') adminId: string,
+    @Body() dto: RespondComplaintDto,
+  ) {
+    return this.complaintsService.arbitrate(id, adminId, dto);
+  }
+
   @Post(':id/decide')
   @Roles(UserRole.ADMIN)
   decide(
@@ -52,6 +63,7 @@ export class ComplaintsController {
     return this.complaintsService.findAllForAdmin();
   }
 
+  // شكاوى ونزاعات المستخدم الحالي (عميل/مقدم خدمة)
   @Get('mine')
   findMine(@GetUser('id') userId: string) {
     return this.complaintsService.findForUser(userId);
