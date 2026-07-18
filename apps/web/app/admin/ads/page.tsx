@@ -212,7 +212,18 @@ const AAD_CSS = `
 .aad-ico.aad-ico-danger { color:#b91c1c; }
 .aad-ico.aad-ico-danger:hover { border-color:#b91c1c; color:#b91c1c; background:#fef2f2; }
 .aad-empty { text-align:center; color:var(--muted); padding:40px; font-size:14px; }
-@media (max-width:640px) { .aad-grid { grid-template-columns:1fr; } .aad-row { flex-direction:column; } .aad-actions { flex-direction:row; flex-wrap:wrap; } }
+@media (max-width:640px) {
+  .aad-form { padding:16px; border-radius:14px; }
+  .aad-grid { grid-template-columns:1fr; gap:12px; }
+  .aad-check { height:auto; padding:6px 0; }
+  .aad-row { flex-direction:column; align-items:stretch; }
+  .aad-thumb { width:100%; height:150px; }
+  .aad-row-top { gap:8px; }
+  .aad-meta { gap:8px 14px; }
+  .aad-actions { flex-wrap:wrap; }
+  .aad-ico { width:40px; height:40px; }
+  .aad-ico svg { width:18px; height:18px; }
+}
 `;
 
 export default function AdminAdsPage() {
