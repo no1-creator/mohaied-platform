@@ -547,3 +547,18 @@ model Invoice {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
+// ==================== DYNAMIC OPTION LISTS (جديد) ====================
+// قوائم خيارات يتحكم فيها الأدمن (أنواع النزاع/القرار/التصنيفات… إلخ)
+
+model OptionItem {
+  id         String   @id @default(uuid())
+  groupKey   String
+  value      String
+  label      String
+  isActive   Boolean  @default(true)
+  orderIndex Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([groupKey, value])
+}
