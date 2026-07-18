@@ -36,6 +36,7 @@ const TYPES = [
 ];
 
 type Milestone = { id: string; title: string; status?: string };
+type DynOption = { id: string; label: string; value: string };
 
 const NC_CSS = `
 .nc-wrap{max-width:720px;margin:0 auto;padding:24px 20px 60px;}
@@ -79,6 +80,7 @@ function NewComplaintInner() {
   const [milestoneId, setMilestoneId] = useState('');
   const [details, setDetails] = useState('');
   const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [dynTypes, setDynTypes] = useState<DynOption[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -87,24 +89,46 @@ function NewComplaintInner() {
       router.push('/login');
       return;
     }
+    // أنواع النزاع المُضافة من إدارة محايد (ديناميكية)
+    api<DynOption[]>('/options/COMPLAINT_TYPE')
+      .then((data) => setDynTypes(Array.isArray(data) ? data : []))
+      .catch(() => {});
     if (!projectId) return;
     api<Milestone[]>(`/milestones/project/${projectId}`)
       .then((data) => setMilestones(data || []))
       .catch(() => {});
   }, [projectId, router]);
 
+  const builtinNoOther = TYPES.filter((t) => t.value !== 'OTHER');
+  const otherType = TYPES.find((t) => t.value === 'OTHER')!;
+  const dynAsTypes = dynTypes.map((o) => ({
+    value: `DYN::${o.label}`,
+    label: o.label,
+    desc: 'نوع نزاع مُضاف من إدارة محايد.',
+  }));
+  const allTypes = [...builtinNoOther, ...dynAsTypes, otherType];
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    const isDyn = type.startsWith('DYN::');
     if (type === 'OTHER' && !customType.trim()) {
       setError('اكتب نوع النزاع في الخانة المخصصة.');
       return;
     }
     setLoading(true);
     try {
-      const body: Record<string, unknown> = { projectId, type, details };
+      const body: Record<string, unknown> = { projectId, details };
       if (milestoneId) body.milestoneId = milestoneId;
-      if (type === 'OTHER' && customType.trim()) body.customType = customType.trim();
+      if (isDyn) {
+        body.type = 'OTHER';
+        body.customType = type.slice(5);
+      } else if (type === 'OTHER') {
+        body.type = 'OTHER';
+        if (customType.trim()) body.customType = customType.trim();
+      } else {
+        body.type = type;
+      }
       const complaint = await api<{ id: string }>('/complaints', {
         method: 'POST',
         body,
@@ -130,39 +154,38 @@ function NewComplaintInner() {
   return (
     <div className="nc-wrap">
       <div className="nc-head">
-        <h1 className="nc-title">
-          <Icon name="scale" size={22} /> فتح نزاع جديد
-        </h1>
-        <p className="nc-lead">
-          النزاع بيتوثّق ويتسجّل رسميًا، الطرف الآخر هيقدر يرد، وإدارة محايد بتتدخّل
-          كمُحكّم محايد وتصدر القرار النهائي المُلزم.
-        </p>
+        <div className="nc-title">
+          <Icon name="scale" size={24} />
+          فتح نزاع جديد
+        </div>
+        <div className="nc-lead">
+          النزاع بيتوثّق ويتسجّل رسميًا، الطرف الآخر هيقدر يرد، وإدارة محايد بتتدخّل كمُحكّم محايد وتصدر القرار النهائي المُلزم.
+        </div>
       </div>
 
       <div className="nc-process">
-        <Icon name="shield" size={18} style={{ flexShrink: 0 }} />
-        <span>
-          بعد التقديم: الطرف الآخر بيتبلّغ ويرد، إدارة محايد بتراجع الأدلة وتتدخّل
-          كمُحكّم، وفي الآخر بيصدر قرار موثّق مُلزم للطرفين.
-        </span>
+        <Icon name="shield" size={18} />
+        <div>
+          بعد التقديم: الطرف الآخر بيتبلّغ ويرد، إدارة محايد بتراجع الأدلة وتتدخّل كمُحكّم، وفي الآخر بيصدر قرار موثّق مُلزم للطرفين.
+        </div>
       </div>
 
       {error && <div className="nc-error">{error}</div>}
 
       <form className="nc-form" onSubmit={handleSubmit}>
         <div className="nc-field">
-          <label className="nc-label">١. نوع النزاع</label>
+          <div className="nc-label">١. نوع النزاع</div>
           <div className="nc-types">
-            {TYPES.map((t) => (
+            {allTypes.map((t) => (
               <button
                 type="button"
                 key={t.value}
                 className={`nc-type ${type === t.value ? 'sel' : ''}`}
                 onClick={() => setType(t.value)}
               >
-                <span className="nc-type-check">
-                  {type === t.value && <Icon name="badgeCheck" size={16} />}
-                </span>
+                {type === t.value && (
+                  <Icon name="badgeCheck" size={16} className="nc-type-check" />
+                )}
                 <span className="nc-type-label">{t.label}</span>
                 <span className="nc-type-desc">{t.desc}</span>
               </button>
@@ -184,9 +207,9 @@ function NewComplaintInner() {
 
         {milestones.length > 0 && (
           <div className="nc-field">
-            <label className="nc-label">
+            <div className="nc-label">
               ٢. المرحلة المتعلقة <span className="nc-opt">(اختياري)</span>
-            </label>
+            </div>
             <select
               className="nc-select"
               value={milestoneId}
@@ -203,7 +226,7 @@ function NewComplaintInner() {
         )}
 
         <div className="nc-field">
-          <label className="nc-label">{detailsStep}. تفاصيل النزاع</label>
+          <div className="nc-label">{detailsStep}. تفاصيل النزاع</div>
           <textarea
             className="nc-textarea"
             value={details}
@@ -219,12 +242,11 @@ function NewComplaintInner() {
         </div>
 
         <div className="nc-evidence">
-          <Icon name="folder" size={17} style={{ flexShrink: 0 }} />
+          <Icon name="folder" size={18} />
           <div>
             <div className="nc-ev-title">الأدلة والمرفقات</div>
             <div className="nc-ev-desc">
-              نظام رفع الوثائق والصور قيد التجهيز. مؤقتًا اذكر روابط الأدلة داخل
-              التفاصيل، وهتقدر ترفعها في ملف النزاع قريبًا.
+              نظام رفع الوثائق والصور قيد التجهيز. مؤقتًا اذكر روابط الأدلة داخل التفاصيل، وهتقدر ترفعها في ملف النزاع قريبًا.
             </div>
           </div>
         </div>
