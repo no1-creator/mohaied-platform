@@ -59,6 +59,13 @@ const SA_CSS = `
 .sa-meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:11px;color:var(--muted);font-size:13.5px;}
 .sa-meta .sa-type{font-weight:700;color:var(--green-dark);}
 .sa-sep{color:var(--line);}
+@media (max-width:600px){
+  .sa-wrap{padding:8px 14px 40px;}
+  .sa-title{font-size:19px;}
+  .sa-desc{font-size:13px;line-height:1.7;}
+  .sa-card{padding:15px 16px;}
+  .sa-code{font-size:15px;}
+}
 `;
 
 export default function SupervisorArbitrationsPage() {
