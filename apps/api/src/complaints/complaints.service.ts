@@ -23,8 +23,10 @@ import {
 
 @Injectable()
 export class ComplaintsService {
-  constructor(private prisma: PrismaService) {}
-
+  constructor(
+    private prisma: PrismaService,
+    private notifications: NotificationsService,
+  ) {}
   // فتح شكوى (العميل أو مقدم الخدمة)
   async create(userId: string, dto: CreateComplaintDto) {
     const project = await this.prisma.project.findUnique({
@@ -39,7 +41,7 @@ export class ComplaintsService {
 
     const code = await this.generateCode();
 
-    return this.prisma.$transaction(async (tx) => {
+const created = await this.prisma.$transaction(async (tx) => {
       const complaint = await tx.complaint.create({
         data: {
           code,
@@ -67,11 +69,26 @@ export class ComplaintsService {
         },
       });
 
-      return complaint;
+          return complaint;
+  });
+
+  // 🔔 إشعار للطرف الآخر بفتح الشكوى
+  const otherPartyId =
+    project.clientId === userId ? project.providerId : project.clientId;
+  if (otherPartyId) {
+    await this.notifications.create({
+      userId: otherPartyId,
+      type: 'COMPLAINT',
+      title: 'تم فتح شكوى على مشروعك',
+      body: `تم فتح شكوى (${created.code}) على مشروع «${project.title}».`,
+      linkUrl: `/complaints/${created.id}`,
     });
   }
 
-  // رد الطرف الآخر
+  return created;
+}
+
+// رد الطرف الآخر
   async respond(
     complaintId: string,
     userId: string,
