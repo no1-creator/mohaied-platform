@@ -6,6 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 
 @Injectable()
@@ -13,6 +14,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
+    private notifications: NotificationsService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -33,6 +35,15 @@ export class AuthService {
         role: dto.role,
         phone: dto.phone,
       },
+    });
+
+    // 🔔 إشعار ترحيب
+    await this.notifications.create({
+      userId: user.id,
+      type: 'SYSTEM',
+      title: 'أهلًا بك في محايد 👋',
+      body: 'تم إنشاء حسابك بنجاح. اكمل بياناتك وابدأ رحلتك على المنصة.',
+      linkUrl: '/dashboard',
     });
 
     return this.buildAuthResponse(user.id, user.email, user.role, user.fullName);
