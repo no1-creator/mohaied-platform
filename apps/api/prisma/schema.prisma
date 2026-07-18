@@ -170,6 +170,8 @@ model User {
 
   subscriptions Subscription[]
   invoices      Invoice[]
+
+  notifications Notification[]
 }
 
 model ProviderProfile {
