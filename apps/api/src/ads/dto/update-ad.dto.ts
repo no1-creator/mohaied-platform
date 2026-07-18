@@ -11,6 +11,8 @@ export class UpdateAdDto {
   @IsOptional() @IsNumber() amount?: number;
   @IsOptional() @IsBoolean() paid?: boolean;
   @IsOptional() @IsInt() orderIndex?: number;
+  @IsOptional() @IsInt() priority?: number;
+  @IsOptional() @IsInt() dailyImpressionCap?: number;
   @IsOptional() @IsString() startDate?: string;
   @IsOptional() @IsString() endDate?: string;
 }
