@@ -15,6 +15,7 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { EscrowModule } from './escrow/escrow.module';
 import { OptionsModule } from './options/options.module';
 import { ContentModule } from './content/content.module';
+import { AdsModule } from './ads/ads.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ContentModule } from './content/content.module';
     EscrowModule,
     OptionsModule,
     ContentModule,
+    AdsModule,
   ],
   controllers: [],
   providers: [],
