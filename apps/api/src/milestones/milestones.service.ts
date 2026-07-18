@@ -5,12 +5,16 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { SubmitMilestoneDto, ReviewMilestoneDto } from './dto/milestone.dto';
 import { MilestoneStatus, ProjectStatus } from '@prisma/client';
 
 @Injectable()
 export class MilestonesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notifications: NotificationsService,
+  ) {}
 
   async listForProject(projectId: string, userId: string) {
     const project = await this.prisma.project.findUnique({
@@ -50,7 +54,7 @@ export class MilestonesService {
       throw new BadRequestException('لا يمكن تسليم هذه المرحلة في حالتها الحالية');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const submission = await this.prisma.$transaction(async (tx) => {
       const submission = await tx.submission.create({
         data: {
           milestoneId,
@@ -76,6 +80,17 @@ export class MilestonesService {
 
       return submission;
     });
+
+    // 🔔 إشعار للعميل بتسليم المرحلة للمراجعة
+    await this.notifications.create({
+      userId: milestone.project.clientId,
+      type: 'MILESTONE',
+      title: 'تم تسليم مرحلة للمراجعة',
+      body: `سلّم مقدم الخدمة مرحلة «${milestone.title}» في مشروع «${milestone.project.title}».`,
+      linkUrl: `/projects/${milestone.projectId}/milestones`,
+    });
+
+    return submission;
   }
 
   // العميل يراجع المرحلة (اعتماد أو طلب تعديل)
@@ -98,7 +113,7 @@ export class MilestonesService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       if (lastSubmission) {
         await tx.submission.update({
           where: { id: lastSubmission.id },
@@ -157,6 +172,21 @@ export class MilestonesService {
 
       return tx.milestone.findUnique({ where: { id: milestoneId } });
     });
+
+    // 🔔 إشعار لمقدم الخدمة بنتيجة المراجعة
+    if (milestone.project.providerId) {
+      await this.notifications.create({
+        userId: milestone.project.providerId,
+        type: 'MILESTONE',
+        title: dto.approved ? 'تم اعتماد مرحلة' : 'مطلوب تعديل على مرحلة',
+        body: dto.approved
+          ? `اعتمد العميل مرحلة «${milestone.title}» في مشروع «${milestone.project.title}».`
+          : `طلب العميل تعديلًا على مرحلة «${milestone.title}» في مشروع «${milestone.project.title}».`,
+        linkUrl: `/projects/${milestone.projectId}/milestones`,
+      });
+    }
+
+    return result;
   }
 
   private async getMilestoneWithProject(milestoneId: string) {
