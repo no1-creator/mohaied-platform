@@ -56,8 +56,6 @@ const TB_CSS = `
 .tb { position:sticky; top:0; z-index:50; background:rgba(255,255,255,.92); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
 .tb-inner { max-width:1200px; margin:0 auto; padding:0 20px; height:64px; display:flex; align-items:center; gap:14px; }
 .tb-start { display:flex; align-items:center; gap:10px; flex-shrink:0; }
-.tb-back { width:38px; height:38px; border-radius:10px; border:1px solid var(--line); background:#fff; color:var(--ink); font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; }
-.tb-back:hover { background:var(--mint); border-color:var(--green-light); color:var(--green-dark); }
 .tb-brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
 .tb-logo { width:34px; height:34px; border-radius:10px; background:linear-gradient(140deg,var(--green-light),var(--green-dark)); display:flex; align-items:center; justify-content:center; box-shadow:0 3px 8px rgba(40,125,115,.25); flex-shrink:0; }
 .tb-brand-text { display:flex; flex-direction:column; line-height:1.15; }
@@ -111,9 +109,7 @@ export default function TopBar({ name }: { name?: string }) {
       <style>{TB_CSS}</style>
       <div className="tb-inner">
         <div className="tb-start">
-          <button className="tb-back" onClick={() => router.back()} aria-label="رجوع" title="رجوع">
-            ↩
-          </button>
+    
           <Link href="/dashboard" className="tb-brand">
             <span className="tb-logo">{LOGO}</span>
             <span className="tb-brand-text">
