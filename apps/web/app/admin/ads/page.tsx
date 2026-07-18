@@ -54,6 +54,38 @@ const EMPTY = {
   paid: false,
 };
 
+// أيقونات الأزرار (SVG صغيرة احترافية)
+const IC = {
+  edit: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 20h4L18.5 9.5a2.12 2.12 0 0 0-3-3L5 17v3z" />
+      <path d="M13.5 6.5l4 4" />
+    </svg>
+  ),
+  play: (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M7 5.5v13a1 1 0 0 0 1.5.87l11-6.5a1 1 0 0 0 0-1.74l-11-6.5A1 1 0 0 0 7 5.5z" />
+    </svg>
+  ),
+  pause: (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <rect x="6" y="5" width="4" height="14" rx="1" />
+      <rect x="14" y="5" width="4" height="14" rx="1" />
+    </svg>
+  ),
+  reject: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M15 9l-6 6M9 9l6 6" />
+    </svg>
+  ),
+  trash: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13M10 11v6M14 11v6" />
+    </svg>
+  ),
+};
+
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const i = new Image();
@@ -169,11 +201,16 @@ const AAD_CSS = `
 .aad-s-PAUSED { background:#eef1f0; color:#70807b; }
 .aad-s-REJECTED { background:#fef2f2; color:#b91c1c; }
 .aad-s-EXPIRED { background:#eef1f0; color:#70807b; }
-.aad-actions { display:flex; flex-direction:column; gap:7px; flex-shrink:0; }
-.aad-btn { background:#fff; border:1px solid var(--line); border-radius:9px; padding:7px 14px; font-size:12.5px; font-weight:700; color:var(--ink); cursor:pointer; font-family:inherit; transition:all .14s; white-space:nowrap; }
-.aad-btn:hover { border-color:var(--green-light); color:var(--green-dark); }
-.aad-btn.aad-danger { color:#b91c1c; }
-.aad-btn.aad-danger:hover { border-color:#b91c1c; background:#fef2f2; }
+.aad-actions { display:flex; gap:6px; flex-shrink:0; align-items:center; }
+.aad-ico { width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:9px; background:#fff; color:var(--muted); cursor:pointer; transition:all .14s; padding:0; }
+.aad-ico svg { width:16px; height:16px; display:block; }
+.aad-ico:hover { border-color:var(--green-light); color:var(--green-dark); background:var(--mint); }
+.aad-ico.aad-ico-ok { color:#1f8f5f; }
+.aad-ico.aad-ico-ok:hover { border-color:#1f8f5f; color:#1f8f5f; background:#e7f6ef; }
+.aad-ico.aad-ico-warn { color:#a86a08; }
+.aad-ico.aad-ico-warn:hover { border-color:#d9820a; color:#b8770a; background:#fef6e0; }
+.aad-ico.aad-ico-danger { color:#b91c1c; }
+.aad-ico.aad-ico-danger:hover { border-color:#b91c1c; color:#b91c1c; background:#fef2f2; }
 .aad-empty { text-align:center; color:var(--muted); padding:40px; font-size:14px; }
 @media (max-width:640px) { .aad-grid { grid-template-columns:1fr; } .aad-row { flex-direction:column; } .aad-actions { flex-direction:row; flex-wrap:wrap; } }
 `;
@@ -303,7 +340,7 @@ export default function AdminAdsPage() {
     <AdminShell active="ads" title="الإعلانات">
       <style>{AAD_CSS}</style>
 
-      <div className={`aad-form${editingId ? ' aad-editing' : ''}`}>
+      <div className={`aad-form ${editingId ? 'aad-editing' : ''}`}>
         <div className="aad-form-head">
           <div className="aad-form-title">{editingId ? '✏️ تعديل الإعلان' : 'إضافة إعلان جديد'}</div>
           {editingId && (
@@ -312,91 +349,91 @@ export default function AdminAdsPage() {
         </div>
 
         <div className="aad-grid">
-          <label className="aad-f aad-wide">
+          <div className="aad-f aad-wide">
             <span>العنوان *</span>
             <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="مثال: خصم 20% على تصميم المواقع" />
-          </label>
-          <label className="aad-f aad-wide">
+          </div>
+          <div className="aad-f">
             <span>الوصف</span>
             <input value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} placeholder="سطر وصف قصير" />
-          </label>
-          <label className="aad-f">
+          </div>
+          <div className="aad-f">
             <span>نص الزر</span>
             <input value={form.ctaLabel} onChange={(e) => setForm({ ...form, ctaLabel: e.target.value })} placeholder="اعرف أكثر" />
-          </label>
-          <label className="aad-f">
+          </div>
+          <div className="aad-f">
             <span>الرابط عند الضغط (اختياري)</span>
             <input value={form.linkUrl} onChange={(e) => setForm({ ...form, linkUrl: e.target.value })} placeholder="https://..." />
-          </label>
-          <label className="aad-f">
+          </div>
+          <div className="aad-f">
             <span>مكان العرض</span>
             <select value={form.placement} onChange={(e) => setForm({ ...form, placement: e.target.value })}>
               {PLACEMENTS.map((p) => (
                 <option key={p.value} value={p.value}>{p.label}</option>
               ))}
             </select>
-          </label>
+          </div>
         </div>
 
-        <label className="aad-f aad-wide" style={{ marginTop: 14 }}>
+        <div className="aad-f aad-wide" style={{ marginTop: 14 }}>
           <span>صورة الإعلان</span>
           {form.imageUrl ? (
             <div className="aad-preview" style={{ backgroundImage: `url(${form.imageUrl})` }}>
-              <button type="button" className="aad-preview-x" onClick={() => setForm({ ...form, imageUrl: '' })}>✕</button>
+              <button className="aad-preview-x" onClick={() => setForm({ ...form, imageUrl: '' })}>✕</button>
             </div>
           ) : (
             <label className="aad-drop">
               <span>🖼️ {uploading ? 'جاري المعالجة...' : 'ارفع صورة من جهازك'}</span>
               <span className="aad-drop-hint">يفضّل صورة عريضة (مثال 1600×600) — بتتصغّر تلقائيًا</span>
-              <input type="file" accept="image/*" onChange={onFile} hidden />
+              <input type="file" accept="image/*" hidden onChange={onFile} />
             </label>
           )}
-        </label>
+        </div>
 
         <div className="aad-sec">⏱️ مدة العرض</div>
         <div className="aad-quick">
-          <button type="button" className="aad-chip" onClick={() => setDuration(7)}>7 أيام</button>
-          <button type="button" className="aad-chip" onClick={() => setDuration(30)}>30 يوم</button>
-          <button type="button" className="aad-chip" onClick={() => setDuration(90)}>90 يوم</button>
-          <button type="button" className="aad-chip" onClick={() => setForm({ ...form, startDate: '', endDate: '' })}>بدون مدة (دائم)</button>
+          <button className="aad-chip" onClick={() => setDuration(7)}>7 أيام</button>
+          <button className="aad-chip" onClick={() => setDuration(30)}>30 يوم</button>
+          <button className="aad-chip" onClick={() => setDuration(90)}>90 يوم</button>
+          <button className="aad-chip" onClick={() => setForm({ ...form, startDate: '', endDate: '' })}>بدون مدة (دائم)</button>
         </div>
         <div className="aad-grid">
-          <label className="aad-f">
+          <div className="aad-f">
             <span>من تاريخ</span>
             <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
-          </label>
-          <label className="aad-f">
+          </div>
+          <div className="aad-f">
             <span>إلى تاريخ</span>
             <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
-          </label>
+          </div>
         </div>
 
         <div className="aad-sec">🎯 التحكم في الظهور</div>
         <div className="aad-grid">
-          <label className="aad-f">
+          <div className="aad-f">
             <span>الأولوية (أعلى = يظهر أول وأكتر)</span>
-            <input type="number" min={0} value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} />
-          </label>
-          <label className="aad-f">
+            <input type="number" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} />
+          </div>
+          <div className="aad-f">
             <span>حد الظهور في اليوم (0 = مفتوح)</span>
-            <input type="number" min={0} value={form.dailyImpressionCap} onChange={(e) => setForm({ ...form, dailyImpressionCap: e.target.value })} />
+            <input type="number" value={form.dailyImpressionCap} onChange={(e) => setForm({ ...form, dailyImpressionCap: e.target.value })} />
             <span className="aad-hint">لما يوصل العدد ده في اليوم، الإعلان يوقف لبكرة تلقائيًا.</span>
-          </label>
+          </div>
         </div>
 
         <div className="aad-sec">💰 التسعير</div>
         <div className="aad-grid">
-          <label className="aad-f">
+          <div className="aad-f">
             <span>السعر (جنيه)</span>
-            <input type="number" min={0} value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
-          </label>
+            <input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
+          </div>
           <label className="aad-check">
             <input type="checkbox" checked={form.paid} onChange={(e) => setForm({ ...form, paid: e.target.checked })} />
             تم دفع قيمة الإعلان
           </label>
         </div>
 
-        <button className="aad-submit" onClick={submit} disabled={saving || uploading || !form.title.trim()}>
+        <button className="aad-submit" onClick={submit} disabled={saving || !form.title.trim()}>
           {saving ? 'جاري الحفظ...' : editingId ? 'حفظ التعديلات' : 'إضافة الإعلان (مفعّل مباشرة)'}
         </button>
       </div>
@@ -410,8 +447,8 @@ export default function AdminAdsPage() {
       ) : (
         <div className="aad-list">
           {ads.map((ad) => (
-            <div className={`aad-row${editingId === ad.id ? ' aad-active-edit' : ''}`} key={ad.id}>
-              <div className="aad-thumb" style={ad.imageUrl ? { backgroundImage: `url(${ad.imageUrl})` } : undefined}>
+            <div key={ad.id} className={`aad-row ${editingId === ad.id ? 'aad-active-edit' : ''}`}>
+              <div className="aad-thumb" style={ad.imageUrl ? { backgroundImage: `url(${ad.imageUrl})` } : {}}>
                 {!ad.imageUrl && 'بدون صورة'}
               </div>
               <div className="aad-row-main">
@@ -432,11 +469,17 @@ export default function AdminAdsPage() {
                 </div>
               </div>
               <div className="aad-actions">
-                <button className="aad-btn" onClick={() => startEdit(ad)}>تعديل</button>
-                {ad.status !== 'ACTIVE' && <button className="aad-btn" onClick={() => setStatus(ad.id, 'ACTIVE')}>تفعيل</button>}
-                {ad.status === 'ACTIVE' && <button className="aad-btn" onClick={() => setStatus(ad.id, 'PAUSED')}>إيقاف</button>}
-                {ad.status !== 'REJECTED' && <button className="aad-btn" onClick={() => setStatus(ad.id, 'REJECTED')}>رفض</button>}
-                <button className="aad-btn aad-danger" onClick={() => remove(ad.id)}>حذف</button>
+                <button className="aad-ico" title="تعديل" onClick={() => startEdit(ad)}>{IC.edit}</button>
+                {ad.status !== 'ACTIVE' && (
+                  <button className="aad-ico aad-ico-ok" title="تفعيل" onClick={() => setStatus(ad.id, 'ACTIVE')}>{IC.play}</button>
+                )}
+                {ad.status === 'ACTIVE' && (
+                  <button className="aad-ico aad-ico-warn" title="إيقاف" onClick={() => setStatus(ad.id, 'PAUSED')}>{IC.pause}</button>
+                )}
+                {ad.status !== 'REJECTED' && (
+                  <button className="aad-ico" title="رفض" onClick={() => setStatus(ad.id, 'REJECTED')}>{IC.reject}</button>
+                )}
+                <button className="aad-ico aad-ico-danger" title="حذف" onClick={() => remove(ad.id)}>{IC.trash}</button>
               </div>
             </div>
           ))}
