@@ -107,17 +107,15 @@ export default function ProjectStartPage() {
   </p>
   <span className="ps-tag now">متاح الآن</span>
 </button>
-          {/* رشّحلي الأفضل */}
-          <button className="ps-card soon" onClick={() => soon('رشّحلي الأفضل')}>
-            <span className="ps-badge">قريبًا</span>
-            <span className="ps-ic">{ICON_STAR}</span>
-            <h2 className="ps-ct">محايد ترشّحلك الأفضل</h2>
-            <p className="ps-desc">
-              قوللنا احتياجك، وخبراؤنا التقنيون يرشّحولك أنسب مقدم خدمة لطبيعة مشروعك وميزانيتك.
-            </p>
-            <span className="ps-tag soon">قيد التطوير</span>
-          </button>
-
+       {/* رشّحلي الأفضل */}
+<button className="ps-card" onClick={() => router.push('/projects/recommend')}>
+  <span className="ps-ic">{ICON_STAR}</span>
+  <h2 className="ps-ct">محايد ترشّحلك الأفضل</h2>
+  <p className="ps-desc">
+    قوللنا احتياجك، وخبراؤنا التقنيون يرشّحولك أنسب مقدم خدمة لطبيعة مشروعك وميزانيتك.
+  </p>
+  <span className="ps-tag now">متاح الآن</span>
+</button>
           {/* دعوة طرف خارجي */}
           <button className="ps-card soon" onClick={() => soon('دعوة طرف خارجي')}>
             <span className="ps-badge">قريبًا</span>
