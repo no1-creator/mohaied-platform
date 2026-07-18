@@ -16,7 +16,7 @@ import { EscrowModule } from './escrow/escrow.module';
 import { OptionsModule } from './options/options.module';
 import { ContentModule } from './content/content.module';
 import { AdsModule } from './ads/ads.module';
-
+import { NotificationsModule } from './notifications/notifications.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -38,8 +38,9 @@ import { AdsModule } from './ads/ads.module';
     EscrowModule,
     OptionsModule,
     ContentModule,
-    AdsModule,
-  ],
+     AdsModule,
+  NotificationsModule,
+],
   controllers: [],
   providers: [],
 })
