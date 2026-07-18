@@ -18,8 +18,7 @@ const ADB_CSS = `
 .adb-track { position:absolute; inset:0; }
 .adb-slide { position:absolute; inset:0; opacity:0; transition:opacity .8s ease; pointer-events:none; text-decoration:none; display:block; }
 .adb-slide.active { opacity:1; pointer-events:auto; }
-.adb-bg { position:absolute; inset:0; background-size:cover; background-position:center; transform:scale(1.04); transition:transform 7s ease; }
-.adb-slide.active .adb-bg { transform:scale(1.12); }
+.adb-bg { position:absolute; inset:0; background-size:cover; background-position:center; }
 .adb-bg.fallback { background:linear-gradient(135deg,var(--green),var(--green-dark)); }
 .adb-overlay { position:absolute; inset:0; background:linear-gradient(to left, rgba(0,0,0,.62), rgba(0,0,0,.28) 55%, rgba(0,0,0,.08)); }
 .adb-content { position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:12px; padding:0 52px; color:#fff; max-width:660px; }
