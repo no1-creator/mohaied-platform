@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/roles.guard';
@@ -16,14 +24,25 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get('me')
-getMe(@GetUser('id') userId: string) {
-  return this.usersService.getMe(userId);
-}
+  getMe(@GetUser('id') userId: string) {
+    return this.usersService.getMe(userId);
+  }
 
-@Patch('me')
-updateMe(@GetUser('id') userId: string, @Body() dto: UpdateMeDto) {
-  return this.usersService.updateMe(userId, dto);
-}
+  @Patch('me')
+  updateMe(@GetUser('id') userId: string, @Body() dto: UpdateMeDto) {
+    return this.usersService.updateMe(userId, dto);
+  }
+
+  // دليل مقدمي الخدمة
+  @Get('providers')
+  listProviders() {
+    return this.usersService.listProviders();
+  }
+
+  @Get('providers/:id')
+  getProvider(@Param('id') id: string) {
+    return this.usersService.getProvider(id);
+  }
 
   @Post('provider-profile')
   @Roles(UserRole.PROVIDER)
