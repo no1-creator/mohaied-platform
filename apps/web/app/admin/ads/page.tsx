@@ -62,7 +62,6 @@ async function compressImage(file: File): Promise<string> {
     r.readAsDataURL(file);
   });
   const img = await loadImage(readerUrl);
-
   const render = (maxDim: number, quality: number): string => {
     let w = img.width;
     let h = img.height;
@@ -81,20 +80,19 @@ async function compressImage(file: File): Promise<string> {
     ctx.drawImage(img, 0, 0, w, h);
     return c.toDataURL('image/jpeg', quality);
   };
-
-  const LIMIT = 85000;
-  let out = render(1000, 0.72);
-  let q = 0.72;
-  while (out.length > LIMIT && q > 0.35) {
-    q -= 0.1;
-    out = render(1000, q);
+  const LIMIT = 3500000; // ~2.6MB — صور بانر كبيرة وواضحة
+  let out = render(1920, 0.85);
+  let q = 0.85;
+  while (out.length > LIMIT && q > 0.5) {
+    q -= 0.07;
+    out = render(1920, q);
   }
   if (out.length > LIMIT) {
-    q = 0.6;
-    out = render(680, q);
-    while (out.length > LIMIT && q > 0.3) {
-      q -= 0.1;
-      out = render(680, q);
+    q = 0.72;
+    out = render(1500, q);
+    while (out.length > LIMIT && q > 0.45) {
+      q -= 0.07;
+      out = render(1500, q);
     }
   }
   return out;
