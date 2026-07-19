@@ -44,6 +44,11 @@ export class AdsController {
     return this.ads.listMine(user.id);
   }
 
+@Get('mine/credits')
+@UseGuards(JwtAuthGuard)
+myCredits(@GetUser() user: AuthUser) {
+  return this.ads.myAdCredits(user.id);
+}
   @Post()
   @UseGuards(JwtAuthGuard)
   create(@Body() dto: CreateAdDto, @GetUser() user: AuthUser) {
