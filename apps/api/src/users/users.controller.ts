@@ -15,6 +15,7 @@ import { UserRole } from '@prisma/client';
 import {
   CreateProviderProfileDto,
   CreateSupervisorProfileDto,
+  UpdateProviderProfileDto,
 } from './dto/profile.dto';
 import { UpdateMeDto } from './dto/update-me.dto';
 
@@ -51,6 +52,15 @@ export class UsersController {
     @Body() dto: CreateProviderProfileDto,
   ) {
     return this.usersService.createProviderProfile(userId, dto);
+  }
+
+  @Patch('provider-profile')
+  @Roles(UserRole.PROVIDER)
+  updateProviderProfile(
+    @GetUser('id') userId: string,
+    @Body() dto: UpdateProviderProfileDto,
+  ) {
+    return this.usersService.updateProviderProfile(userId, dto);
   }
 
   @Post('supervisor-profile')
