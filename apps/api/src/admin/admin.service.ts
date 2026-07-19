@@ -1,13 +1,19 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { SendNotificationDto } from './dto/admin.dto';
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notifications: NotificationsService,
+  ) {}
 
   async getStats() {
     const [
@@ -151,6 +157,63 @@ export class AdminService {
         isActive: true,
       },
     });
+  }
+
+  async setRole(id: string, role: string) {
+    const user = await this.ensureUser(id);
+    if (user.role === 'ADMIN' && role !== 'ADMIN') {
+      const admins = await this.prisma.user.count({ where: { role: 'ADMIN' } });
+      if (admins <= 1) {
+        throw new ForbiddenException('لا يمكن إزالة آخر حساب أدمن');
+      }
+    }
+    return this.prisma.user.update({
+      where: { id },
+      data: { role: role as any },
+      select: {
+        id: true,
+        fullName: true,
+        role: true,
+        isVerified: true,
+        isActive: true,
+      },
+    });
+  }
+
+  async notify(dto: SendNotificationDto) {
+    if (dto.target === 'user') {
+      if (!dto.userId) {
+        throw new BadRequestException('حدد المستخدم المستهدف');
+      }
+      await this.ensureUser(dto.userId);
+      await this.notifications.create({
+        userId: dto.userId,
+        title: dto.title,
+        body: dto.body,
+        linkUrl: dto.linkUrl,
+      });
+      return { count: 1 };
+    }
+
+    const where: any = {};
+    if (dto.target === 'role') {
+      if (!dto.role) {
+        throw new BadRequestException('حدد الفئة المستهدفة');
+      }
+      where.role = dto.role;
+    }
+
+    const users = await this.prisma.user.findMany({
+      where,
+      select: { id: true },
+    });
+    const ids = users.map((u) => u.id);
+    const res = await this.notifications.createMany(ids, {
+      title: dto.title,
+      body: dto.body,
+      linkUrl: dto.linkUrl,
+    });
+    return { count: (res as any)?.count ?? ids.length };
   }
 
   async listProjects() {
