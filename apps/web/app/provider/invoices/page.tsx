@@ -257,10 +257,13 @@ export default function ProviderInvoicesPage() {
                         {inv.dueDate && <span className="in-m"><Icon name="clock" size={13} /> استحقاق: {new Date(inv.dueDate).toLocaleDateString('ar-EG')}</span>}
                       </div>
                     </div>
-                    <div className="in-card-side">
-                      <div className="in-total">{money(inv.total, inv.currency)}</div>
-                      <button className="in-del" onClick={(e) => { e.stopPropagation(); remove(inv); }}>حذف</button>
-                    </div>
+                   <div className="in-card-side">
+  <div className="in-total">{money(inv.total, inv.currency)}</div>
+  <div className="in-card-btns">
+    <a className="in-view" href={`/provider/invoices/${inv.id}`} onClick={(e) => e.stopPropagation()}>عرض / طباعة</a>
+    <button className="in-del" onClick={(e) => { e.stopPropagation(); remove(inv); }}>حذف</button>
+  </div>
+</div>
                   </div>
                 ))}
               </div>
@@ -410,6 +413,9 @@ const IN_CSS = `
 .in-card-side{text-align:left;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
 .in-total{font-size:17px;font-weight:900;color:var(--green-dark);white-space:nowrap;}
 .in-del{background:none;border:none;color:#b42318;font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit;}
+.in-card-btns{display:flex;align-items:center;gap:10px;}
+.in-view{color:var(--green-dark);font-weight:800;font-size:12.5px;text-decoration:none;cursor:pointer;}
+.in-view:hover{text-decoration:underline;}
 .in-empty{background:#fff;border:1px solid var(--line);border-radius:16px;padding:50px 24px;text-align:center;}
 .in-empty-ic{color:var(--green);margin-bottom:10px;}
 .in-empty h3{font-size:18px;font-weight:900;color:var(--ink);margin:0 0 8px;}
