@@ -26,6 +26,7 @@ import { KycModule } from './kyc/kyc.module';
 import { ClientsModule } from './clients/clients.module';
 import { ExternalProjectsModule } from './external-projects/external-projects.module';
 import { InvoicesModule } from './invoices/invoices.module';
+import { WalletModule } from './wallet/wallet.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { InvoicesModule } from './invoices/invoices.module';
     ClientsModule,
     ExternalProjectsModule,
     InvoicesModule,
+    WalletModule,
   ],
   controllers: [],
   providers: [],
