@@ -24,6 +24,7 @@ import { FilesModule } from './files/files.module';
 import { MessagesModule } from './messages/messages.module';
 import { KycModule } from './kyc/kyc.module';
 import { ClientsModule } from './clients/clients.module';
+import { ExternalProjectsModule } from './external-projects/external-projects.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { ClientsModule } from './clients/clients.module';
     MessagesModule,
     KycModule,
     ClientsModule,
+    ExternalProjectsModule,
   ],
   controllers: [],
   providers: [],
