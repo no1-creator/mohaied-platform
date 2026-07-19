@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
@@ -52,6 +52,14 @@ const PR_CSS = `
 .pr-field > span { font-size:13px; font-weight:700; color:var(--ink); }
 .pr-field input { border:1px solid var(--line); border-radius:10px; padding:11px 13px; font-size:14px; font-family:inherit; background:var(--background); color:var(--ink); }
 .pr-field input:focus { outline:none; border-color:var(--green-light); background:#fff; }
+.pr-up { display:flex; align-items:center; gap:16px; }
+.pr-up-preview { width:80px; height:80px; border-radius:50%; overflow:hidden; flex-shrink:0; background:linear-gradient(140deg,var(--green-light),var(--green-dark)); color:#fff; font-weight:800; font-size:32px; display:flex; align-items:center; justify-content:center; border:1px solid var(--line); }
+.pr-up-preview img { width:100%; height:100%; object-fit:cover; }
+.pr-up-side { display:flex; flex-direction:column; gap:8px; }
+.pr-up-btns { display:flex; gap:8px; flex-wrap:wrap; }
+.pr-up-btn { background:var(--mint); color:var(--green-dark); border:1px solid var(--green-light); font-weight:700; font-size:13px; padding:8px 16px; border-radius:9px; cursor:pointer; font-family:inherit; }
+.pr-up-remove { background:#fff; color:#b42318; border:1px solid #f5c6c2; font-weight:700; font-size:13px; padding:8px 16px; border-radius:9px; cursor:pointer; font-family:inherit; }
+.pr-up-hint { font-size:12px; color:var(--muted); line-height:1.6; }
 .pr-actions { display:flex; gap:10px; margin-top:4px; }
 .pr-save { background:var(--green); color:#fff; border:none; font-weight:800; font-size:14px; padding:11px 26px; border-radius:10px; cursor:pointer; font-family:inherit; }
 .pr-save:disabled { opacity:.6; cursor:default; }
@@ -72,6 +80,7 @@ const PR_CSS = `
 
 export default function ProfilePage() {
   const router = useRouter();
+  const fileRef = useRef<HTMLInputElement | null>(null);
   const [me, setMe] = useState<Me | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -102,6 +111,30 @@ export default function ProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
+  function pickAvatar(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (e.target) e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setMsg('الملف لازم يكون صورة');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setMsg('حجم الصورة لازم يكون أقل من 2 ميجا');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setMsg('');
+      setForm((f) => ({ ...f, avatarUrl: String(reader.result) }));
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeAvatar() {
+    setForm((f) => ({ ...f, avatarUrl: '' }));
+  }
+
   async function save() {
     setSaving(true);
     setMsg('');
@@ -120,6 +153,7 @@ export default function ProfilePage() {
 
   function cancel() {
     setEditing(false);
+    setMsg('');
     setForm({
       fullName: me?.fullName || '',
       phone: me?.phone || '',
@@ -223,6 +257,45 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="pr-form">
+              <div className="pr-field">
+                <span>الصورة الشخصية</span>
+                <div className="pr-up">
+                  <div className="pr-up-preview">
+                    {form.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={form.avatarUrl} alt="" />
+                    ) : (
+                      (form.fullName || me?.fullName || '؟').charAt(0)
+                    )}
+                  </div>
+                  <div className="pr-up-side">
+                    <div className="pr-up-btns">
+                      <button
+                        type="button"
+                        className="pr-up-btn"
+                        onClick={() => fileRef.current?.click()}
+                      >
+                        {form.avatarUrl ? 'تغيير الصورة' : 'اختر صورة'}
+                      </button>
+                      {form.avatarUrl && (
+                        <button type="button" className="pr-up-remove" onClick={removeAvatar}>
+                          إزالة
+                        </button>
+                      )}
+                    </div>
+                    <div className="pr-up-hint">
+                      صورة مربعة أوضح. الحد الأقصى 2 ميجا (JPG / PNG).
+                    </div>
+                  </div>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={pickAvatar}
+                  />
+                </div>
+              </div>
               <label className="pr-field">
                 <span>الاسم الكامل</span>
                 <input
@@ -236,14 +309,6 @@ export default function ProfilePage() {
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   placeholder="مثال: 01xxxxxxxxx"
-                />
-              </label>
-              <label className="pr-field">
-                <span>رابط الصورة الشخصية</span>
-                <input
-                  value={form.avatarUrl}
-                  onChange={(e) => setForm({ ...form, avatarUrl: e.target.value })}
-                  placeholder="https://..."
                 />
               </label>
               <div className="pr-actions">
