@@ -1,302 +1,205 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { api } from '@/lib/api';
-import ProviderShell from '@/components/ProviderShell';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import ClientShell from '@/components/ClientShell';
 import Icon from '@/components/Icon';
+import { api } from '@/lib/api';
 
-type Client = {
-  id: string;
-  name: string;
-  company?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  whatsapp?: string | null;
-  source?: string | null;
-  notes?: string | null;
-  createdAt: string;
+type Me = { fullName: string; isVerified: boolean };
+type Project = { id: string; title: string; field: string; status: string; createdAt: string };
+
+const STATUS_LABELS: Record<string, string> = {
+  OPEN: 'مفتوح',
+  IN_PROGRESS: 'قيد التنفيذ',
+  DISPUTED: 'نزاع',
+  COMPLETED: 'مكتمل',
+  CANCELLED: 'ملغي',
 };
 
-const EMPTY = { name: '', company: '', email: '', phone: '', whatsapp: '', source: 'EXTERNAL', notes: '' };
+const STATUS_TONE: Record<string, string> = {
+  OPEN: 'blue',
+  IN_PROGRESS: 'amber',
+  DISPUTED: 'red',
+  COMPLETED: 'ok',
+  CANCELLED: 'muted',
+};
 
-export default function ProviderClientsPage() {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [q, setQ] = useState('');
+export default function ClientOverviewPage() {
+  const [me, setMe] = useState<Me | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const [showForm, setShowForm] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ ...EMPTY });
-  const [saving, setSaving] = useState(false);
-  const [formErr, setFormErr] = useState('');
-
-  const load = () => {
-    setLoading(true);
-    api<Client[]>('/clients')
-      .then((d) => setClients(Array.isArray(d) ? d : []))
-      .catch((e) => setError(e.message))
+  useEffect(() => {
+    Promise.all([api<Me>('/users/me'), api<Project[]>('/projects/mine')])
+      .then(([m, p]) => {
+        setMe(m);
+        setProjects(p);
+      })
+      .catch((e: any) => setError(e.message))
       .finally(() => setLoading(false));
-  };
-  useEffect(() => { load(); }, []);
+  }, []);
 
-  const filtered = useMemo(() => {
-    const t = q.trim().toLowerCase();
-    if (!t) return clients;
-    return clients.filter((c) =>
-      [c.name, c.company, c.email, c.phone, c.whatsapp, c.notes]
-        .filter(Boolean)
-        .some((v) => String(v).toLowerCase().includes(t))
-    );
-  }, [clients, q]);
+  const total = projects.length;
+  const inProgress = projects.filter((p) => p.status === 'IN_PROGRESS').length;
+  const completed = projects.filter((p) => p.status === 'COMPLETED').length;
+  const disputed = projects.filter((p) => p.status === 'DISPUTED').length;
+  const recent = [...projects]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5);
 
-  const openAdd = () => { setEditId(null); setForm({ ...EMPTY }); setFormErr(''); setShowForm(true); };
-  const openEdit = (c: Client) => {
-    setEditId(c.id);
-    setForm({
-      name: c.name || '',
-      company: c.company || '',
-      email: c.email || '',
-      phone: c.phone || '',
-      whatsapp: c.whatsapp || '',
-      source: c.source || 'EXTERNAL',
-      notes: c.notes || '',
-    });
-    setFormErr('');
-    setShowForm(true);
-  };
-  const close = () => { if (!saving) setShowForm(false); };
-  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const stats = [
+    { label: 'إجمالي المشاريع', value: total, icon: 'folder', tone: '' },
+    { label: 'قيد التنفيذ', value: inProgress, icon: 'clock', tone: 'amber' },
+    { label: 'مكتملة', value: completed, icon: 'badgeCheck', tone: 'ok' },
+    { label: 'نزاعات', value: disputed, icon: 'scale', tone: 'red' },
+  ];
 
-  const save = async () => {
-    if (!form.name.trim()) { setFormErr('اكتب اسم العميل على الأقل'); return; }
-    setSaving(true);
-    setFormErr('');
-    const body = {
-      name: form.name.trim(),
-      company: form.company.trim() || undefined,
-      email: form.email.trim() || undefined,
-      phone: form.phone.trim() || undefined,
-      whatsapp: form.whatsapp.trim() || undefined,
-      source: form.source || 'EXTERNAL',
-      notes: form.notes.trim() || undefined,
-    };
-    try {
-      if (editId) {
-        await api(`/clients/${editId}`, { method: 'PATCH', body });
-      } else {
-        await api('/clients', { method: 'POST', body });
-      }
-      setShowForm(false);
-      load();
-    } catch (e: any) {
-      setFormErr(e?.message || 'حصل خطأ، حاول تاني');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const remove = async (c: Client) => {
-    if (!confirm(`متأكد إنك عايز تمسح «${c.name}»؟`)) return;
-    try {
-      await api(`/clients/${c.id}`, { method: 'DELETE' });
-      setClients((list) => list.filter((x) => x.id !== c.id));
-    } catch (e: any) {
-      alert(e?.message || 'تعذّر الحذف');
-    }
-  };
-
-  const waDigits = (v?: string | null) => (v || '').replace(/\D/g, '');
+  const actions = [
+    { href: '/projects/start', icon: 'plus', title: 'مشروع جديد', desc: 'انشر مشروعك واستقبل عروض.', accent: true },
+    { href: '/projects', icon: 'folder', title: 'مشاريعي', desc: 'تابع كل مشاريعك وحالتها.', accent: false },
+    { href: '/complaints/mine', icon: 'scale', title: 'شكاويّ ونزاعاتي', desc: 'تابع الشكاوى وقرارات محايد.', accent: false },
+    { href: '/profile', icon: 'user', title: 'ملفي الشخصي', desc: 'بياناتك وتوثيق حسابك.', accent: false },
+  ];
 
   return (
-    <ProviderShell active="clients" title="عملائي">
-      <style>{CL_CSS}</style>
-      <div className="cl-wrap">
-        <div className="cl-bar">
-          <div className="cl-search">
-            <Icon name="search" size={17} />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ابحث باسم العميل أو الشركة أو رقم..." />
+    <ClientShell active="overview" title="نظرة عامة">
+      <style>{CO_CSS}</style>
+
+      {loading ? (
+        <div className="co-state">جاري التحميل...</div>
+      ) : error ? (
+        <div className="co-state err">{error}</div>
+      ) : (
+        <>
+          <div className="co-hero">
+            <div className="co-hero-orb" />
+            <div className="co-hero-in">
+              <div className="co-badge">بيئة العميل</div>
+              <h2>أهلًا بيك، {me?.fullName} 👋</h2>
+              <p>تابع مشاريعك، استقبل العروض، وكل خطوة موثّقة وحقوقك محفوظة داخل محايد.</p>
+              {me && !me.isVerified && <div className="co-unverified">⏳ حسابك بانتظار التوثيق</div>}
+              <Link href="/projects/start" className="co-cta">
+                <Icon name="plus" size={16} /> ابدأ مشروع جديد
+              </Link>
+            </div>
           </div>
-          <button className="cl-add" onClick={openAdd}>
-            <Icon name="plus" size={16} /> أضف عميل
-          </button>
-        </div>
 
-        {loading ? (
-          <div className="cl-state">جاري التحميل...</div>
-        ) : error ? (
-          <div className="cl-state cl-err">{error}</div>
-        ) : filtered.length === 0 ? (
-          <div className="cl-empty">
-            <div className="cl-empty-ic"><Icon name="users" size={30} /></div>
-            <h3>{clients.length === 0 ? 'لسه مضفتش عملاء' : 'مفيش نتايج للبحث'}</h3>
-            <p>
-              {clients.length === 0
-                ? 'ضيف عملاءك — سواء من المنصة أو من برّه — وابدأ تدير تعاملاتك من مكان واحد.'
-                : 'جرّب كلمة بحث تانية.'}
-            </p>
-            {clients.length === 0 && <button className="cl-empty-btn" onClick={openAdd}>أضف أول عميل</button>}
-          </div>
-        ) : (
-          <div className="cl-grid">
-            {filtered.map((c) => {
-              const wa = waDigits(c.whatsapp);
-              return (
-                <div key={c.id} className="cl-card">
-                  <div className="cl-card-head">
-                    <span className="cl-avatar">{(c.name || '؟').charAt(0)}</span>
-                    <div className="cl-id">
-                      <h3 className="cl-name">{c.name}</h3>
-                      {c.company && <p className="cl-company">{c.company}</p>}
-                    </div>
-                    <span className={`cl-src ${c.source === 'PLATFORM' ? 'cl-src-p' : ''}`}>
-                      {c.source === 'PLATFORM' ? 'من المنصة' : 'عميل خارجي'}
-                    </span>
-                  </div>
-
-                  <div className="cl-contacts">
-                    {c.phone && (
-                      <a className="cl-contact" href={`tel:${c.phone}`}>
-                        <Icon name="phone" size={14} /> {c.phone}
-                      </a>
-                    )}
-                    {wa && (
-<a className="cl-contact" href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer">
-                  <Icon name="phone" size={14} /> واتساب
-                      </a>
-                    )}
-                    {c.email && (
-                      <a className="cl-contact" href={`mailto:${c.email}`}>
-                        <Icon name="link" size={14} /> {c.email}
-                      </a>
-                    )}
-                  </div>
-
-                  {c.notes && <p className="cl-notes">{c.notes}</p>}
-
-                  <div className="cl-actions">
-                    <button className="cl-btn" onClick={() => openEdit(c)}>تعديل</button>
-                    <button className="cl-btn cl-btn-danger" onClick={() => remove(c)}>حذف</button>
-                  </div>
+          <div className="co-stats">
+            {stats.map((s) => (
+              <div key={s.label} className={`co-stat ${s.tone ? 'tone-' + s.tone : ''}`}>
+                <div className="co-stat-icon">
+                  <Icon name={s.icon} size={22} />
                 </div>
-              );
-            })}
+                <div>
+                  <div className="co-stat-value">{s.value}</div>
+                  <div className="co-stat-label">{s.label}</div>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
-      </div>
 
-      {showForm && (
-        <div className="cl-overlay" onClick={close}>
-          <div className="cl-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="cl-modal-head">
-              <h2>{editId ? 'تعديل بيانات العميل' : 'إضافة عميل جديد'}</h2>
-              <button className="cl-x" onClick={close}>✕</button>
-            </div>
-
-            <div className="cl-form">
-              <label className="cl-field">
-                <span>اسم العميل *</span>
-                <input value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="مثلاً: أحمد محمد" />
-              </label>
-              <div className="cl-row">
-                <label className="cl-field">
-                  <span>الشركة</span>
-                  <input value={form.company} onChange={(e) => set('company', e.target.value)} placeholder="اسم الشركة (اختياري)" />
-                </label>
-                <label className="cl-field">
-                  <span>المصدر</span>
-                  <select value={form.source} onChange={(e) => set('source', e.target.value)}>
-                    <option value="EXTERNAL">عميل خارجي</option>
-                    <option value="PLATFORM">من المنصة</option>
-                  </select>
-                </label>
-              </div>
-              <div className="cl-row">
-                <label className="cl-field">
-                  <span>التليفون</span>
-                  <input value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="01xxxxxxxxx" />
-                </label>
-                <label className="cl-field">
-                  <span>واتساب</span>
-                  <input value={form.whatsapp} onChange={(e) => set('whatsapp', e.target.value)} placeholder="201xxxxxxxxx" />
-                </label>
-              </div>
-              <label className="cl-field">
-                <span>الإيميل</span>
-                <input value={form.email} onChange={(e) => set('email', e.target.value)} placeholder="name@example.com" />
-              </label>
-              <label className="cl-field">
-                <span>ملاحظات</span>
-                <textarea value={form.notes} onChange={(e) => set('notes', e.target.value)} rows={3} placeholder="أي تفاصيل مهمة عن العميل..." />
-              </label>
-
-              {formErr && <div className="cl-form-err">{formErr}</div>}
-
-              <div className="cl-form-actions">
-                <button className="cl-cancel" onClick={close} disabled={saving}>إلغاء</button>
-                <button className="cl-save" onClick={save} disabled={saving}>
-                  {saving ? 'جاري الحفظ...' : editId ? 'حفظ التعديلات' : 'إضافة العميل'}
-                </button>
-              </div>
-            </div>
+          <h3 className="co-sec">اختصاراتك</h3>
+          <div className="co-actions">
+            {actions.map((a) => (
+              <Link key={a.href} href={a.href} className={`co-action ${a.accent ? 'accent' : ''}`}>
+                <div className="co-action-icon">
+                  <Icon name={a.icon} size={22} />
+                </div>
+                <div className="co-action-title">{a.title}</div>
+                <div className="co-action-desc">{a.desc}</div>
+              </Link>
+            ))}
           </div>
-        </div>
+
+          <h3 className="co-sec">أحدث مشاريعك</h3>
+          {recent.length === 0 ? (
+            <div className="co-empty">
+              لسه مفيش مشاريع. <Link href="/projects/start">ابدأ أول مشروع</Link>
+            </div>
+          ) : (
+            <div className="co-table-wrap">
+              <table className="co-table">
+                <thead>
+                  <tr>
+                    <th>المشروع</th>
+                    <th>المجال</th>
+                    <th>الحالة</th>
+                    <th>التاريخ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recent.map((p) => (
+                    <tr key={p.id}>
+                      <td>
+                        <Link href={`/projects/${p.id}`} className="co-link">
+                          {p.title}
+                        </Link>
+                      </td>
+                      <td>{p.field}</td>
+                      <td>
+                        <span className={`co-badge ${STATUS_TONE[p.status] || 'muted'}`}>
+                          {STATUS_LABELS[p.status] || p.status}
+                        </span>
+                      </td>
+                      <td className="co-date">{new Date(p.createdAt).toLocaleDateString('ar-EG')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
-    </ProviderShell>
+    </ClientShell>
   );
 }
 
-const CL_CSS = `
-.cl-wrap{max-width:960px;margin:0 auto;}
-.cl-state{padding:50px;text-align:center;color:var(--muted);}
-.cl-err{color:#b42318;}
-.cl-bar{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
-.cl-search{flex:1;min-width:220px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 14px;}
-.cl-search svg{color:var(--muted);flex-shrink:0;}
-.cl-search input{border:none;outline:none;background:transparent;padding:12px 0;width:100%;font-family:inherit;font-size:14px;color:var(--ink);}
-.cl-add{display:flex;align-items:center;gap:6px;background:var(--green);color:#fff;border:none;font-weight:800;font-size:14px;padding:0 22px;border-radius:12px;cursor:pointer;font-family:inherit;}
-.cl-add:hover{background:var(--green-dark);}
-.cl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
-.cl-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;transition:all .15s;}
-.cl-card:hover{border-color:var(--green-light);box-shadow:0 10px 24px rgba(40,125,115,.08);}
-.cl-card-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-.cl-avatar{width:44px;height:44px;border-radius:12px;background:var(--mint);color:var(--green-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0;}
-.cl-id{flex:1;min-width:0;}
-.cl-name{font-size:16px;font-weight:800;color:var(--ink);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cl-company{font-size:12.5px;color:var(--muted);margin:2px 0 0;}
-.cl-src{font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap;background:#eef1f0;color:#67736f;}
-.cl-src-p{background:#e3f4ec;color:#1c7a4f;}
-.cl-contacts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
-.cl-contact{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--green-dark);text-decoration:none;background:var(--mint);padding:5px 10px;border-radius:999px;font-weight:700;}
-.cl-contact:hover{background:#dcefe7;}
-.cl-contact svg{color:var(--green);}
-.cl-notes{font-size:13px;color:var(--muted);line-height:1.7;margin:0 0 14px;background:var(--background);border-radius:10px;padding:10px 12px;}
-.cl-actions{display:flex;gap:8px;margin-top:auto;}
-.cl-btn{flex:1;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px;font-family:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;transition:all .15s;}
-.cl-btn:hover{border-color:var(--green-light);}
-.cl-btn-danger{color:#b42318;}
-.cl-btn-danger:hover{border-color:#f0c4c0;background:#fdf5f4;}
-.cl-empty{background:#fff;border:1px solid var(--line);border-radius:16px;padding:50px 24px;text-align:center;}
-.cl-empty-ic{color:var(--green);margin-bottom:10px;}
-.cl-empty h3{font-size:18px;font-weight:900;color:var(--ink);margin:0 0 8px;}
-.cl-empty p{color:var(--muted);font-size:14px;line-height:1.7;margin:0 0 18px;}
-.cl-empty-btn{background:var(--green);color:#fff;border:none;font-weight:800;font-size:14px;padding:12px 26px;border-radius:12px;cursor:pointer;font-family:inherit;}
-.cl-overlay{position:fixed;inset:0;background:rgba(23,33,31,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;}
-.cl-modal{background:#fff;border-radius:20px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.2);}
-.cl-modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--line);}
-.cl-modal-head h2{font-size:17px;font-weight:900;color:var(--ink);margin:0;}
-.cl-x{background:none;border:none;font-size:18px;color:var(--muted);cursor:pointer;line-height:1;}
-.cl-form{padding:22px 24px;}
-.cl-row{display:flex;gap:12px;}
-.cl-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;flex:1;}
-.cl-field span{font-size:13px;font-weight:700;color:var(--ink);}
-.cl-field input,.cl-field select,.cl-field textarea{border:1px solid var(--line);border-radius:11px;padding:11px 13px;font-family:inherit;font-size:14px;color:var(--ink);outline:none;background:#fff;}
-.cl-field input:focus,.cl-field select:focus,.cl-field textarea:focus{border-color:var(--green-light);}
-.cl-field textarea{resize:vertical;}
-.cl-form-err{background:#fdf5f4;color:#b42318;font-size:13px;font-weight:700;padding:10px 12px;border-radius:10px;margin-bottom:14px;}
-.cl-form-actions{display:flex;gap:10px;margin-top:6px;}
-.cl-cancel{flex:1;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;font-family:inherit;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer;}
-.cl-save{flex:2;background:var(--green);color:#fff;border:none;border-radius:12px;padding:12px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;}
-.cl-save:disabled,.cl-cancel:disabled{opacity:.6;cursor:default;}
-@media(max-width:720px){.cl-grid{grid-template-columns:1fr;}.cl-row{flex-direction:column;gap:0;}}
+const CO_CSS = `
+.co-state{padding:40px;text-align:center;color:var(--muted);background:#fff;border-radius:14px;border:1px solid var(--line);}
+.co-state.err{color:#b4322b;background:#fdeceb;border-color:#f5cfcc;}
+.co-hero{position:relative;overflow:hidden;border-radius:22px;padding:30px 28px;color:#fff;background:linear-gradient(135deg,#2f8d81,var(--green-dark) 60%,#184f48);box-shadow:0 22px 50px rgba(24,79,72,.24);margin-bottom:22px;}
+.co-hero-orb{position:absolute;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.08);top:-130px;inset-inline-start:-60px;pointer-events:none;}
+.co-hero-in{position:relative;z-index:1;}
+.co-badge{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.24);padding:5px 13px;border-radius:999px;font-size:12px;font-weight:800;margin-bottom:12px;}
+.co-hero-in h2{font-size:25px;font-weight:900;margin:0 0 8px;}
+.co-hero-in p{font-size:14.5px;opacity:.95;line-height:1.8;margin:0 0 16px;max-width:560px;}
+.co-unverified{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);padding:6px 13px;border-radius:10px;font-size:13px;font-weight:700;margin:0 0 16px;}
+.co-cta{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--green-dark);padding:12px 24px;border-radius:13px;font-weight:900;font-size:14.5px;text-decoration:none;box-shadow:0 12px 26px rgba(0,0,0,.15);transition:transform .16s;}
+.co-cta:hover{transform:translateY(-2px);}
+.co-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.co-stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;align-items:center;gap:14px;box-shadow:0 10px 26px rgba(24,70,61,.06);}
+.co-stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--mint);color:var(--green-dark);flex-shrink:0;}
+.co-stat-value{font-size:26px;font-weight:800;color:var(--ink);line-height:1;}
+.co-stat-label{font-size:13px;color:var(--muted);margin-top:4px;}
+.co-stat.tone-red .co-stat-icon{background:#fdeceb;color:#b4322b;}
+.co-stat.tone-amber .co-stat-icon{background:#fdf3dd;color:#96690f;}
+.co-stat.tone-ok .co-stat-icon{background:#e3f4ec;color:#1c7a4f;}
+.co-sec{font-size:18px;font-weight:900;color:var(--ink);margin:28px 0 14px;}
+.co-actions{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+.co-action{position:relative;display:flex;flex-direction:column;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;text-decoration:none;transition:all .18s;box-shadow:0 4px 16px rgba(23,33,31,.04);}
+.co-action:hover{border-color:var(--green-light);transform:translateY(-4px);box-shadow:0 16px 34px rgba(40,125,115,.14);}
+.co-action-icon{width:48px;height:48px;border-radius:13px;background:var(--mint);color:var(--green-dark);display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+.co-action.accent .co-action-icon{background:linear-gradient(140deg,var(--green-light),var(--green-dark));color:#fff;}
+.co-action-title{font-size:16px;font-weight:800;color:var(--ink);margin-bottom:4px;}
+.co-action-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+.co-empty{padding:30px;text-align:center;color:var(--muted);background:#fff;border-radius:14px;border:1px solid var(--line);}
+.co-empty a{color:var(--green-dark);font-weight:800;}
+.co-table-wrap{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 10px 26px rgba(24,70,61,.05);}
+.co-table{width:100%;border-collapse:collapse;font-size:14px;}
+.co-table th{text-align:right;padding:14px 16px;background:var(--mint);color:var(--green-dark);font-weight:700;font-size:13px;}
+.co-table td{padding:13px 16px;border-top:1px solid var(--line);color:var(--ink);}
+.co-table tr:hover td{background:#fafcfb;}
+.co-link{color:var(--green-dark);font-weight:700;text-decoration:none;}
+.co-link:hover{text-decoration:underline;}
+.co-date{color:var(--muted);font-size:13px;}
+.co-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;}
+.co-badge.ok{background:#e3f4ec;color:#1c7a4f;}
+.co-badge.muted{background:#eef1f0;color:var(--muted);}
+.co-badge.red{background:#fdeceb;color:#b4322b;}
+.co-badge.blue{background:#e7f0fb;color:#2f5fa6;}
+.co-badge.amber{background:#fdf3dd;color:#96690f;}
+@media(max-width:900px){.co-stats{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.co-stats{grid-template-columns:1fr;}.co-hero-in h2{font-size:21px;}}
 `;
