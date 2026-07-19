@@ -20,6 +20,11 @@ type ProviderProfile = {
   skills?: string[] | string | null;
   rating?: number | string | null;
   reviewsCount?: number | null;
+  logoUrl?: string | null;
+  coverUrl?: string | null;
+  portfolioImages?: string | null;
+  linkedinUrl?: string | null;
+  whatsapp?: string | null;
 };
 
 type Provider = {
@@ -53,10 +58,21 @@ function ratingText(r?: number | string | null): string | null {
   if (Number.isNaN(n) || n <= 0) return null;
   return n.toFixed(1);
 }
+function parseGallery(s?: string | null): string[] {
+  if (!s) return [];
+  try {
+    const a = JSON.parse(s);
+    return Array.isArray(a) ? a.filter((x) => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
 
 const PV_CSS = `
 .pv-wrap{max-width:760px;margin:0 auto;width:100%;padding:24px 20px 90px;}
 .pv-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:0 12px 30px rgba(24,70,61,.05);}
+.pv-cover-banner{margin:-26px -26px 20px;height:190px;overflow:hidden;background:linear-gradient(120deg,var(--mint),#dcefe7);}
+.pv-cover-banner img{width:100%;height:100%;object-fit:cover;display:block;}
 .pv-head{display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
 .pv-av{width:74px;height:74px;border-radius:18px;object-fit:cover;background:var(--mint);color:var(--green-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:26px;flex-shrink:0;}
 .pv-name{font-size:22px;font-weight:800;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
@@ -71,6 +87,10 @@ const PV_CSS = `
 .pv-bio{font-size:14px;color:#3a4a46;line-height:1.9;margin:0;white-space:pre-wrap;}
 .pv-chips{display:flex;flex-wrap:wrap;gap:8px;}
 .pv-chip{background:var(--mint);color:var(--green-dark);font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:999px;}
+.pv-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+.pv-gitem{aspect-ratio:4/3;border-radius:12px;overflow:hidden;border:1px solid var(--line);display:block;}
+.pv-gitem img{width:100%;height:100%;object-fit:cover;transition:transform .2s;}
+.pv-gitem:hover img{transform:scale(1.05);}
 .pv-links{display:flex;flex-wrap:wrap;gap:16px;}
 .pv-link{color:var(--green-dark);font-size:13.5px;font-weight:700;text-decoration:none;}
 .pv-link:hover{text-decoration:underline;}
@@ -78,7 +98,7 @@ const PV_CSS = `
 .pv-cta:hover{background:var(--green-dark);}
 .pv-note{text-align:center;color:var(--muted);font-size:12.5px;margin-top:10px;line-height:1.7;}
 .pv-state{text-align:center;color:var(--muted);padding:50px 20px;font-size:14px;}
-@media(max-width:560px){.pv-name{font-size:19px;}}
+@media(max-width:560px){.pv-name{font-size:19px;}.pv-cover-banner{height:150px;}}
 `;
 
 export default function ProviderDetailPage() {
@@ -105,6 +125,9 @@ export default function ProviderDetailPage() {
   const displayName = pp?.companyName || provider?.fullName || '';
   const skills = toSkills(pp?.skills);
   const rate = ratingText(pp?.rating);
+  const gallery = parseGallery(pp?.portfolioImages);
+  const headImg = pp?.logoUrl || provider?.avatarUrl || '';
+  const waDigits = (pp?.whatsapp || '').replace(/\D/g, '');
 
   return (
     <>
@@ -117,9 +140,17 @@ export default function ProviderDetailPage() {
 
         {!loading && !error && provider && (
           <div className="pv-card">
+            {pp?.coverUrl && (
+              <div className="pv-cover-banner">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={pp.coverUrl} alt="" />
+              </div>
+            )}
+
             <div className="pv-head">
-              {provider.avatarUrl ? (
-                <img className="pv-av" src={provider.avatarUrl} alt={displayName} />
+              {headImg ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img className="pv-av" src={headImg} alt={displayName} />
               ) : (
                 <span className="pv-av">{initials(displayName)}</span>
               )}
@@ -175,9 +206,29 @@ export default function ProviderDetailPage() {
               </div>
             )}
 
-            {(pp?.website || pp?.portfolioUrl) && (
+            {gallery.length > 0 && (
               <div className="pv-sec">
-                <h2 className="pv-sec-h">روابط</h2>
+                <h2 className="pv-sec-h">معرض الأعمال</h2>
+                <div className="pv-gallery">
+                  {gallery.map((img, i) => (
+                    <a
+                      className="pv-gitem"
+                      key={i}
+                      href={img}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img} alt={`عمل ${i + 1}`} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(pp?.website || pp?.portfolioUrl || pp?.linkedinUrl || waDigits) && (
+              <div className="pv-sec">
+                <h2 className="pv-sec-h">روابط وتواصل</h2>
                 <div className="pv-links">
                   {pp?.website && (
                     <a className="pv-link" href={pp.website} target="_blank" rel="noopener noreferrer">
@@ -186,7 +237,17 @@ export default function ProviderDetailPage() {
                   )}
                   {pp?.portfolioUrl && (
                     <a className="pv-link" href={pp.portfolioUrl} target="_blank" rel="noopener noreferrer">
-                      معرض الأعمال ↗
+                      رابط أعمال سابقة ↗
+                    </a>
+                  )}
+                  {pp?.linkedinUrl && (
+                    <a className="pv-link" href={pp.linkedinUrl} target="_blank" rel="noopener noreferrer">
+                      لينكدإن ↗
+                    </a>
+                  )}
+                  {waDigits && (
+                    <a className="pv-link" href={`https://wa.me/${waDigits}`} target="_blank" rel="noopener noreferrer">
+                      واتساب ↗
                     </a>
                   )}
                 </div>
@@ -200,12 +261,12 @@ export default function ProviderDetailPage() {
               اطلب عرض من مقدم الخدمة ده
             </button>
             <p className="pv-note">
-      هتنشر تفاصيل مشروعك، ومقدم الخدمة ده هيقدر يقدّم لك عرضه — كله موثّق ومضمون من محايد.
-    </p>
+              هتنشر تفاصيل مشروعك، ومقدم الخدمة ده هيقدر يقدّم لك عرضه — كله موثّق ومضمون من محايد.
+            </p>
 
-    <ProviderReviews providerId={provider.id} />
-  </div>
-)}
+            <ProviderReviews providerId={provider.id} />
+          </div>
+        )}
       </div>
     </>
   );
