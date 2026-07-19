@@ -255,7 +255,7 @@ preferredProviderId String?
   messages              Message[]
   supervisorAssignments SupervisorAssignment[]
   activityLogs          ActivityLog[]
-  escrowTransactions    EscrowTransaction
+escrowTransactions    EscrowTransaction[]
 reviews               Review[]
 
   createdAt DateTime @default(now())
