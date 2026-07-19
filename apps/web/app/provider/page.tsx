@@ -46,19 +46,21 @@ const [loading, setLoading] = useState(true);
       return;
     }
     (async () => {
-      const [meR, subR, offR, opR, unR] = await Promise.allSettled([
-        api<Me>('/users/me'),
-        api<Sub>('/subscriptions/mine'),
-        api<Offer[]>('/offers/mine'),
-        api<OpenProject[]>('/projects/open'),
-        api<{ count: number }>('/notifications/unread-count'),
-      ]);
-      if (meR.status === 'fulfilled') setMe(meR.value);
-      if (subR.status === 'fulfilled') setSub(subR.value);
-      if (offR.status === 'fulfilled' && Array.isArray(offR.value)) setOffers(offR.value);
-      if (opR.status === 'fulfilled' && Array.isArray(opR.value)) setOpen(opR.value);
-      if (unR.status === 'fulfilled') setUnread(Number(unR.value?.count) || 0);
-      setLoading(false);
+ const [meR, subR, offR, opR, unR, acR] = await Promise.allSettled([
+  api<Me>('/users/me'),
+  api<Sub>('/subscriptions/mine'),
+  api<Offer[]>('/offers/mine'),
+  api<OpenProject[]>('/projects/open'),
+  api<{ count: number }>('/notifications/unread-count'),
+  api<{ total: number; used: number; remaining: number }>('/ads/mine/credits'),
+]);
+if (meR.status === 'fulfilled') setMe(meR.value);
+if (subR.status === 'fulfilled') setSub(subR.value);
+if (offR.status === 'fulfilled' && Array.isArray(offR.value)) setOffers(offR.value);
+if (opR.status === 'fulfilled' && Array.isArray(opR.value)) setOpen(opR.value);
+if (unR.status === 'fulfilled') setUnread(Number(unR.value?.count) || 0);
+if (acR.status === 'fulfilled') setAdCredits(acR.value);
+setLoading(false);
     })();
   }, [router]);
 
@@ -125,6 +127,24 @@ const [loading, setLoading] = useState(true);
               </div>
             )}
 
+            {/* رصيد الإعلانات */}
+{adCredits && adCredits.total > 0 && (
+  <div className="pw-adcredit">
+    <div className="pw-adcredit-info">
+      <div className="pw-adcredit-label">رصيد إعلاناتك هذا الشهر</div>
+      <div className="pw-adcredit-nums">
+        <span className="pw-adcredit-remain">{adCredits.remaining}</span>
+        <span className="pw-adcredit-of"> متبقّي من {adCredits.total}</span>
+      </div>
+      <div className="pw-adcredit-hint">
+        أي إعلان تعمله من رصيدك بيتفعّل فورًا من غير مراجعة. الرصيد بيتجدّد أول كل شهر.
+      </div>
+    </div>
+    <Link href="/advertise" className="pw-adcredit-btn">اعمل إعلان</Link>
+  </div>
+)}
+
+{/* إحصائيات سريعة */}
             {/* إحصائيات سريعة */}
             <div className="pw-stats">
               <Stat label="عروضك" value={offers.length} hint={pendingOffers ? `${pendingOffers} قيد المراجعة` : undefined} />
@@ -237,6 +257,13 @@ const PW_CSS = `
 .pw-perk{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--green-dark);}
 .pw-perk-label{font-size:12px;color:var(--muted);}
 .pw-perk-value{font-size:15px;font-weight:800;color:var(--ink);}
+.pw-adcredit{display:flex;justify-content:space-between;align-items:center;gap:16px;background:var(--sand);border:1px solid var(--green-light);border-radius:14px;padding:16px 18px;margin-bottom:16px;}
+.pw-adcredit-label{font-size:13px;color:var(--muted);margin-bottom:2px;}
+.pw-adcredit-nums{font-size:20px;font-weight:900;color:var(--ink);}
+.pw-adcredit-remain{color:var(--green-dark);font-size:26px;}
+.pw-adcredit-of{font-size:14px;color:var(--muted);font-weight:700;}
+.pw-adcredit-hint{font-size:12px;color:var(--muted);margin-top:4px;max-width:520px;}
+.pw-adcredit-btn{background:var(--green);color:#fff;font-weight:800;font-size:14px;padding:10px 18px;border-radius:12px;white-space:nowrap;text-decoration:none;}
 .pw-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
 .pw-stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;}
 .pw-stat-hot{border-color:var(--green);box-shadow:0 8px 20px rgba(40,125,115,.12);}
@@ -260,5 +287,5 @@ const PW_CSS = `
 .pw-item-amount{font-weight:800;color:var(--green-dark);font-size:13px;}
 .pw-item-status{font-size:12px;color:var(--muted);background:var(--mint);padding:3px 10px;border-radius:999px;}
 @media(max-width:820px){.pw-perks,.pw-stats,.pw-actions{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:520px){.pw-plan{flex-direction:column;align-items:flex-start;}.pw-perks,.pw-stats,.pw-actions{grid-template-columns:1fr 1fr;}}
+@media(max-width:520px){.pw-plan,.pw-adcredit{flex-direction:column;align-items:flex-start;}.pw-perks,.pw-stats,.pw-actions{grid-template-columns:1fr 1fr;}}
 `;
