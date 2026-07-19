@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, getToken } from '@/lib/api';
-import TopBar from '@/components/TopBar';
-import BackBar from '@/components/BackBar';
 import Icon from '@/components/Icon';
+import ProviderShell from '@/components/ProviderShell';
 
 type Me = { id: string; fullName?: string; role?: string; isVerified?: boolean };
 type Plan = {
@@ -36,9 +35,9 @@ export default function ProviderWorkspacePage() {
   const [sub, setSub] = useState<Sub>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [open, setOpen] = useState<OpenProject[]>([]);
-const [unread, setUnread] = useState(0);
-const [adCredits, setAdCredits] = useState<{ total: number; used: number; remaining: number } | null>(null);
-const [loading, setLoading] = useState(true);
+  const [unread, setUnread] = useState(0);
+  const [adCredits, setAdCredits] = useState<{ total: number; used: number; remaining: number } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!getToken()) {
@@ -46,21 +45,21 @@ const [loading, setLoading] = useState(true);
       return;
     }
     (async () => {
- const [meR, subR, offR, opR, unR, acR] = await Promise.allSettled([
-  api<Me>('/users/me'),
-  api<Sub>('/subscriptions/mine'),
-  api<Offer[]>('/offers/mine'),
-  api<OpenProject[]>('/projects/open'),
-  api<{ count: number }>('/notifications/unread-count'),
-  api<{ total: number; used: number; remaining: number }>('/ads/mine/credits'),
-]);
-if (meR.status === 'fulfilled') setMe(meR.value);
-if (subR.status === 'fulfilled') setSub(subR.value);
-if (offR.status === 'fulfilled' && Array.isArray(offR.value)) setOffers(offR.value);
-if (opR.status === 'fulfilled' && Array.isArray(opR.value)) setOpen(opR.value);
-if (unR.status === 'fulfilled') setUnread(Number(unR.value?.count) || 0);
-if (acR.status === 'fulfilled') setAdCredits(acR.value);
-setLoading(false);
+      const [meR, subR, offR, opR, unR, acR] = await Promise.allSettled([
+        api<Me>('/users/me'),
+        api<Sub>('/subscriptions/mine'),
+        api<Offer[]>('/offers/mine'),
+        api<OpenProject[]>('/projects/open'),
+        api<{ count: number }>('/notifications/unread-count'),
+        api<{ total: number; used: number; remaining: number }>('/ads/mine/credits'),
+      ]);
+      if (meR.status === 'fulfilled') setMe(meR.value);
+      if (subR.status === 'fulfilled') setSub(subR.value);
+      if (offR.status === 'fulfilled' && Array.isArray(offR.value)) setOffers(offR.value);
+      if (opR.status === 'fulfilled' && Array.isArray(opR.value)) setOpen(opR.value);
+      if (unR.status === 'fulfilled') setUnread(Number(unR.value?.count) || 0);
+      if (acR.status === 'fulfilled') setAdCredits(acR.value);
+      setLoading(false);
     })();
   }, [router]);
 
@@ -72,23 +71,9 @@ setLoading(false);
     d ? new Date(d).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
 
   return (
-    <main className="pw-main">
-      <TopBar />
-      <BackBar />
+    <ProviderShell active="overview" title="نظرة عامة">
       <style>{PW_CSS}</style>
       <div className="pw-wrap">
-        <div className="pw-head">
-          <div>
-            <h1 className="pw-title">بيئة عملك{me?.fullName ? `، ${me.fullName}` : ''} 👋</h1>
-            <p className="pw-sub">مكانك اللي بتدير منه شغلك على محايد.</p>
-          </div>
-          {me?.isVerified && (
-            <span className="pw-verified">
-              <Icon name="badgeCheck" size={16} /> موثّق
-            </span>
-          )}
-        </div>
-
         {loading ? (
           <div className="pw-loading">جاري التحميل...</div>
         ) : (
@@ -128,23 +113,22 @@ setLoading(false);
             )}
 
             {/* رصيد الإعلانات */}
-{adCredits && adCredits.total > 0 && (
-  <div className="pw-adcredit">
-    <div className="pw-adcredit-info">
-      <div className="pw-adcredit-label">رصيد إعلاناتك هذا الشهر</div>
-      <div className="pw-adcredit-nums">
-        <span className="pw-adcredit-remain">{adCredits.remaining}</span>
-        <span className="pw-adcredit-of"> متبقّي من {adCredits.total}</span>
-      </div>
-      <div className="pw-adcredit-hint">
-        أي إعلان تعمله من رصيدك بيتفعّل فورًا من غير مراجعة. الرصيد بيتجدّد أول كل شهر.
-      </div>
-    </div>
-    <Link href="/advertise" className="pw-adcredit-btn">اعمل إعلان</Link>
-  </div>
-)}
+            {adCredits && adCredits.total > 0 && (
+              <div className="pw-adcredit">
+                <div className="pw-adcredit-info">
+                  <div className="pw-adcredit-label">رصيد إعلاناتك هذا الشهر</div>
+                  <div className="pw-adcredit-nums">
+                    <span className="pw-adcredit-remain">{adCredits.remaining}</span>
+                    <span className="pw-adcredit-of"> متبقّي من {adCredits.total}</span>
+                  </div>
+                  <div className="pw-adcredit-hint">
+                    أي إعلان تعمله من رصيدك بيتفعّل فورًا من غير مراجعة. الرصيد بيتجدّد أول كل شهر.
+                  </div>
+                </div>
+                <Link href="/advertise" className="pw-adcredit-btn">اعمل إعلان</Link>
+              </div>
+            )}
 
-{/* إحصائيات سريعة */}
             {/* إحصائيات سريعة */}
             <div className="pw-stats">
               <Stat label="عروضك" value={offers.length} hint={pendingOffers ? `${pendingOffers} قيد المراجعة` : undefined} />
@@ -158,11 +142,11 @@ setLoading(false);
               <ActionCard href="/projects/open" icon="folder" title="المشاريع المتاحة" desc="اتصفّح وقدّم عروضك" />
               <ActionCard href="/providers" icon="grid" title="دليل مقدمي الخدمة" desc="شوف ظهورك في الدليل" />
               <ActionCard href="/profile" icon="user" title="بروفايلي" desc="عدّل بياناتك ومعرض أعمالك" />
-          <ActionCard href="/provider/plans" icon="creditCard" title="الباقات والاشتراك" desc="رقّي واحصل على مميزات" />
-  {plan?.analyticsAccess && (
-    <ActionCard href="/provider/analytics" icon="star" title="تحليلات أدائك" desc="عروضك وإعلاناتك بالأرقام" />
-  )}
-</div>
+              <ActionCard href="/provider/plans" icon="creditCard" title="الباقات والاشتراك" desc="رقّي واحصل على مميزات" />
+              {plan?.analyticsAccess && (
+                <ActionCard href="/provider/analytics" icon="star" title="تحليلات أدائك" desc="عروضك وإعلاناتك بالأرقام" />
+              )}
+            </div>
 
             {/* أحدث عروضك */}
             <div className="pw-panel">
@@ -193,7 +177,7 @@ setLoading(false);
           </>
         )}
       </div>
-    </main>
+    </ProviderShell>
   );
 }
 
@@ -240,12 +224,7 @@ function statusAr(s: string) {
 }
 
 const PW_CSS = `
-.pw-main{min-height:100vh;background:var(--background);}
-.pw-wrap{max-width:1000px;margin:0 auto;padding:24px 20px 60px;}
-.pw-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:20px;}
-.pw-title{font-size:24px;font-weight:900;color:var(--ink);margin:0;}
-.pw-sub{color:var(--muted);font-size:14px;margin:4px 0 0;}
-.pw-verified{display:inline-flex;align-items:center;gap:6px;background:var(--mint);color:var(--green-dark);font-weight:800;font-size:13px;padding:6px 12px;border-radius:999px;white-space:nowrap;}
+.pw-wrap{max-width:1040px;margin:0 auto;}
 .pw-loading{padding:60px;text-align:center;color:var(--muted);}
 .pw-plan{display:flex;justify-content:space-between;align-items:center;gap:16px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:14px;}
 .pw-plan-on{background:linear-gradient(120deg,var(--green),var(--green-dark));border-color:transparent;color:#fff;}
