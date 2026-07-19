@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, getToken } from '@/lib/api';
-import TopBar from '@/components/TopBar';
-import BackBar from '@/components/BackBar';
 import Icon from '@/components/Icon';
+import ProviderShell from '@/components/ProviderShell';
 
 type Plan = { name?: string; analyticsAccess?: boolean };
 type Sub = { plan?: Plan } | null;
@@ -58,15 +57,10 @@ export default function ProviderAnalyticsPage() {
   const ctr = impressions > 0 ? ((clicks / impressions) * 100).toFixed(1) : null;
 
   return (
-    <main className="an-main">
-      <TopBar />
-      <BackBar />
+    <ProviderShell active="analytics" title="التحليلات">
       <style>{AN_CSS}</style>
       <div className="an-wrap">
-        <div className="an-head">
-          <h1 className="an-title">تحليلات أدائك 📊</h1>
-          <p className="an-sub">نظرة سريعة على عروضك وإعلاناتك على محايد.</p>
-        </div>
+        <p className="an-sub">نظرة سريعة على عروضك وإعلاناتك على محايد.</p>
 
         {loading ? (
           <div className="an-loading">جاري التحميل...</div>
@@ -124,7 +118,7 @@ export default function ProviderAnalyticsPage() {
           </>
         )}
       </div>
-    </main>
+    </ProviderShell>
   );
 }
 
@@ -139,11 +133,8 @@ function Kpi({ label, value, icon, tone }: { label: string; value: number | stri
 }
 
 const AN_CSS = `
-.an-main{min-height:100vh;background:var(--background);}
-.an-wrap{max-width:1000px;margin:0 auto;padding:24px 20px 60px;}
-.an-head{margin-bottom:20px;}
-.an-title{font-size:24px;font-weight:900;color:var(--ink);margin:0;}
-.an-sub{color:var(--muted);font-size:14px;margin:4px 0 0;}
+.an-wrap{max-width:1000px;margin:0 auto;}
+.an-sub{color:var(--muted);font-size:14px;margin:0 0 16px;}
 .an-loading{padding:60px;text-align:center;color:var(--muted);}
 .an-gate{background:#fff;border:1px solid var(--line);border-radius:16px;padding:44px 24px;text-align:center;max-width:520px;margin:20px auto;}
 .an-gate-ic{color:var(--green);margin-bottom:10px;}
