@@ -780,3 +780,18 @@ model KycSubmission {
   @@index([userId])
   @@index([status])
 }
+model ProviderClient {
+  id         String   @id @default(uuid())
+  providerId String
+  name       String
+  company    String?
+  email      String?
+  phone      String?
+  whatsapp   String?
+  source     String?  // EXTERNAL | PLATFORM
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([providerId])
+}
