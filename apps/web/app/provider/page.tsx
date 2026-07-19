@@ -36,8 +36,9 @@ export default function ProviderWorkspacePage() {
   const [sub, setSub] = useState<Sub>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [open, setOpen] = useState<OpenProject[]>([]);
-  const [unread, setUnread] = useState(0);
-  const [loading, setLoading] = useState(true);
+const [unread, setUnread] = useState(0);
+const [adCredits, setAdCredits] = useState<{ total: number; used: number; remaining: number } | null>(null);
+const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!getToken()) {
