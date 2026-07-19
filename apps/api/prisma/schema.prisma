@@ -795,3 +795,21 @@ model ProviderClient {
 
   @@index([providerId])
 }
+model ExternalProject {
+  id          String    @id @default(uuid())
+  providerId  String
+  clientId    String?
+  title       String
+  description String?
+  status      String    @default("IN_PROGRESS") // NEW | IN_PROGRESS | DONE | CANCELLED
+  value       Decimal?
+  currency    String?   @default("EGP")
+  startDate   DateTime?
+  dueDate     DateTime?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([providerId])
+  @@index([clientId])
+}
