@@ -22,6 +22,7 @@ import { InvitationsModule } from './invitations/invitations.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { FilesModule } from './files/files.module';
 import { MessagesModule } from './messages/messages.module';
+import { KycModule } from './kyc/kyc.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { MessagesModule } from './messages/messages.module';
     ReviewsModule,
     FilesModule,
     MessagesModule,
+    KycModule,
   ],
   controllers: [],
   providers: [],
