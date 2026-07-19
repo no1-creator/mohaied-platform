@@ -29,7 +29,17 @@ type Invoice = {
 type Me = {
   fullName?: string;
   email?: string;
-  providerProfile?: { companyName?: string | null; headline?: string | null; whatsapp?: string | null } | null;
+  providerProfile?: { companyName?: string | null; headline?: string | null } | null;
+};
+type Biz = {
+  businessName?: string | null;
+  logoUrl?: string | null;
+  address?: string | null;
+  taxNumber?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  website?: string | null;
+  invoiceFooter?: string | null;
 };
 
 const STATUS_LABEL: Record<string, string> = { DRAFT: 'مسودة', SENT: 'مُرسلة', PAID: 'مدفوعة', CANCELLED: 'ملغية' };
@@ -41,6 +51,7 @@ export default function InvoiceDetailPage() {
   const id = String(params?.id || '');
   const [inv, setInv] = useState<Invoice | null>(null);
   const [me, setMe] = useState<Me | null>(null);
+  const [biz, setBiz] = useState<Biz | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -51,6 +62,7 @@ export default function InvoiceDetailPage() {
     Promise.all([
       api<Invoice>(`/invoices/${id}`).then((d) => setInv(d)),
       api<Me>('/users/me').then((d) => setMe(d)).catch(() => {}),
+      api<Biz>('/business-settings').then((d) => setBiz(d)).catch(() => {}),
     ])
       .catch((e: any) => setError(e?.message || 'تعذّر تحميل الفاتورة'))
       .finally(() => setLoading(false));
@@ -58,8 +70,8 @@ export default function InvoiceDetailPage() {
   useEffect(() => { if (id) load(); }, [id]);
 
   const num = (v?: number | string | null) => { const n = Number(v); return Number.isNaN(n) ? 0 : n; };
-  const cur = inv?.currency || 'EGP';
-  const money = (v?: number | string | null) => `${num(v).toLocaleString('en-US')} ${cur}`;
+  const cur = inv?.currency || biz?.businessName ? (inv?.currency || 'EGP') : (inv?.currency || 'EGP');
+  const money = (v?: number | string | null) => `${num(v).toLocaleString('en-US')} ${inv?.currency || 'EGP'}`;
   const fmt = (d?: string | null) => (d ? new Date(d).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }) : '—');
 
   const setStatus = async (status: string) => {
@@ -70,8 +82,9 @@ export default function InvoiceDetailPage() {
     finally { setBusy(false); }
   };
 
-  const businessName = me?.providerProfile?.companyName || me?.fullName || 'مقدّم الخدمة';
+  const businessName = biz?.businessName || me?.providerProfile?.companyName || me?.fullName || 'مقدّم الخدمة';
   const businessSub = me?.providerProfile?.headline || '';
+  const bizEmail = biz?.email || me?.email;
 
   return (
     <ProviderShell active="invoices" title="الفاتورة">
@@ -104,10 +117,19 @@ export default function InvoiceDetailPage() {
               <div className="iv-doc">
                 <div className="iv-head">
                   <div className="iv-biz">
-                    <div className="iv-biz-name">{businessName}</div>
-                    {businessSub && <div className="iv-biz-sub">{businessSub}</div>}
-                    {me?.email && <div className="iv-biz-c">{me.email}</div>}
-                    {me?.providerProfile?.whatsapp && <div className="iv-biz-c">{me.providerProfile.whatsapp}</div>}
+                    {biz?.logoUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img className="iv-logo" src={biz.logoUrl} alt="logo" />
+                    )}
+                    <div>
+                      <div className="iv-biz-name">{businessName}</div>
+                      {businessSub && <div className="iv-biz-sub">{businessSub}</div>}
+                      {biz?.phone && <div className="iv-biz-c">{biz.phone}</div>}
+                      {bizEmail && <div className="iv-biz-c">{bizEmail}</div>}
+                      {biz?.website && <div className="iv-biz-c">{biz.website}</div>}
+                      {biz?.address && <div className="iv-biz-c">{biz.address}</div>}
+                      {biz?.taxNumber && <div className="iv-biz-c">رقم ضريبي: {biz.taxNumber}</div>}
+                    </div>
                   </div>
                   <div className="iv-head-r">
                     <div className="iv-doc-title">فاتورة</div>
@@ -171,7 +193,7 @@ export default function InvoiceDetailPage() {
                   </div>
                 )}
 
-                <div className="iv-footer">تم إصدار هذه الفاتورة عبر منصة محايد · {businessName}</div>
+                <div className="iv-footer">{biz?.invoiceFooter || `تم إصدار هذه الفاتورة عبر منصة محايد · ${businessName}`}</div>
               </div>
             </div>
           </>
@@ -197,6 +219,8 @@ const IV_CSS = `
 .iv-print-btn:hover{background:var(--green-dark);}
 .iv-doc{background:#fff;border:1px solid var(--line);border-radius:16px;padding:36px 40px;}
 .iv-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding-bottom:24px;border-bottom:2px solid var(--green);}
+.iv-biz{display:flex;gap:14px;align-items:flex-start;}
+.iv-logo{width:64px;height:64px;object-fit:contain;border-radius:10px;border:1px solid var(--line);background:#fff;flex-shrink:0;}
 .iv-biz-name{font-size:22px;font-weight:900;color:var(--green-dark);}
 .iv-biz-sub{font-size:13.5px;color:var(--muted);margin-top:2px;}
 .iv-biz-c{font-size:12.5px;color:var(--muted);margin-top:2px;}
@@ -229,7 +253,7 @@ const IV_CSS = `
 .iv-t-grand span:first-child{color:var(--ink);}
 .iv-notes{margin-top:24px;padding-top:20px;border-top:1px dashed var(--line);}
 .iv-notes p{font-size:13.5px;color:var(--ink);line-height:1.8;margin:0;white-space:pre-wrap;}
-.iv-footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);}
+.iv-footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);white-space:pre-wrap;}
 @media(max-width:600px){.iv-doc{padding:24px 20px;}.iv-head{flex-direction:column;}.iv-head-r{text-align:right;}.iv-totals{max-width:100%;}}
 @media print{
   body * { visibility: hidden !important; }
