@@ -59,7 +59,8 @@ const EMPTY = {
 export default function ProviderInvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
-  const [q, setQ] = useState('');
+const [settings, setSettings] = useState<any>(null);
+const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -79,7 +80,8 @@ export default function ProviderInvoicesPage() {
     Promise.all([
       api<Invoice[]>('/invoices').then((d) => setInvoices(Array.isArray(d) ? d : [])),
       api<Client[]>('/clients').then((d) => setClients(Array.isArray(d) ? d : [])).catch(() => {}),
-    ])
+  api('/business-settings').then((d) => setSettings(d)).catch(() => {}),
+])
       .catch((e: any) => setError(e?.message || 'حصل خطأ'))
       .finally(() => setLoading(false));
   }, []);
@@ -122,12 +124,18 @@ export default function ProviderInvoicesPage() {
       items: f.items.length > 1 ? f.items.filter((_: any, i: number) => i !== idx) : f.items,
     }));
 
-  const openAdd = () => {
-    setEditId(null);
-    setForm({ ...EMPTY, items: [{ ...EMPTY_ITEM }] });
-    setFormErr('');
-    setShowForm(true);
-  };
+const openAdd = () => {
+  setEditId(null);
+  setForm({
+    ...EMPTY,
+    currency: settings?.defaultCurrency || 'EGP',
+    taxRate: settings?.defaultTaxRate != null ? String(settings.defaultTaxRate) : '0',
+    notes: settings?.defaultPaymentTerms || '',
+    items: [{ ...EMPTY_ITEM }],
+  });
+  setFormErr('');
+  setShowForm(true);
+};
   const openEdit = (inv: Invoice) => {
     setEditId(inv.id);
     setForm({
