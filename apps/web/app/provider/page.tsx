@@ -158,8 +158,11 @@ setLoading(false);
               <ActionCard href="/projects/open" icon="folder" title="المشاريع المتاحة" desc="اتصفّح وقدّم عروضك" />
               <ActionCard href="/providers" icon="grid" title="دليل مقدمي الخدمة" desc="شوف ظهورك في الدليل" />
               <ActionCard href="/profile" icon="user" title="بروفايلي" desc="عدّل بياناتك ومعرض أعمالك" />
-              <ActionCard href="/provider/plans" icon="creditCard" title="الباقات والاشتراك" desc="رقّي واحصل على مميزات" />
-            </div>
+          <ActionCard href="/provider/plans" icon="creditCard" title="الباقات والاشتراك" desc="رقّي واحصل على مميزات" />
+  {plan?.analyticsAccess && (
+    <ActionCard href="/provider/analytics" icon="star" title="تحليلات أدائك" desc="عروضك وإعلاناتك بالأرقام" />
+  )}
+</div>
 
             {/* أحدث عروضك */}
             <div className="pw-panel">
