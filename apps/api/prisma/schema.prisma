@@ -813,3 +813,26 @@ model ExternalProject {
   @@index([providerId])
   @@index([clientId])
 }
+model Invoice {
+  id         String    @id @default(uuid())
+  providerId String
+  clientId   String?
+  number     String?
+  title      String?
+  status     String    @default("DRAFT") // DRAFT | SENT | PAID | CANCELLED
+  currency   String?   @default("EGP")
+  items      String?   // JSON: [{ desc, qty, price }]
+  subtotal   Decimal?  @default(0)
+  taxRate    Decimal?  @default(0)
+  discount   Decimal?  @default(0)
+  total      Decimal?  @default(0)
+  notes      String?
+  issueDate  DateTime?
+  dueDate    DateTime?
+  paidAt     DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([providerId])
+  @@index([clientId])
+}
