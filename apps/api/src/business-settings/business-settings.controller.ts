@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/roles.guard';
 import { GetUser, AuthUser } from '../auth/get-user.decorator';
@@ -17,7 +17,7 @@ export class BusinessSettingsController {
     return this.service.get(user.id);
   }
 
-  @Put()
+  @Patch()
   upsert(@GetUser() user: AuthUser, @Body() dto: UpsertBusinessSettingsDto) {
     return this.service.upsert(user.id, dto);
   }
