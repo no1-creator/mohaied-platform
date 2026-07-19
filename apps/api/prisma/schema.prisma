@@ -836,3 +836,19 @@ model ProviderInvoice {
   @@index([providerId])
   @@index([clientId])
 }
+model ProviderWalletTransaction {
+  id          String   @id @default(uuid())
+  providerId  String
+  type        String   // EARNING | ADJUSTMENT | WITHDRAWAL
+  amount      Decimal
+  currency    String?  @default("EGP")
+  status      String   @default("COMPLETED") // PENDING | COMPLETED | CANCELLED
+  method      String?  // للسحب: bank | instapay | wallet ...
+  description String?
+  refType     String?  // INVOICE | MANUAL ...
+  refId       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([providerId])
+}
