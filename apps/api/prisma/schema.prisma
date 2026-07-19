@@ -84,7 +84,7 @@ enum ComplaintType {
   AGREEMENT_VIOLATION
   PAYMENT_ISSUE
   UNPROFESSIONAL
-OTHER
+  OTHER
 }
 
 enum ComplaintStatus {
@@ -102,7 +102,7 @@ enum DecisionType {
   FAVOR_CLIENT
   FAVOR_PROVIDER
   AMICABLE
-OTHER
+  OTHER
 }
 
 // ---- Monetization enums (جديد) ----
@@ -171,37 +171,38 @@ model User {
   subscriptions Subscription[]
   invoices      Invoice[]
 
-    notifications Notification[]
+  notifications Notification[]
 
   recommendationRequests RecommendationRequest[] @relation("ClientRecommendations")
 
   externalInvitations ExternalInvitation[] @relation("ClientInvitations")
-reviewsWritten  Review[] @relation("ReviewAuthor")
-reviewsReceived Review[] @relation("ReviewTarget")
+
+  reviewsWritten  Review[] @relation("ReviewAuthor")
+  reviewsReceived Review[] @relation("ReviewTarget")
 }
 
 model ProviderProfile {
-  id             String   @id @default(uuid())
-  userId         String   @unique
-  user           User     @relation(fields: [userId], references: [id])
-  type           ProviderType
-  companyName    String?
-  field          String
-  bio            String?
-  yearsExp       Int?
-  teamSize       Int?
-  city           String?
-  phone          String?
-  website        String?
-  portfolioUrl   String?
-  skills         String?
+  id              String      @id @default(uuid())
+  userId          String      @unique
+  user            User        @relation(fields: [userId], references: [id])
+  type            ProviderType
+  companyName     String?
+  field           String
+  bio             String?
+  yearsExp        Int?
+  teamSize        Int?
+  city            String?
+  phone           String?
+  website         String?
+  portfolioUrl    String?
+  skills          String?
   commercialRegNo String?
-  taxId          String?
-  nationalId     String?
-  rating         Float    @default(0)
-  reviewsCount   Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  taxId           String?
+  nationalId      String?
+  rating          Float       @default(0)
+  reviewsCount    Int         @default(0)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
 
 model SupervisorProfile {
@@ -239,13 +240,13 @@ model Project {
   clientId String
   client   User   @relation("ClientProjects", fields: [clientId], references: [id])
 
-providerId String?
-provider   User?   @relation("ProviderProjects", fields: [providerId], references: [id])
+  providerId String?
+  provider   User?   @relation("ProviderProjects", fields: [providerId], references: [id])
 
-preferredProviderId String?
-  budgetMin    Decimal?
-  budgetMax    Decimal?
-  durationDays Int?
+  preferredProviderId String?
+  budgetMin           Decimal?
+  budgetMax           Decimal?
+  durationDays        Int?
 
   offers                Offer[]
   agreement             Agreement?
@@ -255,8 +256,8 @@ preferredProviderId String?
   messages              Message[]
   supervisorAssignments SupervisorAssignment[]
   activityLogs          ActivityLog[]
-escrowTransactions    EscrowTransaction[]
-reviews               Review[]
+  escrowTransactions    EscrowTransaction[]
+  reviews               Review[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -271,11 +272,11 @@ model Offer {
   providerId String
   provider   User    @relation(fields: [providerId], references: [id])
 
-  status       OfferStatus @default(DRAFT)
-  totalPrice   Decimal
+  status      OfferStatus @default(DRAFT)
+  totalPrice  Decimal
   durationDays Int
-  scope        String
-  version      Int         @default(1)
+  scope       String
+  version     Int         @default(1)
 
   milestones OfferMilestone[]
   agreement  Agreement?
@@ -304,13 +305,13 @@ model Agreement {
   offerId   String  @unique
   offer     Offer   @relation(fields: [offerId], references: [id])
 
-  status            AgreementStatus @default(PENDING_CLIENT)
-  totalValue        Decimal
-  durationDays      Int
-  revisionPolicy    String?
-  clientApprovedAt  DateTime?
+  status             AgreementStatus @default(PENDING_CLIENT)
+  totalValue         Decimal
+  durationDays       Int
+  revisionPolicy     String?
+  clientApprovedAt   DateTime?
   providerApprovedAt DateTime?
-  confirmedAt       DateTime?
+  confirmedAt        DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -356,12 +357,12 @@ model Submission {
 // ==================== SUPERVISOR ====================
 
 model SupervisorAssignment {
-  id            String                     @id @default(uuid())
-  projectId     String
-  project       Project                    @relation(fields: [projectId], references: [id])
-  supervisorId  String
-  supervisor    User                       @relation(fields: [supervisorId], references: [id])
-  status        SupervisorAssignmentStatus @default(INVITED)
+  id           String                     @id @default(uuid())
+  projectId    String
+  project      Project                    @relation(fields: [projectId], references: [id])
+  supervisorId String
+  supervisor   User                       @relation(fields: [supervisorId], references: [id])
+  status       SupervisorAssignmentStatus @default(INVITED)
   ratePerReview Decimal
 
   reports   SupervisorReport[]
@@ -385,19 +386,19 @@ model SupervisorReport {
 // ==================== COMPLAINTS ====================
 
 model Complaint {
-  id          String          @id @default(uuid())
-  code        String          @unique
-  projectId   String
-  project     Project         @relation(fields: [projectId], references: [id])
+  id        String  @id @default(uuid())
+  code      String  @unique
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
   milestoneId String?
-  creatorId   String
-  creator     User            @relation("ComplaintCreator", fields: [creatorId], references: [id])
+  creatorId String
+  creator   User    @relation("ComplaintCreator", fields: [creatorId], references: [id])
 
-type       ComplaintType
-customType String?
-arbitratorId String?
-status ComplaintStatus @default(OPEN)
-  details String
+  type         ComplaintType
+  customType    String?
+  arbitratorId String?
+  status       ComplaintStatus @default(OPEN)
+  details      String
 
   evidences ComplaintEvidence[]
   responses ComplaintResponse[]
@@ -429,9 +430,9 @@ model Decision {
   id          String       @id @default(uuid())
   complaintId String       @unique
   complaint   Complaint    @relation(fields: [complaintId], references: [id])
- type        DecisionType
-customType  String?
-reason      String
+  type        DecisionType
+  customType   String?
+  reason      String
   decidedById String
   createdAt   DateTime     @default(now())
 }
@@ -443,6 +444,9 @@ model FileAsset {
   name         String
   url          String
   mimeType     String?
+  data         String?     // محتوى الملف base64 (جديد)
+  size         Int?        // حجم الملف بالبايت (جديد)
+  uploaderId   String?     // مين رفع الملف (جديد)
   projectId    String?
   project      Project?    @relation(fields: [projectId], references: [id])
   submissionId String?
@@ -492,20 +496,20 @@ model SubscriptionPlan {
   commissionRate Decimal      @default(10)
   features       String?
   maxOffers      Int?
-isFeatured     Boolean      @default(false)
-isActive       Boolean      @default(true)
-orderIndex     Int          @default(0)
+  isFeatured     Boolean      @default(false)
+  isActive       Boolean      @default(true)
+  orderIndex     Int          @default(0)
 
-// ---- مميزات الباقة القابلة للتفعيل (جديد) ----
-directoryPriority      Int     @default(0)
-badgeLabel             String?
-monthlyAdCredits       Int     @default(0)
-recommendationPriority Int     @default(0)
-teamSeats              Int     @default(1)
-analyticsAccess        Boolean @default(false)
-prioritySupport        Boolean @default(false)
+  // ---- مميزات الباقة القابلة للتفعيل (جديد) ----
+  directoryPriority      Int     @default(0)
+  badgeLabel             String?
+  monthlyAdCredits       Int     @default(0)
+  recommendationPriority Int     @default(0)
+  teamSeats              Int     @default(1)
+  analyticsAccess        Boolean @default(false)
+  prioritySupport        Boolean @default(false)
 
-subscriptions Subscription[]
+  subscriptions Subscription[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -566,56 +570,60 @@ model Invoice {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
+
 // ==================== DYNAMIC OPTION LISTS (جديد) ====================
 // قوائم خيارات يتحكم فيها الأدمن (أنواع النزاع/القرار/التصنيفات… إلخ)
 
 model OptionItem {
-  id         String   @id @default(uuid())
-  groupKey   String
-  value      String
-  label      String
-  isActive   Boolean  @default(true)
-  orderIndex Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(uuid())
+  groupKey  String
+  value     String
+  label     String
+  isActive  Boolean  @default(true)
+  orderIndex Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([groupKey, value])
 }
+
 model SiteContent {
-  id         String   @id @default(uuid())
-  key        String   @unique
-  value      String
-  groupKey   String   @default("general")
-  label      String?
-  type       String   @default("text")
-  orderIndex Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  groupKey  String   @default("general")
+  label     String?
+  type      String   @default("text")
+  orderIndex Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
+
 model AdBanner {
-  id                 String    @id @default(uuid())
+  id                 String   @id @default(uuid())
   advertiserId       String?
   title              String
   subtitle           String?
   imageUrl           String?
   linkUrl            String?
   ctaLabel           String?
-  placement          String    @default("HOME_TOP")
-  status             String    @default("PENDING")
-  amount             Float     @default(0)
-  paid               Boolean   @default(false)
-  priority           Int       @default(0)
-  dailyImpressionCap Int       @default(0)
-  impressionsToday   Int       @default(0)
+  placement          String   @default("HOME_TOP")
+  status             String   @default("PENDING")
+  amount             Float    @default(0)
+  paid               Boolean  @default(false)
+  priority           Int      @default(0)
+  dailyImpressionCap Int      @default(0)
+  impressionsToday   Int      @default(0)
   impressionDay      String?
   startDate          DateTime?
   endDate            DateTime?
-  orderIndex         Int       @default(0)
-  clicks             Int       @default(0)
-  impressions        Int       @default(0)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  orderIndex         Int      @default(0)
+  clicks             Int      @default(0)
+  impressions        Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
+
 // ==================== NOTIFICATIONS ====================
 
 enum NotificationType {
@@ -644,6 +652,7 @@ model Notification {
   @@index([userId, isRead])
   @@index([userId, createdAt])
 }
+
 // ==================== RECOMMENDATION REQUESTS (رشّحلي الأفضل) ====================
 
 enum RecommendationStatus {
@@ -654,26 +663,27 @@ enum RecommendationStatus {
 }
 
 model RecommendationRequest {
-  id           String               @id @default(uuid())
-  clientId     String
-  client       User                 @relation("ClientRecommendations", fields: [clientId], references: [id])
-  title        String
-  field        String
-  description  String
-  budgetMin    Decimal?
-  budgetMax    Decimal?
-  durationDays Int?
-  status       RecommendationStatus @default(PENDING)
-  adminNote    String?
-  recommendedProviderIds String[]   @default([])
-  respondedById String?
-  respondedAt  DateTime?
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+  id                     String               @id @default(uuid())
+  clientId               String
+  client                 User                 @relation("ClientRecommendations", fields: [clientId], references: [id])
+  title                  String
+  field                  String
+  description            String
+  budgetMin              Decimal?
+  budgetMax              Decimal?
+  durationDays           Int?
+  status                 RecommendationStatus @default(PENDING)
+  adminNote              String?
+  recommendedProviderIds String[]             @default([])
+  respondedById          String?
+  respondedAt            DateTime?
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
 
   @@index([clientId])
   @@index([status])
 }
+
 // ==================== EXTERNAL INVITATIONS (دعوة طرف خارجي) ====================
 
 enum InvitationStatus {
@@ -708,10 +718,11 @@ model ExternalInvitation {
   @@index([clientId])
   @@index([status])
 }
+
 // ==================== REVIEWS & RATINGS (تقييمات ومراجعات) ====================
 
 enum ReviewRole {
-  CLIENT   // تقييم كتبه العميل عن مقدّم الخدمة
+  CLIENT // تقييم كتبه العميل عن مقدّم الخدمة
   PROVIDER // تقييم كتبه مقدّم الخدمة عن العميل
 }
 
