@@ -66,6 +66,86 @@ export class CreateProviderProfileDto {
   nationalId?: string;
 }
 
+export class UpdateProviderProfileDto {
+  @IsOptional()
+  @IsEnum(ProviderType)
+  type?: ProviderType;
+
+  @IsOptional()
+  @IsString()
+  companyName?: string;
+
+  @IsOptional()
+  @IsString()
+  field?: string;
+
+  @IsOptional()
+  @IsString()
+  bio?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  yearsExp?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  teamSize?: number;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  website?: string;
+
+  @IsOptional()
+  @IsString()
+  portfolioUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  skills?: string;
+
+  @IsOptional()
+  @IsString()
+  commercialRegNo?: string;
+
+  @IsOptional()
+  @IsString()
+  taxId?: string;
+
+  @IsOptional()
+  @IsString()
+  nationalId?: string;
+
+  @IsOptional()
+  @IsString()
+  logoUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  coverUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  portfolioImages?: string;
+
+  @IsOptional()
+  @IsString()
+  linkedinUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  whatsapp?: string;
+}
+
 export class CreateSupervisorProfileDto {
   @IsString()
   title: string;
