@@ -23,6 +23,7 @@ const NAV = [
 { key: 'clients', href: '/provider/clients', label: 'عملائي', icon: 'users' },
 { key: 'invoices', href: '/provider/invoices', label: 'الفواتير', icon: 'fileText' },
 { key: 'wallet', href: '/provider/wallet', label: 'المحفظة', icon: 'landmark' },
+{ key: 'tasks', href: '/provider/tasks', label: 'المهام', icon: 'fileCheck' },
   { key: 'plan', href: '/provider/plans', label: 'الاشتراك والباقة', icon: 'creditCard' },
   { key: 'analytics', href: '/provider/analytics', label: 'التحليلات', icon: 'sparkles' },
   { key: 'ads', href: '/advertise', label: 'الإعلانات', icon: 'star' },
