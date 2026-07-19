@@ -110,7 +110,7 @@ export default function ProviderSettingsPage() {
       invoiceFooter: form.invoiceFooter.trim() || undefined,
     };
     try {
-      await api('/business-settings', { method: 'PUT', body });
+await api('/business-settings', { method: 'PATCH', body });
       setOk(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e: any) {
