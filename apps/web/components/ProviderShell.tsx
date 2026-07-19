@@ -18,7 +18,8 @@ type Me = {
 const NAV = [
   { key: 'overview', href: '/provider', label: 'نظرة عامة', icon: 'grid' },
   { key: 'projects', href: '/projects/open', label: 'تصفّح المشاريع', icon: 'search' },
-  { key: 'offers', href: '/offers/mine', label: 'عروضي', icon: 'fileText' },
+{ key: 'offers', href: '/offers/mine', label: 'عروضي', icon: 'fileText' },
+{ key: 'myprojects', href: '/provider/projects', label: 'مشاريعي', icon: 'folder' },
   { key: 'plan', href: '/provider/plans', label: 'الاشتراك والباقة', icon: 'creditCard' },
   { key: 'analytics', href: '/provider/analytics', label: 'التحليلات', icon: 'sparkles' },
   { key: 'ads', href: '/advertise', label: 'الإعلانات', icon: 'star' },
