@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateProviderProfileDto,
   CreateSupervisorProfileDto,
+  UpdateProviderProfileDto,
 } from './dto/profile.dto';
 import { UpdateMeDto } from './dto/update-me.dto';
 
@@ -73,6 +74,11 @@ export class UsersService {
         website: true,
         portfolioUrl: true,
         skills: true,
+        logoUrl: true,
+        coverUrl: true,
+        portfolioImages: true,
+        linkedinUrl: true,
+        whatsapp: true,
         rating: true,
         reviewsCount: true,
       },
@@ -191,6 +197,44 @@ export class UsersService {
         nationalId: dto.nationalId,
       },
     });
+  }
+
+  async updateProviderProfile(userId: string, dto: UpdateProviderProfileDto) {
+    const existing = await this.prisma.providerProfile.findUnique({
+      where: { userId },
+    });
+    if (!existing) {
+      throw new NotFoundException('لازم تكمّل بيانات بروفايلك الأساسية الأول');
+    }
+
+    const data: Record<string, unknown> = {};
+    const keys: (keyof UpdateProviderProfileDto)[] = [
+      'type',
+      'companyName',
+      'field',
+      'bio',
+      'yearsExp',
+      'teamSize',
+      'city',
+      'phone',
+      'website',
+      'portfolioUrl',
+      'skills',
+      'commercialRegNo',
+      'taxId',
+      'nationalId',
+      'logoUrl',
+      'coverUrl',
+      'portfolioImages',
+      'linkedinUrl',
+      'whatsapp',
+    ];
+    for (const k of keys) {
+      if (dto[k] !== undefined) data[k] = dto[k];
+    }
+
+    await this.prisma.providerProfile.update({ where: { userId }, data });
+    return this.getMe(userId);
   }
 
   async createSupervisorProfile(
