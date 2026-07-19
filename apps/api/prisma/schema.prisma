@@ -176,6 +176,8 @@ model User {
   recommendationRequests RecommendationRequest[] @relation("ClientRecommendations")
 
   externalInvitations ExternalInvitation[] @relation("ClientInvitations")
+reviewsWritten  Review[] @relation("ReviewAuthor")
+reviewsReceived Review[] @relation("ReviewTarget")
 }
 
 model ProviderProfile {
