@@ -21,6 +21,7 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
 import { InvitationsModule } from './invitations/invitations.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { FilesModule } from './files/files.module';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { FilesModule } from './files/files.module';
     InvitationsModule,
     ReviewsModule,
     FilesModule,
+    MessagesModule,
   ],
   controllers: [],
   providers: [],
