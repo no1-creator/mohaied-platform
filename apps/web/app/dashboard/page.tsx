@@ -179,11 +179,15 @@ export default function DashboardPage() {
     }
     api<Me>('/users/me')
       .then((data) => {
-        if (data.role === 'ADMIN') {
-          router.replace('/admin');
-          return;
-        }
-        setMe(data);
+       if (data.role === 'ADMIN') {
+  router.replace('/admin');
+  return;
+}
+if (data.role === 'CLIENT') {
+  router.replace('/client');
+  return;
+}
+setMe(data);
         setLoading(false);
       })
       .catch((err) => {
