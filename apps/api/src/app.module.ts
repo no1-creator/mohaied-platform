@@ -23,6 +23,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { FilesModule } from './files/files.module';
 import { MessagesModule } from './messages/messages.module';
 import { KycModule } from './kyc/kyc.module';
+import { ClientsModule } from './clients/clients.module';
 
 @Module({
   imports: [
