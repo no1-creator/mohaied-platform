@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -11,7 +12,12 @@ import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/roles.guard';
 import { UserRole } from '@prisma/client';
-import { SetVerifiedDto, SetActiveDto } from './dto/admin.dto';
+import {
+  SetVerifiedDto,
+  SetActiveDto,
+  ChangeRoleDto,
+  SendNotificationDto,
+} from './dto/admin.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -37,6 +43,16 @@ export class AdminController {
   @Patch('users/:id/active')
   setActive(@Param('id') id: string, @Body() dto: SetActiveDto) {
     return this.adminService.setActive(id, dto.isActive);
+  }
+
+  @Patch('users/:id/role')
+  setRole(@Param('id') id: string, @Body() dto: ChangeRoleDto) {
+    return this.adminService.setRole(id, dto.role);
+  }
+
+  @Post('notify')
+  notify(@Body() dto: SendNotificationDto) {
+    return this.adminService.notify(dto);
   }
 
   @Get('projects')
