@@ -869,3 +869,22 @@ model ProviderTask {
   @@index([providerId])
   @@index([clientId])
 }
+model ProviderBusinessSettings {
+  id                  String   @id @default(uuid())
+  providerId          String   @unique
+  businessName        String?
+  logoUrl             String?
+  address             String?
+  taxNumber           String?
+  phone               String?
+  email               String?
+  website             String?
+  defaultCurrency     String?  @default("EGP")
+  defaultTaxRate      Decimal? @default(0)
+  defaultPaymentTerms String?
+  invoiceFooter       String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([providerId])
+}
