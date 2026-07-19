@@ -30,6 +30,7 @@ const NAV = [
   { key: 'ads', href: '/advertise', label: 'الإعلانات', icon: 'star' },
   { key: 'kyc', href: '/kyc', label: 'توثيق الهوية', icon: 'badgeCheck' },
 { key: 'profile', href: '/provider/profile', label: 'ملفي الاحترافي', icon: 'user' },
+{ key: 'settings', href: '/provider/settings', label: 'إعدادات النشاط', icon: 'building' },
 ];
 
 export default function ProviderShell({
