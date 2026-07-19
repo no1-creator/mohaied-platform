@@ -246,8 +246,8 @@ export default function ProviderDetailPage() {
                     </a>
                   )}
                 {waDigits && (
-  <a className="pv-link" href={`https://wa.me/${waDigits}`} target="_blank" rel="noopener noreferrer">
-                      واتساب ↗
+<a className="pv-link" href={`https://wa.me/${waDigits}`} target="_blank" rel="noopener noreferrer">
+                واتساب ↗
                     </a>
                   )}
                 </div>
