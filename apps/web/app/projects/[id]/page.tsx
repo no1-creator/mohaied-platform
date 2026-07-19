@@ -7,6 +7,7 @@ import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
 import ProjectFiles from '@/components/ProjectFiles';
+import ProjectChat from '@/components/ProjectChat';
 import ProjectReview from '@/components/ProjectReview';
 
 type Milestone = {
@@ -156,6 +157,8 @@ export default function ProjectDetailPage() {
         </div>
 
         <ProjectFiles projectId={id} />
+
+        <ProjectChat projectId={id} />
 
         <ProjectReview projectId={id} />
       </div>
