@@ -28,6 +28,9 @@ type Offer = {
   project?: { id?: string; title?: string };
 };
 type OpenProject = { id: string; title: string; preferredProviderId?: string | null };
+type MineProject = { id: string; status?: string };
+type ExtProject = { id: string; status?: string };
+type Invoice = { id: string; status?: string; total?: number | string | null };
 
 export default function ProviderWorkspacePage() {
   const router = useRouter();
@@ -37,6 +40,10 @@ export default function ProviderWorkspacePage() {
   const [open, setOpen] = useState<OpenProject[]>([]);
   const [unread, setUnread] = useState(0);
   const [adCredits, setAdCredits] = useState<{ total: number; used: number; remaining: number } | null>(null);
+  const [clients, setClients] = useState<{ id: string }[]>([]);
+  const [mineProjects, setMineProjects] = useState<MineProject[]>([]);
+  const [extProjects, setExtProjects] = useState<ExtProject[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,13 +52,17 @@ export default function ProviderWorkspacePage() {
       return;
     }
     (async () => {
-      const [meR, subR, offR, opR, unR, acR] = await Promise.allSettled([
+      const [meR, subR, offR, opR, unR, acR, clR, mpR, epR, invR] = await Promise.allSettled([
         api<Me>('/users/me'),
         api<Sub>('/subscriptions/mine'),
         api<Offer[]>('/offers/mine'),
         api<OpenProject[]>('/projects/open'),
         api<{ count: number }>('/notifications/unread-count'),
         api<{ total: number; used: number; remaining: number }>('/ads/mine/credits'),
+        api<{ id: string }[]>('/clients'),
+        api<MineProject[]>('/projects/mine'),
+        api<ExtProject[]>('/external-projects'),
+        api<Invoice[]>('/invoices'),
       ]);
       if (meR.status === 'fulfilled') setMe(meR.value);
       if (subR.status === 'fulfilled') setSub(subR.value);
@@ -59,6 +70,10 @@ export default function ProviderWorkspacePage() {
       if (opR.status === 'fulfilled' && Array.isArray(opR.value)) setOpen(opR.value);
       if (unR.status === 'fulfilled') setUnread(Number(unR.value?.count) || 0);
       if (acR.status === 'fulfilled') setAdCredits(acR.value);
+      if (clR.status === 'fulfilled' && Array.isArray(clR.value)) setClients(clR.value);
+      if (mpR.status === 'fulfilled' && Array.isArray(mpR.value)) setMineProjects(mpR.value);
+      if (epR.status === 'fulfilled' && Array.isArray(epR.value)) setExtProjects(epR.value);
+      if (invR.status === 'fulfilled' && Array.isArray(invR.value)) setInvoices(invR.value);
       setLoading(false);
     })();
   }, [router]);
@@ -66,6 +81,22 @@ export default function ProviderWorkspacePage() {
   const plan = sub?.plan || null;
   const directCount = me ? open.filter((p) => p.preferredProviderId === me.id).length : 0;
   const pendingOffers = offers.filter((o) => (o.status || '').toUpperCase() === 'PENDING').length;
+
+  const num = (v?: number | string | null) => {
+    const n = Number(v);
+    return Number.isNaN(n) ? 0 : n;
+  };
+  const egp = (v: number) => `${v.toLocaleString('en-US')} ج.م`;
+
+  const activeProjects =
+    mineProjects.filter((p) => ['IN_AGREEMENT', 'IN_PROGRESS'].includes((p.status || '').toUpperCase())).length +
+    extProjects.filter((p) => ['NEW', 'IN_PROGRESS'].includes((p.status || '').toUpperCase())).length;
+  const outstanding = invoices
+    .filter((i) => (i.status || '').toUpperCase() === 'SENT')
+    .reduce((s, i) => s + num(i.total), 0);
+  const paidTotal = invoices
+    .filter((i) => (i.status || '').toUpperCase() === 'PAID')
+    .reduce((s, i) => s + num(i.total), 0);
 
   const fmtDate = (d?: string) =>
     d ? new Date(d).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
@@ -99,6 +130,21 @@ export default function ProviderWorkspacePage() {
               </Link>
             </div>
 
+            {/* بيئة عملك */}
+            <div className="pw-section-h">بيئة عملك</div>
+            <div className="pw-stats">
+              <Stat label="عملاؤك" value={clients.length} />
+              <Stat label="مشاريع جارية" value={activeProjects} highlight={activeProjects > 0} />
+              <Stat label="مستحق (فواتير مُرسلة)" value={egp(outstanding)} money warn={outstanding > 0} />
+              <Stat label="محصّل (مدفوع)" value={egp(paidTotal)} money />
+            </div>
+            <div className="pw-actions">
+              <ActionCard href="/provider/clients" icon="users" title="عملائي" desc="أدر عملاءك وبياناتهم" />
+              <ActionCard href="/provider/projects" icon="folder" title="مشاريعي" desc="متابعة كل مشاريعك" />
+              <ActionCard href="/provider/invoices" icon="fileText" title="الفواتير" desc="افوتر وتابع المستحقات" />
+              <ActionCard href="/provider/profile" icon="user" title="ملفي الاحترافي" desc="عدّل بياناتك ومعرض أعمالك" />
+            </div>
+
             {/* مميزات الباقة */}
             {plan && (
               <div className="pw-perks">
@@ -129,7 +175,8 @@ export default function ProviderWorkspacePage() {
               </div>
             )}
 
-            {/* إحصائيات سريعة */}
+            {/* إحصائيات المنصة */}
+            <div className="pw-section-h">نشاطك على المنصة</div>
             <div className="pw-stats">
               <Stat label="عروضك" value={offers.length} hint={pendingOffers ? `${pendingOffers} قيد المراجعة` : undefined} />
               <Stat label="مشاريع متاحة" value={open.length} />
@@ -141,7 +188,7 @@ export default function ProviderWorkspacePage() {
             <div className="pw-actions">
               <ActionCard href="/projects/open" icon="folder" title="المشاريع المتاحة" desc="اتصفّح وقدّم عروضك" />
               <ActionCard href="/providers" icon="grid" title="دليل مقدمي الخدمة" desc="شوف ظهورك في الدليل" />
-              <ActionCard href="/profile" icon="user" title="بروفايلي" desc="عدّل بياناتك ومعرض أعمالك" />
+              <ActionCard href="/offers/mine" icon="fileText" title="عروضي" desc="تابع كل عروضك" />
               <ActionCard href="/provider/plans" icon="creditCard" title="الباقات والاشتراك" desc="رقّي واحصل على مميزات" />
               {plan?.analyticsAccess && (
                 <ActionCard href="/provider/analytics" icon="star" title="تحليلات أدائك" desc="عروضك وإعلاناتك بالأرقام" />
@@ -193,10 +240,24 @@ function Perk({ icon, label, value }: { icon: string; label: string; value: stri
   );
 }
 
-function Stat({ label, value, hint, highlight }: { label: string; value: number; hint?: string; highlight?: boolean }) {
+function Stat({
+  label,
+  value,
+  hint,
+  highlight,
+  money,
+  warn,
+}: {
+  label: string;
+  value: number | string;
+  hint?: string;
+  highlight?: boolean;
+  money?: boolean;
+  warn?: boolean;
+}) {
   return (
-    <div className={`pw-stat ${highlight ? 'pw-stat-hot' : ''}`}>
-      <div className="pw-stat-value">{value}</div>
+    <div className={`pw-stat ${highlight ? 'pw-stat-hot' : ''} ${warn ? 'pw-stat-warn' : ''}`}>
+      <div className={`pw-stat-value ${money ? 'pw-stat-money' : ''}`}>{value}</div>
       <div className="pw-stat-label">{label}</div>
       {hint && <div className="pw-stat-hint">{hint}</div>}
     </div>
@@ -226,7 +287,8 @@ function statusAr(s: string) {
 const PW_CSS = `
 .pw-wrap{max-width:1040px;margin:0 auto;}
 .pw-loading{padding:60px;text-align:center;color:var(--muted);}
-.pw-plan{display:flex;justify-content:space-between;align-items:center;gap:16px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:14px;}
+.pw-section-h{font-size:15px;font-weight:900;color:var(--ink);margin:6px 2px 12px;}
+.pw-plan{display:flex;justify-content:space-between;align-items:center;gap:16px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:18px;}
 .pw-plan-on{background:linear-gradient(120deg,var(--green),var(--green-dark));border-color:transparent;color:#fff;}
 .pw-plan-label{font-size:13px;opacity:.85;margin-bottom:2px;}
 .pw-plan-name{font-size:20px;font-weight:900;display:flex;align-items:center;gap:8px;}
@@ -239,20 +301,23 @@ const PW_CSS = `
 .pw-perk{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--green-dark);}
 .pw-perk-label{font-size:12px;color:var(--muted);}
 .pw-perk-value{font-size:15px;font-weight:800;color:var(--ink);}
-.pw-adcredit{display:flex;justify-content:space-between;align-items:center;gap:16px;background:var(--sand);border:1px solid var(--green-light);border-radius:14px;padding:16px 18px;margin-bottom:16px;}
+.pw-adcredit{display:flex;justify-content:space-between;align-items:center;gap:16px;background:var(--sand);border:1px solid var(--green-light);border-radius:14px;padding:16px 18px;margin-bottom:18px;}
 .pw-adcredit-label{font-size:13px;color:var(--muted);margin-bottom:2px;}
 .pw-adcredit-nums{font-size:20px;font-weight:900;color:var(--ink);}
 .pw-adcredit-remain{color:var(--green-dark);font-size:26px;}
 .pw-adcredit-of{font-size:14px;color:var(--muted);font-weight:700;}
 .pw-adcredit-hint{font-size:12px;color:var(--muted);margin-top:4px;max-width:520px;}
 .pw-adcredit-btn{background:var(--green);color:#fff;font-weight:800;font-size:14px;padding:10px 18px;border-radius:12px;white-space:nowrap;text-decoration:none;}
-.pw-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.pw-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
 .pw-stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;}
 .pw-stat-hot{border-color:var(--green);box-shadow:0 8px 20px rgba(40,125,115,.12);}
+.pw-stat-warn{border-color:#f0d9a8;}
 .pw-stat-value{font-size:26px;font-weight:900;color:var(--green-dark);}
+.pw-stat-money{font-size:19px;}
+.pw-stat-warn .pw-stat-value{color:#a86a12;}
 .pw-stat-label{font-size:13px;color:var(--muted);margin-top:2px;}
 .pw-stat-hint{font-size:11.5px;color:var(--green);font-weight:700;margin-top:2px;}
-.pw-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.pw-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
 .pw-action{display:flex;flex-direction:column;gap:4px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;text-decoration:none;transition:.15s;}
 .pw-action:hover{border-color:var(--green);transform:translateY(-2px);}
 .pw-action-ic{color:var(--green);}
