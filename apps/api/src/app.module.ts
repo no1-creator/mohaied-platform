@@ -20,6 +20,8 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
 import { InvitationsModule } from './invitations/invitations.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { FilesModule } from './files/files.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -41,12 +43,13 @@ import { ReviewsModule } from './reviews/reviews.module';
     EscrowModule,
     OptionsModule,
     ContentModule,
-     AdsModule,
-  NotificationsModule,
-  RecommendationsModule,
-  InvitationsModule,
+    AdsModule,
+    NotificationsModule,
+    RecommendationsModule,
+    InvitationsModule,
     ReviewsModule,
-],
+    FilesModule,
+  ],
   controllers: [],
   providers: [],
 })
