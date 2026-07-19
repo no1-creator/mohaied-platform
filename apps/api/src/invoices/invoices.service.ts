@@ -46,7 +46,7 @@ export class InvoicesService {
   async create(providerId: string, dto: CreateInvoiceDto) {
     const items = dto.items || [];
     const { subtotal, total } = this.compute(items, dto.taxRate, dto.discount);
-    const inv = await this.prisma.invoice.create({
+    const inv = await this.prisma.providerInvoice.create({
       data: {
         providerId,
         clientId: dto.clientId || null,
@@ -69,7 +69,7 @@ export class InvoicesService {
   }
 
   async list(providerId: string) {
-    const invoices = await this.prisma.invoice.findMany({
+    const invoices = await this.prisma.providerInvoice.findMany({
       where: { providerId },
       orderBy: { createdAt: 'desc' },
     });
@@ -91,13 +91,13 @@ export class InvoicesService {
   }
 
   async get(providerId: string, id: string) {
-    const inv = await this.prisma.invoice.findFirst({ where: { id, providerId } });
+    const inv = await this.prisma.providerInvoice.findFirst({ where: { id, providerId } });
     if (!inv) throw new NotFoundException('الفاتورة غير موجودة');
     return this.attachClient(providerId, inv);
   }
 
   async update(providerId: string, id: string, dto: UpdateInvoiceDto) {
-    const current = await this.prisma.invoice.findFirst({ where: { id, providerId } });
+    const current = await this.prisma.providerInvoice.findFirst({ where: { id, providerId } });
     if (!current) throw new NotFoundException('الفاتورة غير موجودة');
 
     const data: any = {};
@@ -125,14 +125,14 @@ export class InvoicesService {
       data.total = total;
     }
 
-    const updated = await this.prisma.invoice.update({ where: { id }, data });
+    const updated = await this.prisma.providerInvoice.update({ where: { id }, data });
     return this.attachClient(providerId, updated);
   }
 
   async remove(providerId: string, id: string) {
-    const current = await this.prisma.invoice.findFirst({ where: { id, providerId } });
+    const current = await this.prisma.providerInvoice.findFirst({ where: { id, providerId } });
     if (!current) throw new NotFoundException('الفاتورة غير موجودة');
-    await this.prisma.invoice.delete({ where: { id } });
+    await this.prisma.providerInvoice.delete({ where: { id } });
     return { ok: true };
   }
 }
