@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
+import ProviderReviews from '@/components/ProviderReviews';
 
 type ProviderProfile = {
   type?: string | null;
@@ -199,10 +200,12 @@ export default function ProviderDetailPage() {
               اطلب عرض من مقدم الخدمة ده
             </button>
             <p className="pv-note">
-              هتنشر تفاصيل مشروعك، ومقدم الخدمة ده هيقدر يقدّم لك عرضه — كله موثّق ومضمون من محايد.
-            </p>
-          </div>
-        )}
+      هتنشر تفاصيل مشروعك، ومقدم الخدمة ده هيقدر يقدّم لك عرضه — كله موثّق ومضمون من محايد.
+    </p>
+
+    <ProviderReviews providerId={provider.id} />
+  </div>
+)}
       </div>
     </>
   );
