@@ -852,3 +852,20 @@ model ProviderWalletTransaction {
 
   @@index([providerId])
 }
+model ProviderTask {
+  id          String    @id @default(uuid())
+  providerId  String
+  title       String
+  description String?
+  status      String    @default("TODO")    // TODO | DOING | DONE
+  priority    String    @default("MEDIUM")  // LOW | MEDIUM | HIGH
+  dueDate     DateTime?
+  clientId    String?
+  projectRef  String?   // ربط اختياري بمشروع (منصة/خارجي) بالعنوان أو المعرّف
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([providerId])
+  @@index([clientId])
+}
