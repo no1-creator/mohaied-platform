@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
+import ProjectFiles from '@/components/ProjectFiles';
 import ProjectReview from '@/components/ProjectReview';
 
 type Milestone = {
@@ -150,12 +151,14 @@ export default function ProjectDetailPage() {
                   {m.value} ج.م
                 </span>
               </div>
-           ))}
-      </div>
-    </div>
+            ))}
+          </div>
+        </div>
 
-    <ProjectReview projectId={id} />
-  </div>
-</main>
+        <ProjectFiles projectId={id} />
+
+        <ProjectReview projectId={id} />
+      </div>
+    </main>
   );
 }
