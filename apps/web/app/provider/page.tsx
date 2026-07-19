@@ -31,6 +31,8 @@ type OpenProject = { id: string; title: string; preferredProviderId?: string | n
 type MineProject = { id: string; status?: string };
 type ExtProject = { id: string; status?: string };
 type Invoice = { id: string; status?: string; total?: number | string | null };
+type Wallet = { available?: number; currency?: string };
+type Task = { status?: string; dueDate?: string | null };
 
 export default function ProviderWorkspacePage() {
   const router = useRouter();
@@ -44,6 +46,8 @@ export default function ProviderWorkspacePage() {
   const [mineProjects, setMineProjects] = useState<MineProject[]>([]);
   const [extProjects, setExtProjects] = useState<ExtProject[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,7 +56,7 @@ export default function ProviderWorkspacePage() {
       return;
     }
     (async () => {
-      const [meR, subR, offR, opR, unR, acR, clR, mpR, epR, invR] = await Promise.allSettled([
+      const [meR, subR, offR, opR, unR, acR, clR, mpR, epR, invR, wR, tR] = await Promise.allSettled([
         api<Me>('/users/me'),
         api<Sub>('/subscriptions/mine'),
         api<Offer[]>('/offers/mine'),
@@ -63,6 +67,8 @@ export default function ProviderWorkspacePage() {
         api<MineProject[]>('/projects/mine'),
         api<ExtProject[]>('/external-projects'),
         api<Invoice[]>('/invoices'),
+        api<Wallet>('/wallet'),
+        api<Task[]>('/tasks'),
       ]);
       if (meR.status === 'fulfilled') setMe(meR.value);
       if (subR.status === 'fulfilled') setSub(subR.value);
@@ -74,6 +80,8 @@ export default function ProviderWorkspacePage() {
       if (mpR.status === 'fulfilled' && Array.isArray(mpR.value)) setMineProjects(mpR.value);
       if (epR.status === 'fulfilled' && Array.isArray(epR.value)) setExtProjects(epR.value);
       if (invR.status === 'fulfilled' && Array.isArray(invR.value)) setInvoices(invR.value);
+      if (wR.status === 'fulfilled') setWallet(wR.value);
+      if (tR.status === 'fulfilled' && Array.isArray(tR.value)) setTasks(tR.value);
       setLoading(false);
     })();
   }, [router]);
@@ -86,7 +94,7 @@ export default function ProviderWorkspacePage() {
     const n = Number(v);
     return Number.isNaN(n) ? 0 : n;
   };
-  const egp = (v: number) => `${v.toLocaleString('en-US')} ج.م`;
+  const egp = (v: number, c?: string) => `${v.toLocaleString('en-US')} ${c || 'ج.م'}`;
 
   const activeProjects =
     mineProjects.filter((p) => ['IN_AGREEMENT', 'IN_PROGRESS'].includes((p.status || '').toUpperCase())).length +
@@ -97,6 +105,17 @@ export default function ProviderWorkspacePage() {
   const paidTotal = invoices
     .filter((i) => (i.status || '').toUpperCase() === 'PAID')
     .reduce((s, i) => s + num(i.total), 0);
+
+  const tasksAttention = (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return tasks.filter((t) => {
+      if ((t.status || '').toUpperCase() === 'DONE' || !t.dueDate) return false;
+      const d = new Date(t.dueDate);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() <= today.getTime();
+    }).length;
+  })();
 
   const fmtDate = (d?: string) =>
     d ? new Date(d).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
@@ -135,13 +154,17 @@ export default function ProviderWorkspacePage() {
             <div className="pw-stats">
               <Stat label="عملاؤك" value={clients.length} />
               <Stat label="مشاريع جارية" value={activeProjects} highlight={activeProjects > 0} />
+              <Stat label="الرصيد المتاح" value={egp(num(wallet?.available), wallet?.currency)} money highlight={num(wallet?.available) > 0} />
               <Stat label="مستحق (فواتير مُرسلة)" value={egp(outstanding)} money warn={outstanding > 0} />
+              <Stat label="مهام تحتاج انتباه" value={tasksAttention} warn={tasksAttention > 0} />
               <Stat label="محصّل (مدفوع)" value={egp(paidTotal)} money />
             </div>
             <div className="pw-actions">
               <ActionCard href="/provider/clients" icon="users" title="عملائي" desc="أدر عملاءك وبياناتهم" />
               <ActionCard href="/provider/projects" icon="folder" title="مشاريعي" desc="متابعة كل مشاريعك" />
               <ActionCard href="/provider/invoices" icon="fileText" title="الفواتير" desc="افوتر وتابع المستحقات" />
+              <ActionCard href="/provider/wallet" icon="landmark" title="المحفظة" desc="أرباحك وطلبات السحب" />
+              <ActionCard href="/provider/tasks" icon="fileCheck" title="المهام" desc="نظّم شغلك ومواعيدك" />
               <ActionCard href="/provider/profile" icon="user" title="ملفي الاحترافي" desc="عدّل بياناتك ومعرض أعمالك" />
             </div>
 
