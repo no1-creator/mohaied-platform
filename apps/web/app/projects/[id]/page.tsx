@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
+import ProjectReview from '@/components/ProjectReview';
 
 type Milestone = {
   id: string;
@@ -149,10 +150,12 @@ export default function ProjectDetailPage() {
                   {m.value} ج.م
                 </span>
               </div>
-            ))}
-          </div>
-        </div>
+           ))}
       </div>
-    </main>
+    </div>
+
+    <ProjectReview projectId={id} />
+  </div>
+</main>
   );
 }
