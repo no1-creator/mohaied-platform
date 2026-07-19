@@ -255,7 +255,8 @@ preferredProviderId String?
   messages              Message[]
   supervisorAssignments SupervisorAssignment[]
   activityLogs          ActivityLog[]
-  escrowTransactions    EscrowTransaction[]
+  escrowTransactions    EscrowTransaction
+reviews               Review[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -706,4 +707,29 @@ model ExternalInvitation {
 
   @@index([clientId])
   @@index([status])
+}
+// ==================== REVIEWS & RATINGS (تقييمات ومراجعات) ====================
+
+enum ReviewRole {
+  CLIENT   // تقييم كتبه العميل عن مقدّم الخدمة
+  PROVIDER // تقييم كتبه مقدّم الخدمة عن العميل
+}
+
+model Review {
+  id         String     @id @default(uuid())
+  projectId  String
+  project    Project    @relation(fields: [projectId], references: [id])
+  authorId   String
+  author     User       @relation("ReviewAuthor", fields: [authorId], references: [id])
+  targetId   String
+  target     User       @relation("ReviewTarget", fields: [targetId], references: [id])
+  authorRole ReviewRole
+  rating     Int
+  comment    String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@unique([projectId, authorId])
+  @@index([targetId])
+  @@index([projectId])
 }
