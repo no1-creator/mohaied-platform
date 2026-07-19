@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
-import TopBar from '@/components/TopBar';
-import BackBar from '@/components/BackBar';
 import Icon from '@/components/Icon';
+import ProviderShell from '@/components/ProviderShell';
 
 type Plan = {
   id: string;
@@ -90,12 +89,9 @@ export default function ProviderPlansPage() {
   };
 
   return (
-    <main className="pp-main">
-      <TopBar />
-      <BackBar />
+    <ProviderShell active="plan" title="الاشتراك والباقة">
       <style>{PP_CSS}</style>
       <div className="pp-wrap">
-        <h1 className="pp-title">باقات مقدمي الخدمة</h1>
         <p className="pp-sub">اختار الباقة اللي تناسب شغلك وافتح مميزات تخليك متقدّم على المنصة.</p>
 
         {msg && <div className="pp-msg">{msg}</div>}
@@ -146,15 +142,14 @@ export default function ProviderPlansPage() {
 
         <p className="pp-note">الدفع مبدئيًا بيتفعّل مباشرة (بوابة الدفع الفعلية هتتضاف لاحقًا).</p>
       </div>
-    </main>
+    </ProviderShell>
   );
 }
 
 const PP_CSS = `
-.pp-main{min-height:100vh;background:var(--background);}
-.pp-wrap{max-width:1080px;margin:0 auto;padding:24px 20px 60px;}
+.pp-wrap{max-width:1080px;margin:0 auto;}
 .pp-title{font-size:26px;font-weight:900;color:var(--ink);margin:0;}
-.pp-sub{color:var(--muted);font-size:14px;margin:6px 0 20px;}
+.pp-sub{color:var(--muted);font-size:14px;margin:0 0 20px;}
 .pp-msg{background:#e3f4ec;color:#1c7a4f;border:1px solid #bfe6d2;border-radius:10px;padding:10px 14px;font-size:14px;margin-bottom:14px;}
 .pp-err{background:#fdecec;color:#b42318;border:1px solid #f5c6c2;border-radius:10px;padding:10px 14px;font-size:14px;margin-bottom:14px;}
 .pp-loading,.pp-empty{padding:50px;text-align:center;color:var(--muted);}
