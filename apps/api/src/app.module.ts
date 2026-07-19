@@ -27,6 +27,7 @@ import { ClientsModule } from './clients/clients.module';
 import { ExternalProjectsModule } from './external-projects/external-projects.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { WalletModule } from './wallet/wallet.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { WalletModule } from './wallet/wallet.module';
     ExternalProjectsModule,
     InvoicesModule,
     WalletModule,
+    TasksModule,
   ],
   controllers: [],
   providers: [],
