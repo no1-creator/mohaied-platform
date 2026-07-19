@@ -813,7 +813,7 @@ model ExternalProject {
   @@index([providerId])
   @@index([clientId])
 }
-model Invoice {
+model ProviderInvoice {
   id         String    @id @default(uuid())
   providerId String
   clientId   String?
