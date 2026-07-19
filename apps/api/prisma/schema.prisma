@@ -744,3 +744,34 @@ model Review {
   @@index([targetId])
   @@index([projectId])
 }
+enum KycStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum KycIdType {
+  NATIONAL_ID
+  PASSPORT
+  COMMERCIAL_REGISTER
+}
+
+model KycSubmission {
+  id           String    @id @default(uuid())
+  userId       String
+  idType       KycIdType
+  idNumber     String
+  fullNameOnId String
+  frontImage   String
+  backImage    String?
+  selfie       String?
+  status       KycStatus @default(PENDING)
+  reviewNote   String?
+  reviewedById String?
+  reviewedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
