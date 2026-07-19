@@ -28,6 +28,7 @@ import { ExternalProjectsModule } from './external-projects/external-projects.mo
 import { InvoicesModule } from './invoices/invoices.module';
 import { WalletModule } from './wallet/wallet.module';
 import { TasksModule } from './tasks/tasks.module';
+import { BusinessSettingsModule } from './business-settings/business-settings.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { TasksModule } from './tasks/tasks.module';
     InvoicesModule,
     WalletModule,
     TasksModule,
+    BusinessSettingsModule,
   ],
   controllers: [],
   providers: [],
