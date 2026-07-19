@@ -22,15 +22,16 @@ export class InvoicesService {
     }
   }
 
-  private compute(items: InvoiceItemDto[] | any[], taxRate?: number, discount?: number) {
-    const subtotal = (items || []).reduce(
-      (s, it) => s + (Number(it.qty) || 0) * (Number(it.price) || 0),
-      0,
-    );
-    const tax = (subtotal * (Number(taxRate) || 0)) / 100;
-    const total = subtotal + tax - (Number(discount) || 0);
-    return { subtotal, total };
-  }
+  private compute(items: any[], taxRate?: number, discount?: number) {
+  const list = Array.isArray(items) ? items : [];
+  const subtotal = list.reduce<number>(
+    (s, it) => s + (Number(it.qty) || 0) * (Number(it.price) || 0),
+    0,
+  );
+  const tax = (subtotal * (Number(taxRate) || 0)) / 100;
+  const total = subtotal + tax - (Number(discount) || 0);
+  return { subtotal, total };
+}
 
   private async attachClient(providerId: string, inv: any) {
     let client = null;
