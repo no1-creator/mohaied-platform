@@ -161,8 +161,8 @@ export default function ProviderClientsPage() {
                       </a>
                     )}
                     {wa && (
-                      <a className="cl-contact" href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer">
-                        <Icon name="phone" size={14} /> واتساب
+<a className="cl-contact" href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer">
+                  <Icon name="phone" size={14} /> واتساب
                       </a>
                     )}
                     {c.email && (
