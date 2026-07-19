@@ -41,7 +41,16 @@ export default function LoginPage() {
         body: { email: mail, password: pass },
       });
       saveToken(res.accessToken);
-      router.push('/dashboard');
+try {
+  const me = await api<{ role?: string }>('/users/me');
+  const role = (me?.role || '').toUpperCase();
+  if (role === 'ADMIN') router.push('/admin');
+  else if (role === 'PROVIDER') router.push('/provider');
+  else if (role === 'SUPERVISOR') router.push('/supervisor');
+  else router.push('/dashboard');
+} catch {
+  router.push('/dashboard');
+}
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
