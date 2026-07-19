@@ -23,7 +23,7 @@ const NAV = [
   { key: 'analytics', href: '/provider/analytics', label: 'التحليلات', icon: 'sparkles' },
   { key: 'ads', href: '/advertise', label: 'الإعلانات', icon: 'star' },
   { key: 'kyc', href: '/kyc', label: 'توثيق الهوية', icon: 'badgeCheck' },
-  { key: 'profile', href: '/profile', label: 'ملفي الشخصي', icon: 'user' },
+{ key: 'profile', href: '/provider/profile', label: 'ملفي الاحترافي', icon: 'user' },
 ];
 
 export default function ProviderShell({
