@@ -116,6 +116,7 @@ const ADV_CSS = `
 .adv-form, .adv-side { background:#fff; border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:0 4px 16px rgba(23,33,31,.04); }
 .adv-form-title { font-size:17px; font-weight:800; color:var(--ink); margin-bottom:16px; }
 .adv-note { font-size:12.5px; color:#4a5a55; line-height:1.7; background:var(--mint); border-radius:10px; padding:12px 14px; margin-bottom:16px; }
+.adv-credit { background:#fff7e6; color:#92640a; border:1px solid #f2d68a; border-radius:10px; padding:12px 14px; font-size:13px; font-weight:700; line-height:1.7; margin-bottom:16px; }
 .adv-f { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
 .adv-f span { font-size:12.5px; font-weight:700; color:var(--muted); }
 .adv-f input, .adv-f select { height:44px; border:1px solid var(--line); border-radius:11px; padding:0 13px; font-family:inherit; font-size:14px; background:#fff; color:var(--ink); }
@@ -166,17 +167,22 @@ export default function AdvertisePage() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ ...EMPTY });
   const [uploading, setUploading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [done, setDone] = useState(false);
+ const [saving, setSaving] = useState(false);
+const [done, setDone] = useState(false);
+const [credits, setCredits] = useState<{ total: number; used: number; remaining: number } | null>(null);
+const [instant, setInstant] = useState(false);
 
-  const load = () => {
-    api<Ad[]>('/ads/mine')
-      .then((d) => {
-        setMine(Array.isArray(d) ? d : []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  };
+const load = () => {
+  api<Ad[]>('/ads/mine')
+    .then((d) => {
+      setMine(Array.isArray(d) ? d : []);
+      setLoading(false);
+    })
+    .catch(() => setLoading(false));
+  api<{ total: number; used: number; remaining: number }>('/ads/mine/credits')
+    .then((c) => setCredits(c))
+    .catch(() => {});
+};
 
   useEffect(() => {
     if (!getToken()) {
@@ -206,9 +212,10 @@ export default function AdvertisePage() {
   };
 
   const submit = async () => {
-    if (!form.title.trim()) return;
-    setSaving(true);
-    try {
+  if (!form.title.trim()) return;
+  setInstant(!!(credits && credits.remaining > 0));
+  setSaving(true);
+  try {
       await api('/ads', {
         method: 'POST',
         body: {
@@ -243,9 +250,12 @@ export default function AdvertisePage() {
         </section>
 
         {done && (
-          <div className="adv-success">✅ تم إرسال إعلانك بنجاح! هيظهر بعد مراجعة الإدارة والموافقة عليه.</div>
-        )}
-
+  <div className="adv-success">
+    {instant
+      ? '⚡ تم نشر إعلانك فورًا من رصيد باقتك! هو دلوقتي ظاهر على المنصة.'
+      : '✅ تم إرسال إعلانك بنجاح! هيظهر بعد مراجعة الإدارة والموافقة عليه.'}
+  </div>
+)}
         {/* المعاينة الحيّة */}
         <div className="advp-label">👁️ معاينة مباشرة — كده هيبان إعلانك على المنصة</div>
         <div className="advp-banner">
@@ -267,10 +277,14 @@ export default function AdvertisePage() {
         <div className="adv-cols">
           <div className="adv-form">
             <div className="adv-form-title">اعمل إعلانك</div>
-            <div className="adv-note">
-              إعلانك بيتراجع من الإدارة قبل النشر. التكلفة بتكون ضمن باقة اشتراكك أو باتفاق منفصل مع الإدارة.
-            </div>
-
+        <div className="adv-note">
+  إعلانك بيتراجع من الإدارة قبل النشر. التكلفة بتكون ضمن باقة اشتراكك أو باتفاق منفصل مع الإدارة.
+</div>
+{credits && credits.remaining > 0 && (
+  <div className="adv-credit">
+    ⚡ عندك <b>{credits.remaining}</b> إعلان متبقّي في رصيد باقتك الشهري — الإعلان ده هيتفعّل <b>فورًا</b> من غير مراجعة.
+  </div>
+)}
             <label className="adv-f">
               <span>عنوان الإعلان *</span>
               <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="مثال: خدمات تصميم مواقع احترافية" />
@@ -311,9 +325,13 @@ export default function AdvertisePage() {
               )}
             </label>
 
-            <button className="adv-submit" onClick={submit} disabled={saving || uploading || !form.title.trim()}>
-              {saving ? 'جاري الإرسال...' : 'إرسال الإعلان للمراجعة'}
-            </button>
+      <button className="adv-submit" onClick={submit} disabled={saving || uploading || !form.title.trim()}>
+  {saving
+    ? 'جاري الإرسال...'
+    : credits && credits.remaining > 0
+    ? 'انشر الإعلان فورًا (من رصيدك)'
+    : 'إرسال الإعلان للمراجعة'}
+</button>
           </div>
 
           <aside className="adv-side">
