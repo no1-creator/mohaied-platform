@@ -54,6 +54,7 @@ import { ClientsModule } from './clients/clients.module';
     FilesModule,
     MessagesModule,
     KycModule,
+    ClientsModule,
   ],
   controllers: [],
   providers: [],
