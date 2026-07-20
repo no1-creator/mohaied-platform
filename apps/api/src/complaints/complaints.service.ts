@@ -42,20 +42,31 @@ export class ComplaintsService {
 
     const code = await this.generateCode();
 
-    const created = await this.prisma.$transaction(async (tx) => {
-      const complaint = await tx.complaint.create({
-        data: {
-          code,
-          projectId: dto.projectId,
-          milestoneId: dto.milestoneId,
-          creatorId: userId,
-          type: dto.type,
-          customType: dto.customType,
-          details: dto.details,
-          status: ComplaintStatus.AWAITING_RESPONSE,
-        },
-      });
+    const evidenceRows = [
+  ...(dto.evidenceImages || [])
+    .filter((u) => typeof u === 'string' && u.trim().length > 0)
+    .map((fileUrl) => ({ fileUrl })),
+  ...(dto.evidenceLinks || [])
+    .filter((l) => typeof l === 'string' && l.trim().length > 0)
+    .map((link) => ({ link })),
+];
 
+const created = await this.prisma.$transaction(async (tx) => {
+  const complaint = await tx.complaint.create({
+    data: {
+      code,
+      projectId: dto.projectId,
+      milestoneId: dto.milestoneId,
+      creatorId: userId,
+      type: dto.type,
+      customType: dto.customType,
+      details: dto.details,
+      status: ComplaintStatus.AWAITING_RESPONSE,
+      evidences: evidenceRows.length
+        ? { create: evidenceRows }
+        : undefined,
+    },
+  });
       await tx.project.update({
         where: { id: dto.projectId },
         data: { status: ProjectStatus.DISPUTED },
