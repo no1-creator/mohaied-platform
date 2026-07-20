@@ -9,12 +9,19 @@ export type ContentEntry = {
   def: string;
   label: string;
   group: string;
-  type?: 'text' | 'textarea';
+type?: 'text' | 'textarea' | 'image';
 };
 
 // السجل المركزي لكل النصوص القابلة للتحكم من لوحة التحكم.
 // هيكبر تدريجيًا كل ما نوصّل شاشة جديدة بالنظام.
 export const CONTENT_REGISTRY: ContentEntry[] = [
+  {
+    key: 'site.logo.url',
+    def: '',
+    label: 'شعار المنصة (صورة) — يظهر في الهيدر والفوتر. سيبه فاضي لاستخدام الشعار الافتراضي.',
+    group: 'الهوية والشعار',
+    type: 'image',
+  },
   {
     key: 'projects.new.title',
     def: 'مشروع جديد',
