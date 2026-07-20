@@ -283,8 +283,9 @@ model Offer {
   scope       String
   version     Int         @default(1)
 
-  milestones OfferMilestone[]
-  agreement  Agreement?
+ milestones  OfferMilestone[]
+attachments OfferAttachment[]
+agreement   Agreement?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
