@@ -64,27 +64,45 @@ export class OffersService {
       }
     }
 
-    const offer = await this.prisma.offer.create({
-      data: {
-        projectId: dto.projectId,
-        providerId,
-        scope: dto.scope,
-        totalPrice: dto.totalPrice,
-        durationDays: dto.durationDays,
-        status: OfferStatus.SUBMITTED,
-        milestones: {
-          create: dto.milestones.map((m, index) => ({
-            title: m.title,
-            description: m.description,
-            price: m.price,
-            durationDays: m.durationDays,
-            orderIndex: index,
-          })),
-        },
-      },
-      include: { milestones: { orderBy: { orderIndex: 'asc' } } },
-    });
+ // ===== المرفقات (صور base64 + روابط) =====
+const images = (dto.attachmentImages || []).filter(
+  (s) => typeof s === 'string' && s.trim() !== '',
+);
+const links = (dto.attachmentLinks || []).filter(
+  (s) => typeof s === 'string' && s.trim() !== '',
+);
+const attachmentRows = [
+  ...images.map((fileUrl) => ({ fileUrl })),
+  ...links.map((link) => ({ link })),
+];
 
+const offer = await this.prisma.offer.create({
+  data: {
+    projectId: dto.projectId,
+    providerId,
+    scope: dto.scope,
+    totalPrice: dto.totalPrice,
+    durationDays: dto.durationDays,
+    status: OfferStatus.SUBMITTED,
+    milestones: {
+      create: dto.milestones.map((m, index) => ({
+        title: m.title,
+        description: m.description,
+        price: m.price,
+        durationDays: m.durationDays,
+        orderIndex: index,
+      })),
+    },
+    attachments: attachmentRows.length
+      ? { create: attachmentRows }
+      : undefined,
+  },
+   include: {
+    milestones: { orderBy: { orderIndex: 'asc' } },
+    provider: { select: { id: true, fullName: true } },
+    attachments: true,
+  },
+});
     // 🔔 إشعار لصاحب المشروع بوصول عرض جديد
     await this.notifications.create({
       userId: project.clientId,
