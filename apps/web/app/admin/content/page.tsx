@@ -29,6 +29,11 @@ const CT_CSS = `
 .ct-dirty{color:#b45309;font-size:12.5px;font-weight:700;}
 .ct-save-all{padding:10px 20px;border-radius:11px;border:none;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;background:var(--ink);color:#fff;}
 .ct-save-all:disabled{opacity:.5;cursor:default;}
+.ct-img-field{display:flex;flex-direction:column;gap:10px;}
+.ct-img-preview{max-width:220px;max-height:130px;border-radius:12px;border:1px solid var(--line);object-fit:cover;}
+.ct-img-empty{width:220px;height:110px;border:1px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;}
+.ct-img-actions{display:flex;gap:10px;align-items:center;}
+.ct-upload{display:inline-flex;align-items:center;cursor:pointer;}
 `;
 
 export default function AdminContentPage() {
@@ -62,9 +67,41 @@ export default function AdminContentPage() {
     hydrate();
   }, []);
 
-  function setVal(key: string, v: string) {
-    setValues((prev) => ({ ...prev, [key]: v }));
+ function setVal(key: string, v: string) {
+  setValues((prev) => ({ ...prev, [key]: v }));
+}
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+
+async function uploadImage(key: string, file: File) {
+  if (!file.type.startsWith('image/')) {
+    toast.error('لازم تختار صورة');
+    return;
   }
+  if (file.size > 5 * 1024 * 1024) {
+    toast.error('حجم الصورة أكبر من 5 ميجا');
+    return;
+  }
+  setSavingKey(key);
+  try {
+    const dataUrl: string = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('فشل قراءة الصورة'));
+      reader.readAsDataURL(file);
+    });
+    const media = await api<{ url: string }>('/files/media', {
+      method: 'POST',
+      body: { name: file.name, mimeType: file.type, dataUrl },
+    });
+    setVal(key, `${API_BASE}${media.url}`);
+    toast.success('اترفعت الصورة ✅ — اضغط «حفظ» لتثبيتها');
+  } catch (err: any) {
+    toast.error(err.message);
+  } finally {
+    setSavingKey('');
+  }
+}
 
   async function saveOne(entry: ContentEntry) {
     setSavingKey(entry.key);
@@ -176,19 +213,54 @@ export default function AdminContentPage() {
                   <div className="ct-item" key={e.key}>
                     <label className="ct-label">{e.label}</label>
                     <div className="ct-key">{e.key}</div>
-                    {e.type === 'textarea' ? (
-                      <textarea
-                        className="ct-textarea"
-                        value={values[e.key] ?? ''}
-                        onChange={(ev) => setVal(e.key, ev.target.value)}
-                      />
-                    ) : (
-                      <input
-                        className="ct-input"
-                        value={values[e.key] ?? ''}
-                        onChange={(ev) => setVal(e.key, ev.target.value)}
-                      />
-                    )}
+                   {e.type === 'image' ? (
+  <div className="ct-img-field">
+    {values[e.key] ? (
+      <img
+        className="ct-img-preview"
+        src={values[e.key]}
+        alt=""
+      />
+    ) : (
+      <div className="ct-img-empty">لا توجد صورة بعد</div>
+    )}
+    <div className="ct-img-actions">
+      <label className="ct-btn ct-upload">
+        {savingKey === e.key ? 'جاري الرفع…' : 'رفع صورة'}
+        <input
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={(ev) => {
+            const f = ev.target.files?.[0];
+            if (f) uploadImage(e.key, f);
+            ev.target.value = '';
+          }}
+        />
+      </label>
+      {values[e.key] && (
+        <button
+          className="ct-btn ct-reset"
+          onClick={() => setVal(e.key, '')}
+        >
+          إزالة
+        </button>
+      )}
+    </div>
+  </div>
+) : e.type === 'textarea' ? (
+  <textarea
+    className="ct-textarea"
+    value={values[e.key] ?? ''}
+    onChange={(ev) => setVal(e.key, ev.target.value)}
+  />
+) : (
+  <input
+    className="ct-input"
+    value={values[e.key] ?? ''}
+    onChange={(ev) => setVal(e.key, ev.target.value)}
+  />
+)}
                     <div className="ct-row-actions">
                       <button
                         className="ct-btn"
