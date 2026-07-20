@@ -362,11 +362,19 @@ model Submission {
   reviewNotes  String?
   approved     Boolean?
 
-  files     FileAsset[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+   files       FileAsset[]
+  attachments SubmissionAttachment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-
+model SubmissionAttachment {
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id])
+  fileUrl      String?
+  link         String?
+  createdAt    DateTime   @default(now())
+}
 // ==================== SUPERVISOR ====================
 
 model SupervisorAssignment {
