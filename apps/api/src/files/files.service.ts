@@ -7,8 +7,10 @@ import {
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFileDto } from './dto/create-file.dto';
+import { CreateMediaDto } from './dto/create-media.dto';
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 ميجا
+const MAX_MEDIA_BYTES = 5 * 1024 * 1024; // 5 ميجا لصور المكتبة (حد الطلب 12 ميجا)
 
 @Injectable()
 export class FilesService {
@@ -113,6 +115,64 @@ export class FilesService {
     if (!file) throw new NotFoundException('الملف غير موجود');
     if (file.uploaderId !== userId) {
       throw new ForbiddenException('تقدر تمسح الملفات اللي رفعتها بس');
+    }
+    await this.prisma.fileAsset.delete({ where: { id } });
+    return { ok: true };
+  }
+
+  // ==================== مكتبة الوسائط (جديد) ====================
+
+  // رفع صورة لمكتبة الوسائط (أدمن) — متاحة للعرض العام
+  async createMedia(userId: string, dto: CreateMediaDto) {
+    const size = this.computeSize(dto.dataUrl);
+    if (size <= 0) throw new BadRequestException('ملف غير صالح');
+    if (size > MAX_MEDIA_BYTES) {
+      throw new BadRequestException('حجم الصورة أكبر من 5 ميجا');
+    }
+
+    const id = randomUUID();
+    return this.prisma.fileAsset.create({
+      data: {
+        id,
+        name: dto.name,
+        mimeType: dto.mimeType || null,
+        url: `/files/public/${id}`,
+        data: dto.dataUrl,
+        size,
+        uploaderId: userId,
+        folder: 'MEDIA',
+        isPublic: true,
+      },
+      select: this.metaSelect,
+    });
+  }
+
+  listMedia() {
+    return this.prisma.fileAsset.findMany({
+      where: { folder: 'MEDIA' },
+      orderBy: { createdAt: 'desc' },
+      select: this.metaSelect,
+    });
+  }
+
+  // عرض عام للصورة كبايتس (بدون تسجيل دخول) — للوسائط العامة فقط
+  async getPublicRaw(id: string) {
+    const file = await this.prisma.fileAsset.findUnique({ where: { id } });
+    if (!file || !file.isPublic || !file.data) {
+      throw new NotFoundException('الصورة غير موجودة');
+    }
+    const dataUrl = file.data;
+    const base64 = dataUrl.includes(',') ? dataUrl.split(',')[1] : dataUrl;
+    let mime = file.mimeType || 'application/octet-stream';
+    const match = /^data:([^;]+);/.exec(dataUrl);
+    if (match) mime = match[1];
+    return { buffer: Buffer.from(base64, 'base64'), mime };
+  }
+
+  async removeMedia(id: string) {
+    const file = await this.prisma.fileAsset.findUnique({ where: { id } });
+    if (!file || file.folder !== 'MEDIA') {
+      throw new NotFoundException('الصورة غير موجودة');
     }
     await this.prisma.fileAsset.delete({ where: { id } });
     return { ok: true };
