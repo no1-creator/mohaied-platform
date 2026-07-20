@@ -7,7 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { SendNotificationDto } from './dto/admin.dto';
-
+import { AuthUser } from '../auth/get-user.decorator';
 @Injectable()
 export class AdminService {
   constructor(
@@ -180,21 +180,24 @@ export class AdminService {
     });
   }
 
-  async notify(dto: SendNotificationDto) {
-    if (dto.target === 'user') {
-      if (!dto.userId) {
-        throw new BadRequestException('حدد المستخدم المستهدف');
-      }
-      await this.ensureUser(dto.userId);
-      await this.notifications.create({
-        userId: dto.userId,
-        title: dto.title,
-        body: dto.body,
-        linkUrl: dto.linkUrl,
-      });
-      return { count: 1 };
-    }
+  async notify(admin: AuthUser, dto: SendNotificationDto) {
+  let count = 0;
+  let recipientName: string | null = null;
 
+  if (dto.target === 'user') {
+    if (!dto.userId) {
+      throw new BadRequestException('حدد المستخدم المستهدف');
+    }
+    const target = await this.ensureUser(dto.userId);
+    recipientName = target.fullName;
+    await this.notifications.create({
+      userId: dto.userId,
+      title: dto.title,
+      body: dto.body,
+      linkUrl: dto.linkUrl,
+    });
+    count = 1;
+  } else {
     const where: any = {};
     if (dto.target === 'role') {
       if (!dto.role) {
@@ -213,8 +216,32 @@ export class AdminService {
       body: dto.body,
       linkUrl: dto.linkUrl,
     });
-    return { count: (res as any)?.count ?? ids.length };
+    count = (res as any)?.count ?? ids.length;
   }
+
+  await this.prisma.adminNotification.create({
+    data: {
+      adminId: admin.id,
+      adminName: admin.fullName,
+      target: dto.target,
+      role: dto.target === 'role' ? dto.role : null,
+      recipientName,
+      title: dto.title,
+      body: dto.body,
+      linkUrl: dto.linkUrl,
+      recipientCount: count,
+    },
+  });
+
+  return { count };
+}
+
+async listSentNotifications() {
+  return this.prisma.adminNotification.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 100,
+  });
+}
 
   async listProjects() {
     return this.prisma.project.findMany({
