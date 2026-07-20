@@ -50,8 +50,12 @@ export default function RegisterPage() {
         body: { fullName, email, password, role },
       });
       saveToken(res.accessToken);
-      router.push('/dashboard');
-    } catch (err: any) {
+  if (role === 'ADMIN') router.push('/admin');
+  else if (role === 'PROVIDER') router.push('/provider');
+  else if (role === 'SUPERVISOR') router.push('/supervisor');
+  else if (role === 'CLIENT') router.push('/client');
+  else router.push('/dashboard');
+} catch (err: any) {
       setError(err.message);
       setLoading(false);
     }
