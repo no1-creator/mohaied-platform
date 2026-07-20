@@ -324,9 +324,20 @@ model Agreement {
   revisionPolicy     String?
   clientApprovedAt   DateTime?
   providerApprovedAt DateTime?
-  confirmedAt        DateTime?
+confirmedAt        DateTime?
 
-  createdAt DateTime @default(now())
+// ---- العقد الإلكتروني وتوقيعه (جديد) ----
+contractNumber   String?   @unique
+contractBody     String?
+clientSignName   String?
+clientSignedAt   DateTime?
+clientSignHash   String?
+providerSignName String?
+providerSignedAt DateTime?
+providerSignHash String?
+fullySignedAt    DateTime?
+
+createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
