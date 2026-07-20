@@ -11,6 +11,7 @@ import {
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/roles.guard';
+import { GetUser, AuthUser } from '../auth/get-user.decorator';
 import { UserRole } from '@prisma/client';
 import {
   SetVerifiedDto,
@@ -50,10 +51,15 @@ export class AdminController {
     return this.adminService.setRole(id, dto.role);
   }
 
-  @Post('notify')
-  notify(@Body() dto: SendNotificationDto) {
-    return this.adminService.notify(dto);
-  }
+@Post('notify')
+notify(@GetUser() user: AuthUser, @Body() dto: SendNotificationDto) {
+  return this.adminService.notify(user, dto);
+}
+
+@Get('notifications')
+listSentNotifications() {
+  return this.adminService.listSentNotifications();
+}
 
   @Get('projects')
   listProjects() {
