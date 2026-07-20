@@ -13,6 +13,12 @@ type Milestone = {
   durationDays: number;
 };
 
+type Attachment = {
+  id: string;
+  fileUrl?: string | null;
+  link?: string | null;
+};
+
 type Offer = {
   id: string;
   scope: string;
@@ -21,6 +27,7 @@ type Offer = {
   status: string;
   provider?: { fullName: string };
   milestones?: Milestone[];
+  attachments?: Attachment[];
 };
 
 export default function ProjectOffersPage() {
@@ -104,9 +111,56 @@ export default function ProjectOffersPage() {
                     </span>
                   </div>
                 ))}
-              </div>
+             </div>
 
-              {o.status === 'SUBMITTED' || o.status === 'REVISED' ? (
+{o.attachments && o.attachments.length > 0 && (
+  <div className="mb-4">
+    <p className="text-sm font-extrabold mb-2">مرفقات العرض</p>
+    <div className="flex flex-wrap gap-3">
+      {o.attachments
+        .filter((a) => a.fileUrl)
+        .map((a) => (
+          <a
+            key={a.id}
+            href={a.fileUrl as string}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src={a.fileUrl as string}
+              alt="مرفق"
+              style={{
+                width: 72,
+                height: 72,
+                objectFit: 'cover',
+                borderRadius: 10,
+                border: '1px solid var(--line)',
+              }}
+            />
+          </a>
+        ))}
+    </div>
+    {o.attachments.some((a) => a.link) && (
+      <div className="space-y-2 mt-3">
+        {o.attachments
+          .filter((a) => a.link)
+          .map((a) => (
+            <a
+              key={a.id}
+              href={a.link as string}
+              target="_blank"
+              rel="noreferrer"
+              className="block text-sm text-brand truncate"
+            >
+              🔗 {a.link}
+            </a>
+          ))}
+      </div>
+    )}
+  </div>
+)}
+
+{o.status === 'SUBMITTED' || o.status === 'REVISED' ? (
                 <button
                   onClick={() => acceptOffer(o.id)}
                   className="btn-primary"
