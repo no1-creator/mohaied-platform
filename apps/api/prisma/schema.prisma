@@ -327,7 +327,7 @@ model Agreement {
 confirmedAt        DateTime?
 
 // ---- العقد الإلكتروني وتوقيعه (جديد) ----
-contractNumber   String?   @unique
+contractNumber   String?
 contractBody     String?
 clientSignName   String?
 clientSignedAt   DateTime?
