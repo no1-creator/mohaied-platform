@@ -31,9 +31,12 @@ export class MilestonesService {
       where: { projectId },
       orderBy: { orderIndex: 'asc' },
       include: {
-        submissions: { orderBy: { createdAt: 'desc' } },
-      },
-    });
+    submissions: {
+      orderBy: { createdAt: 'desc' },
+      include: { attachments: true },
+    },
+  },
+});
   }
 
   // مقدم الخدمة يسلّم المرحلة
@@ -54,15 +57,29 @@ export class MilestonesService {
       throw new BadRequestException('لا يمكن تسليم هذه المرحلة في حالتها الحالية');
     }
 
-    const submission = await this.prisma.$transaction(async (tx) => {
-      const submission = await tx.submission.create({
-        data: {
-          milestoneId,
-          providerId,
-          notes: dto.notes,
-          externalLink: dto.externalLink,
-        },
-      });
+    const images = (dto.attachmentImages || []).filter(
+  (s) => typeof s === 'string' && s.trim() !== '',
+);
+const links = (dto.attachmentLinks || []).filter(
+  (s) => typeof s === 'string' && s.trim() !== '',
+);
+const attachmentRows = [
+  ...images.map((fileUrl) => ({ fileUrl })),
+  ...links.map((link) => ({ link })),
+];
+
+const submission = await this.prisma.$transaction(async (tx) => {
+  const submission = await tx.submission.create({
+    data: {
+      milestoneId,
+      providerId,
+      notes: dto.notes,
+      externalLink: dto.externalLink,
+      attachments: attachmentRows.length
+        ? { create: attachmentRows }
+        : undefined,
+    },
+  });
 
       await tx.milestone.update({
         where: { id: milestoneId },
