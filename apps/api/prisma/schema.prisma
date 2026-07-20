@@ -290,7 +290,14 @@ agreement   Agreement?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
+model OfferAttachment {
+  id        String   @id @default(uuid())
+  offerId   String
+  offer     Offer    @relation(fields: [offerId], references: [id])
+  fileUrl   String?
+  link      String?
+  createdAt DateTime @default(now())
+}
 model OfferMilestone {
   id           String  @id @default(uuid())
   offerId      String
