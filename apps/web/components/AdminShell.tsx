@@ -17,7 +17,8 @@ const LOGO = (
 
 const NAV = [
   { key: 'overview', href: '/admin', label: 'نظرة عامة', icon: 'grid' },
-  { key: 'users', href: '/admin/users', label: 'المستخدمون', icon: 'users' },
+{ key: 'users', href: '/admin/users', label: 'المستخدمون', icon: 'users' },
+{ key: 'notifications', href: '/admin/notifications', label: 'سجل الإشعارات', icon: 'clock' },
   { key: 'projects', href: '/admin/projects', label: 'المشاريع', icon: 'folder' },
   { key: 'supervisors', href: '/admin/supervisors', label: 'المشرفون', icon: 'shield' },
   { key: 'complaints', href: '/admin/complaints', label: 'الشكاوى', icon: 'scale' },
