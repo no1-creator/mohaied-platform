@@ -1,4 +1,11 @@
-import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AgreementsService } from './agreements.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/roles.guard';
@@ -17,6 +24,20 @@ export class AgreementsController {
     @GetUser('id') clientId: string,
   ) {
     return this.agreementsService.acceptOffer(offerId, clientId);
+  }
+
+  // توقيع العقد إلكترونيًا (العميل أو المنفّذ)
+  @Post(':agreementId/sign')
+  signAgreement(
+    @Param('agreementId') agreementId: string,
+    @GetUser('id') userId: string,
+    @Body() body: { signName?: string },
+  ) {
+    return this.agreementsService.signAgreement(
+      agreementId,
+      userId,
+      body?.signName,
+    );
   }
 
   @Get('project/:projectId')
