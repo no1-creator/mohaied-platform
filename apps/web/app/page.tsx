@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import Icon from '@/components/Icon';
 import AdBanners from '@/components/AdBanners';
-
+import { useSiteContent } from '@/lib/content';
 const STEPS = [
   { t: 'اطرح مشروعك', d: 'اكتب اللي محتاجه بوضوح — المطلوب، الميزانية، والمدة المتوقّعة.' },
   { t: 'اتفاق موثّق', d: 'يتحدد نطاق الشغل والمراحل والحقوق المالية في اتفاق رسمي مسجّل.' },
@@ -44,6 +44,18 @@ const LOGO = (
 );
 
 export default function LandingPage() {
+  const { t } = useSiteContent();
+  const logoUrl = t('site.logo.url', '');
+  const logoMark = logoUrl ? (
+    <img
+      src={logoUrl}
+      alt="محايد"
+      style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 8 }}
+    />
+  ) : (
+    LOGO
+  );
+
   useEffect(() => {
     const header = document.querySelector('.site-header');
     const onScroll = () => {
@@ -78,7 +90,7 @@ export default function LandingPage() {
       <header className="site-header">
         <div className="nav-inner">
           <div className="brand">
-            <div className="logo-mark small">{LOGO}</div>
+<div className="logo-mark small">{logoMark}</div>
             <div>
               <div className="brand-name">محايد</div>
               <span className="brand-tag">
@@ -344,7 +356,7 @@ export default function LandingPage() {
         <div className="footer-inner">
           <div>
             <div className="footer-brand">
-              <div className="logo-mark small">{LOGO}</div> محايد
+<div className="logo-mark small">{logoMark}</div> محايد
             </div>
             <p className="footer-about">
               منصة محايدة لحماية الحقوق، تعمل تحت إشراف الحكومة المصرية لضمان تنفيذ
