@@ -545,13 +545,44 @@ export default function DisputeCase({ id }: { id: string }) {
                   {complaint.evidences.map((ev, i) => (
                     <li className="dc-ev" key={(ev as any).id || i}>
                       <Icon name="fileText" size={16} className="dc-ev-ic" />
-                      {String(
-                        (ev as any).description ||
-                          (ev as any).note ||
-                          (ev as any).url ||
-                          (ev as any).fileName ||
-                          'مرفق',
-                      )}
+                    {(ev as any).fileUrl ? (
+  // eslint-disable-next-line @next/next/no-img-element
+  <a
+    href={(ev as any).fileUrl}
+    target="_blank"
+    rel="noreferrer"
+    style={{ display: 'inline-flex' }}
+  >
+    <img
+      src={(ev as any).fileUrl}
+      alt={'دليل ' + (i + 1)}
+      style={{
+        width: 64,
+        height: 64,
+        objectFit: 'cover',
+        borderRadius: 8,
+        border: '1px solid var(--line)',
+      }}
+    />
+  </a>
+) : (ev as any).link ? (
+  <a
+    href={(ev as any).link}
+    target="_blank"
+    rel="noreferrer"
+    style={{ color: 'var(--green-dark)', wordBreak: 'break-all' }}
+  >
+    {String((ev as any).link)}
+  </a>
+) : (
+  String(
+    (ev as any).description ||
+      (ev as any).note ||
+      (ev as any).url ||
+      (ev as any).fileName ||
+      'مرفق',
+  )
+)}
                     </li>
                   ))}
                 </ul>
