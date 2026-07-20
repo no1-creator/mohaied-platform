@@ -108,12 +108,23 @@ export default function ProjectDetailPage() {
             >
               عرض العروض
             </Link>
-            <Link
-              href={`/projects/${id}/milestones`}
-              className="bg-brand text-white px-4 py-2 rounded-xl text-sm font-extrabold"
-            >
-              إدارة المراحل
-            </Link>
+          <Link
+  href={`/projects/${id}/milestones`}
+  className="bg-brand text-white px-4 py-2 rounded-xl text-sm font-extrabold"
+>
+  إدارة المراحل
+</Link>
+{project &&
+  ['IN_PROGRESS', 'COMPLETED', 'DISPUTED'].includes(
+    project.status,
+  ) && (
+    <Link
+      href={`/projects/${id}/contract`}
+      className="bg-white border border-line text-brand px-4 py-2 rounded-xl text-sm font-extrabold"
+    >
+      📄 عرض العقد وتوقيعه
+    </Link>
+  )}
             <Link
               href={`/complaints/new?projectId=${id}`}
               className="bg-white border border-line text-red-600 px-4 py-2 rounded-xl text-sm font-extrabold"
