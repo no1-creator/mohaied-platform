@@ -1,4 +1,10 @@
-import { IsBoolean, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class SubmitMilestoneDto {
   @IsString()
@@ -8,6 +14,16 @@ export class SubmitMilestoneDto {
   @IsOptional()
   @IsString()
   externalLink?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  attachmentImages?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  attachmentLinks?: string[];
 }
 
 export class ReviewMilestoneDto {
