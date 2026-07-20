@@ -4,6 +4,7 @@ import {
   IsArray,
   IsInt,
   IsNumber,
+  IsOptional,
   IsString,
   Min,
   MinLength,
@@ -48,4 +49,14 @@ export class CreateOfferDto {
   @ValidateNested({ each: true })
   @Type(() => OfferMilestoneDto)
   milestones: OfferMilestoneDto[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  attachmentImages?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  attachmentLinks?: string[];
 }
