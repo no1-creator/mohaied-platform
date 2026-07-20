@@ -1,11 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import EscrowPanel from '@/components/EscrowPanel';
 import BackBar from '@/components/BackBar';
+
+type Attachment = {
+  id: string;
+  fileUrl?: string | null;
+  link?: string | null;
+};
 
 type Submission = {
   id: string;
@@ -13,6 +19,7 @@ type Submission = {
   externalLink?: string;
   approved?: boolean | null;
   reviewNotes?: string;
+  attachments?: Attachment[];
   createdAt: string;
 };
 
@@ -34,6 +41,9 @@ const STATUS_LABELS: Record<string, string> = {
   REVISION_REQUESTED: 'مطلوب تعديل',
 };
 
+const MAX_IMAGES = 5;
+const MAX_IMAGE_MB = 2;
+
 export default function MilestonesPage() {
   const router = useRouter();
   const params = useParams();
@@ -48,6 +58,8 @@ export default function MilestonesPage() {
   // حقول التسليم لكل مرحلة
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [links, setLinks] = useState<Record<string, string>>({});
+  const [imgs, setImgs] = useState<Record<string, string[]>>({});
+  const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   function loadMilestones() {
     api<Milestone[]>(`/milestones/project/${projectId}`)
@@ -68,6 +80,46 @@ export default function MilestonesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, router]);
 
+  function pickImages(
+    milestoneId: string,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const files = Array.from(e.target.files || []);
+    const input = e.target;
+    if (!files.length) return;
+    setError('');
+    files.forEach((file) => {
+      if (!file.type.startsWith('image/')) {
+        setError('اختَر صور فقط.');
+        return;
+      }
+      if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
+        setError(`كل صورة لازم تكون أقل من ${MAX_IMAGE_MB} ميجا.`);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImgs((p) => {
+          const arr = p[milestoneId] || [];
+          if (arr.length >= MAX_IMAGES) {
+            setError(`أقصى عدد صور هو ${MAX_IMAGES}.`);
+            return p;
+          }
+          return { ...p, [milestoneId]: [...arr, String(reader.result)] };
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+
+  function removeImg(milestoneId: string, index: number) {
+    setImgs((p) => ({
+      ...p,
+      [milestoneId]: (p[milestoneId] || []).filter((_, i) => i !== index),
+    }));
+  }
+
   async function submit(milestoneId: string) {
     setBusy(milestoneId);
     setError('');
@@ -77,8 +129,10 @@ export default function MilestonesPage() {
         body: {
           notes: notes[milestoneId] || '',
           externalLink: links[milestoneId] || undefined,
+          attachmentImages: imgs[milestoneId] || [],
         },
       });
+      setImgs((p) => ({ ...p, [milestoneId]: [] }));
       loadMilestones();
     } catch (err: any) {
       setError(err.message);
@@ -112,14 +166,15 @@ export default function MilestonesPage() {
       <BackBar />
       <div className="max-w-3xl mx-auto px-6 py-10">
         <h1 className="text-2xl font-black mb-8">إدارة المراحل</h1>
-<EscrowPanel projectId={projectId} />
-        
+        <EscrowPanel projectId={projectId} />
+
         {loading && <p className="text-muted">جاري التحميل...</p>}
         {error && <p className="text-red-600 mb-4">{error}</p>}
 
         <div className="space-y-5">
           {milestones.map((m, i) => {
             const lastSub = m.submissions?.[0];
+            const mImgs = imgs[m.id] || [];
             return (
               <div key={m.id} className="card">
                 <div className="flex items-center justify-between mb-2">
@@ -148,10 +203,52 @@ export default function MilestonesPage() {
                       <a
                         href={lastSub.externalLink}
                         target="_blank"
+                        rel="noreferrer"
                         className="text-brand font-extrabold block mt-1"
                       >
                         الرابط المرفق
                       </a>
+                    )}
+                    {lastSub.attachments && lastSub.attachments.length > 0 && (
+                      <div className="mt-2">
+                        <div className="flex flex-wrap gap-2">
+                          {lastSub.attachments
+                            .filter((a) => a.fileUrl)
+                            .map((a) => (
+                              <a
+                                key={a.id}
+                                href={a.fileUrl as string}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                <img
+                                  src={a.fileUrl as string}
+                                  alt="مرفق"
+                                  style={{
+                                    width: 64,
+                                    height: 64,
+                                    objectFit: 'cover',
+                                    borderRadius: 8,
+                                    border: '1px solid var(--line)',
+                                  }}
+                                />
+                              </a>
+                            ))}
+                        </div>
+                        {lastSub.attachments
+                          .filter((a) => a.link)
+                          .map((a) => (
+                            <a
+                              key={a.id}
+                              href={a.link as string}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-brand font-extrabold block mt-1"
+                            >
+                              {a.link}
+                            </a>
+                          ))}
+                      </div>
                     )}
                     {lastSub.reviewNotes && (
                       <p className="text-red-600 mt-2">
@@ -182,6 +279,75 @@ export default function MilestonesPage() {
                           setLinks((p) => ({ ...p, [m.id]: e.target.value }))
                         }
                       />
+
+                      <div>
+                        <input
+                          ref={(el) => {
+                            fileRefs.current[m.id] = el;
+                          }}
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={(e) => pickImages(m.id, e)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileRefs.current[m.id]?.click()}
+                          className="border border-line rounded-xl px-4 py-2 text-sm font-bold text-brand"
+                          disabled={mImgs.length >= MAX_IMAGES}
+                        >
+                          + رفع صور ({mImgs.length}/{MAX_IMAGES})
+                        </button>
+
+                        {mImgs.length > 0 && (
+                          <div className="flex flex-wrap gap-3 mt-3">
+                            {mImgs.map((src, idx) => (
+                              <div
+                                key={idx}
+                                style={{
+                                  position: 'relative',
+                                  width: 80,
+                                  height: 80,
+                                }}
+                              >
+                                <img
+                                  src={src}
+                                  alt=""
+                                  style={{
+                                    width: 80,
+                                    height: 80,
+                                    objectFit: 'cover',
+                                    borderRadius: 10,
+                                    border: '1px solid var(--line)',
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeImg(m.id, idx)}
+                                  style={{
+                                    position: 'absolute',
+                                    top: -8,
+                                    insetInlineEnd: -8,
+                                    width: 22,
+                                    height: 22,
+                                    borderRadius: '50%',
+                                    border: 'none',
+                                    background: '#b42318',
+                                    color: '#fff',
+                                    cursor: 'pointer',
+                                    fontWeight: 800,
+                                    lineHeight: '22px',
+                                  }}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
                       <button
                         onClick={() => submit(m.id)}
                         className="btn-primary"
