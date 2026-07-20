@@ -62,7 +62,7 @@ export default function ProjectOffersPage() {
     setError('');
     try {
       await api(`/agreements/accept/${offerId}`, { method: 'POST' });
-      router.push(`/projects/${projectId}`);
+router.push(`/projects/${projectId}/contract`);
     } catch (err: any) {
       setError(err.message);
       setAccepting('');
