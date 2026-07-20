@@ -904,3 +904,16 @@ model ProviderBusinessSettings {
 
   @@index([providerId])
 }
+model AdminNotification {
+  id             String   @id @default(uuid())
+  adminId        String
+  adminName      String
+  target         String
+  role           String?
+  recipientName  String?
+  title          String
+  body           String?
+  linkUrl        String?
+  recipientCount Int      @default(0)
+  createdAt      DateTime @default(now())
+}
