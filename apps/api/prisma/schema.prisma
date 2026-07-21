@@ -975,3 +975,48 @@ model AuditLog {
   @@index([createdAt])
   @@index([actorId])
 }
+
+// ==================== LEGAL SERVICES (الخدمات القانونية) ====================
+
+enum LegalRequestCategory {
+  IP_PROTECTION       // تسجيل الأفكار وحماية الملكية الفكرية
+  COMPANY_FORMATION   // تأسيس الشركات في مصر
+  FOREIGNER_CASE      // قضايا الأجانب في مصر
+  GENERAL_CONSULT     // استشارة قانونية عامة
+  OTHER
+}
+
+enum LegalRequestStatus {
+  SUBMITTED
+  IN_REVIEW
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  REJECTED
+}
+
+model LegalRequest {
+  id                   String               @id @default(uuid())
+  code                 String               @unique
+  clientId             String
+  category             LegalRequestCategory
+  status               LegalRequestStatus   @default(SUBMITTED)
+  title                String
+  description          String
+  entityName           String?
+  nationality          String?
+  budget               Decimal?
+  preferredContact     String?
+  attachments          String?
+  assignedConsultantId String?
+  adminNote            String?
+  consultantNote       String?
+  resolvedAt           DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  @@index([clientId])
+  @@index([status])
+  @@index([category])
+}
