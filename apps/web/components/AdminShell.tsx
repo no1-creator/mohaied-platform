@@ -6,7 +6,12 @@ import Link from 'next/link';
 import { api, getToken, clearToken } from '@/lib/api';
 import Icon from '@/components/Icon';
 
-type Me = { fullName: string; role: string };
+type Me = {
+  fullName: string;
+  role: string;
+  isSuperAdmin?: boolean;
+  adminScopes?: string | null;
+};
 
 const LOGO = (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -17,23 +22,44 @@ const LOGO = (
 
 const NAV = [
   { key: 'overview', href: '/admin', label: 'نظرة عامة', icon: 'grid' },
-{ key: 'users', href: '/admin/users', label: 'المستخدمون', icon: 'users' },
-{ key: 'notifications', href: '/admin/notifications', label: 'سجل الإشعارات', icon: 'clock' },
+  { key: 'users', href: '/admin/users', label: 'المستخدمون', icon: 'users' },
+  { key: 'notifications', href: '/admin/notifications', label: 'سجل الإشعارات', icon: 'clock' },
   { key: 'projects', href: '/admin/projects', label: 'المشاريع', icon: 'folder' },
   { key: 'supervisors', href: '/admin/supervisors', label: 'المشرفون', icon: 'shield' },
   { key: 'complaints', href: '/admin/complaints', label: 'الشكاوى', icon: 'scale' },
   { key: 'plans', href: '/admin/plans', label: 'الباقات والعمولة', icon: 'creditCard' },
   { key: 'options', href: '/admin/options', label: 'قوائم الخيارات', icon: 'grid' },
-{ key: 'content', href: '/admin/content', label: 'نصوص الواجهات', icon: 'fileText' },
-{ key: 'media', href: '/admin/media', label: 'مكتبة الوسائط', icon: 'palette' },
+  { key: 'content', href: '/admin/content', label: 'نصوص الواجهات', icon: 'fileText' },
+  { key: 'media', href: '/admin/media', label: 'مكتبة الوسائط', icon: 'palette' },
   { key: 'ads', href: '/admin/ads', label: 'الإعلانات', icon: 'star' },
   { key: 'recommendations', href: '/admin/recommendations', label: 'طلبات الترشيح', icon: 'sparkles' },
   { key: 'invitations', href: '/admin/invitations', label: 'دعوات خارجية', icon: 'users' },
-   { key: 'kyc', href: '/admin/kyc', label: 'توثيق الهوية', icon: 'badgeCheck' },
+  { key: 'kyc', href: '/admin/kyc', label: 'توثيق الهوية', icon: 'badgeCheck' },
   { key: 'audit', href: '/admin/audit', label: 'سجل التدقيق', icon: 'eye' },
+  { key: 'team', href: '/admin/team', label: 'صلاحيات الفريق', icon: 'lock' },
 ];
 
+function parseScopes(s?: string | null): string[] | null {
+  if (s == null) return null;
+  try {
+    const a = JSON.parse(s);
+    return Array.isArray(a) ? a : [];
+  } catch {
+    return [];
+  }
+}
 
+function allowedNav(me: Me | null) {
+  const full = !me || me.isSuperAdmin || me.adminScopes == null;
+  const scopes = full ? null : parseScopes(me?.adminScopes) || [];
+  return NAV.filter((n) => {
+    if (n.key === 'overview') return true;
+    // صفحة الفريق: للسوبر أدمن أو الأدمن كامل الصلاحية (عشان الـ bootstrap)
+    if (n.key === 'team') return !!me && (me.isSuperAdmin || me.adminScopes == null);
+    if (full) return true;
+    return scopes!.includes(n.key);
+  });
+}
 
 export default function AdminShell({
   active,
@@ -96,6 +122,8 @@ export default function AdminShell({
     );
   }
 
+  const nav = allowedNav(me);
+
   return (
     <div className="ad-shell">
       <style>{ADMIN_CSS}</style>
@@ -110,7 +138,7 @@ export default function AdminShell({
         </div>
 
         <nav className="ad-nav">
-          {NAV.map((n) => (
+          {nav.map((n) => (
             <Link key={n.key} href={n.href} className={active === n.key ? 'active' : ''}>
               <span className="ad-nav-icon">
                 <Icon name={n.icon} size={18} />
