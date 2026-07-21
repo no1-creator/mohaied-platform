@@ -17,6 +17,7 @@ enum UserRole {
   PROVIDER
   SUPERVISOR
   ADMIN
+  LEGAL_CONSULTANT
 }
 
 enum ProviderType {
@@ -157,8 +158,9 @@ adminScopes  String?
 createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  providerProfile   ProviderProfile?
-  supervisorProfile SupervisorProfile?
+ providerProfile        ProviderProfile?
+supervisorProfile      SupervisorProfile?
+legalConsultantProfile LegalConsultantProfile?
 
   clientProjects   Project[] @relation("ClientProjects")
   providerProjects Project[] @relation("ProviderProjects")
@@ -235,8 +237,30 @@ model SupervisorProfile {
   updatedAt      DateTime @updatedAt
 }
 
-// ==================== PROJECTS ====================
+model LegalConsultantProfile {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id])
+  title            String
+  field            String
+  yearsExp         Int      @default(0)
+  consultationRate Decimal  @default(0)
+  bio              String?
+  education        String?
+  certifications   String?
+  specialties      String?
+  languages        String?
+  city             String?
+  phone            String?
+  linkedinUrl      String?
+  barAssociationNo String?
+  rating           Float    @default(0)
+  reviewsCount     Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
 
+// ==================== PROJECTS ====================
 model Project {
   id          String        @id @default(uuid())
   title       String
