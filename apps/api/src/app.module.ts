@@ -32,6 +32,7 @@ import { BusinessSettingsModule } from './business-settings/business-settings.mo
 import { MatchingModule } from './matching/matching.module';
 import { AuditModule } from './audit/audit.module';
 import { AuditInterceptor } from './audit/audit.interceptor';
+import { AdminTeamModule } from './admin-team/admin-team.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
@@ -71,6 +72,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     BusinessSettingsModule,
     MatchingModule,
     AuditModule,
+    AdminTeamModule,
   ],
   controllers: [],
   providers: [
