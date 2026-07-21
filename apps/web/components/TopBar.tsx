@@ -33,11 +33,12 @@ type Me = {
 };
 
 const NAV: Record<string, { href: string; label: string }[]> = {
-  CLIENT: [
-    { href: '/dashboard', label: 'الرئيسية' },
-    { href: '/projects', label: 'مشاريعي' },
-    { href: '/projects/new', label: '+ مشروع جديد' },
-  ],
+CLIENT: [
+  { href: '/dashboard', label: 'الرئيسية' },
+  { href: '/projects', label: 'مشاريعي' },
+  { href: '/projects/new', label: '+ مشروع جديد' },
+  { href: '/legal-services', label: 'الخدمات القانونية' },
+],
   PROVIDER: [
     { href: '/dashboard', label: 'الرئيسية' },
     { href: '/projects/open', label: 'مشاريع مفتوحة' },
@@ -47,9 +48,14 @@ const NAV: Record<string, { href: string; label: string }[]> = {
     { href: '/dashboard', label: 'الرئيسية' },
     { href: '/supervisor/assignments', label: 'تكليفاتي' },
   ],
-  ADMIN: [
+   ADMIN: [
     { href: '/dashboard', label: 'الرئيسية' },
     { href: '/admin', label: 'لوحة التحكم' },
+  ],
+  LEGAL_CONSULTANT: [
+    { href: '/dashboard', label: 'الرئيسية' },
+    { href: '/legal/requests', label: 'طلباتي القانونية' },
+    { href: '/legal/setup', label: 'ملفي المهني' },
   ],
 };
 
