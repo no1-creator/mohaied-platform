@@ -28,6 +28,7 @@ const ROLES = [
   { value: 'CLIENT', label: 'عميل — عايز أنفّذ مشروع' },
   { value: 'PROVIDER', label: 'مقدم خدمة / فريلانسر' },
   { value: 'SUPERVISOR', label: 'مشرف متخصص' },
+  { value: 'LEGAL_CONSULTANT', label: 'مستشار قانوني' },
 ];
 
 export default function RegisterPage() {
@@ -50,11 +51,12 @@ export default function RegisterPage() {
         body: { fullName, email, password, role },
       });
       saveToken(res.accessToken);
-  if (role === 'ADMIN') router.push('/admin');
-  else if (role === 'PROVIDER') router.push('/provider');
-  else if (role === 'SUPERVISOR') router.push('/supervisor');
-  else if (role === 'CLIENT') router.push('/client');
-  else router.push('/dashboard');
+ if (role === 'ADMIN') router.push('/admin');
+else if (role === 'PROVIDER') router.push('/provider');
+else if (role === 'SUPERVISOR') router.push('/supervisor');
+else if (role === 'LEGAL_CONSULTANT') router.push('/legal/setup');
+else if (role === 'CLIENT') router.push('/client');
+else router.push('/dashboard');
 } catch (err: any) {
       setError(err.message);
       setLoading(false);
