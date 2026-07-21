@@ -33,6 +33,7 @@ import { MatchingModule } from './matching/matching.module';
 import { AuditModule } from './audit/audit.module';
 import { AuditInterceptor } from './audit/audit.interceptor';
 import { AdminTeamModule } from './admin-team/admin-team.module';
+import { LegalModule } from './legal/legal.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
@@ -73,6 +74,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     MatchingModule,
     AuditModule,
     AdminTeamModule,
+    LegalModule,
   ],
   controllers: [],
   providers: [
