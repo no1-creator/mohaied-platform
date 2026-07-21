@@ -26,6 +26,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         role: true,
         fullName: true,
         isActive: true,
+        isSuperAdmin: true,
+        adminScopes: true,
       },
     });
 
