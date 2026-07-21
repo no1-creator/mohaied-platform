@@ -24,11 +24,13 @@ export class UsersService {
         phone: true,
         fullName: true,
         role: true,
-        avatarUrl: true,
-        isVerified: true,
-        createdAt: true,
-        providerProfile: true,
-        supervisorProfile: true,
+       avatarUrl: true,
+isVerified: true,
+isSuperAdmin: true,
+adminScopes: true,
+createdAt: true,
+providerProfile: true,
+supervisorProfile: true,
       },
     });
 
