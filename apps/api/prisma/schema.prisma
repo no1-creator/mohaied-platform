@@ -214,28 +214,6 @@ model ProviderProfile {
   updatedAt DateTime @updatedAt
 }
 
-model LegalConsultantProfile {
-  id               String   @id @default(uuid())
-  userId           String   @unique
-  user             User     @relation(fields: [userId], references: [id])
-  title            String
-  field            String
-  yearsExp         Int      @default(0)
-  consultationRate Decimal  @default(0)
-  bio              String?
-  education        String?
-  certifications   String?
-  specialties      String?
-  languages        String?
-  city             String?
-  phone            String?
-  linkedinUrl      String?
-  barAssociationNo String?
-  rating           Float    @default(0)
-  reviewsCount     Int      @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-}
 
 // ==================== PROJECTS ====================
 
