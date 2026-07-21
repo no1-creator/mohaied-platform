@@ -33,6 +33,7 @@ import { MatchingModule } from './matching/matching.module';
 import { AuditModule } from './audit/audit.module';
 import { AuditInterceptor } from './audit/audit.interceptor';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -67,14 +68,13 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     InvoicesModule,
     WalletModule,
     TasksModule,
-   BusinessSettingsModule,
-  MatchingModule,
-  AuditModule,
-],
+    BusinessSettingsModule,
+    MatchingModule,
+    AuditModule,
   ],
   controllers: [],
-providers: [
-  { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
-],
+  providers: [
+    { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
+  ],
 })
 export class AppModule {}
