@@ -29,9 +29,10 @@ isVerified: true,
 isSuperAdmin: true,
 adminScopes: true,
 createdAt: true,
-providerProfile: true,
-supervisorProfile: true,
-      },
+  providerProfile: true,
+  supervisorProfile: true,
+  legalConsultantProfile: true,
+},
     });
 
     if (!user) {
@@ -265,7 +266,105 @@ supervisorProfile: true,
         city: dto.city,
         phone: dto.phone,
         linkedinUrl: dto.linkedinUrl,
-        membershipNo: dto.membershipNo,
+               membershipNo: dto.membershipNo,
+      },
+    });
+  }
+
+  // ===== المستشار القانوني =====
+  private readonly legalPublicSelect = {
+    id: true,
+    fullName: true,
+    avatarUrl: true,
+    isVerified: true,
+    createdAt: true,
+    legalConsultantProfile: {
+      select: {
+        title: true,
+        field: true,
+        yearsExp: true,
+        consultationRate: true,
+        bio: true,
+        education: true,
+        certifications: true,
+        specialties: true,
+        languages: true,
+        city: true,
+        linkedinUrl: true,
+        rating: true,
+        reviewsCount: true,
+      },
+    },
+  } as const;
+
+  async listLegalConsultants() {
+    return this.prisma.user.findMany({
+      where: {
+        role: 'LEGAL_CONSULTANT',
+        isActive: true,
+        legalConsultantProfile: { isNot: null },
+      },
+      select: this.legalPublicSelect,
+      orderBy: [{ isVerified: 'desc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  async getLegalConsultant(id: string) {
+    const consultant = await this.prisma.user.findFirst({
+      where: {
+        id,
+        role: 'LEGAL_CONSULTANT',
+        legalConsultantProfile: { isNot: null },
+      },
+      select: this.legalPublicSelect,
+    });
+    if (!consultant) {
+      throw new NotFoundException('المستشار القانوني غير موجود');
+    }
+    return consultant;
+  }
+
+  async createLegalConsultantProfile(
+    userId: string,
+    dto: {
+      title: string;
+      field: string;
+      yearsExp?: number;
+      consultationRate?: number;
+      bio?: string;
+      education?: string;
+      certifications?: string;
+      specialties?: string;
+      languages?: string;
+      city?: string;
+      phone?: string;
+      linkedinUrl?: string;
+      barAssociationNo?: string;
+    },
+  ) {
+    const existing = await this.prisma.legalConsultantProfile.findUnique({
+      where: { userId },
+    });
+    if (existing) {
+      throw new ConflictException('بروفايل المستشار القانوني موجود بالفعل');
+    }
+
+    return this.prisma.legalConsultantProfile.create({
+      data: {
+        userId,
+        title: dto.title,
+        field: dto.field,
+        yearsExp: dto.yearsExp ?? 0,
+        consultationRate: dto.consultationRate ?? 0,
+        bio: dto.bio,
+        education: dto.education,
+        certifications: dto.certifications,
+        specialties: dto.specialties,
+        languages: dto.languages,
+        city: dto.city,
+        phone: dto.phone,
+        linkedinUrl: dto.linkedinUrl,
+        barAssociationNo: dto.barAssociationNo,
       },
     });
   }
