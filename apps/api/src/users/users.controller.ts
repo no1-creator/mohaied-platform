@@ -45,6 +45,17 @@ export class UsersController {
     return this.usersService.getProvider(id);
   }
 
+  // دليل المستشارين القانونيين
+  @Get('legal-consultants')
+  listLegalConsultants() {
+    return this.usersService.listLegalConsultants();
+  }
+
+  @Get('legal-consultants/:id')
+  getLegalConsultant(@Param('id') id: string) {
+    return this.usersService.getLegalConsultant(id);
+  }
+
   @Post('provider-profile')
   @Roles(UserRole.PROVIDER)
   createProviderProfile(
@@ -70,5 +81,29 @@ export class UsersController {
     @Body() dto: CreateSupervisorProfileDto,
   ) {
     return this.usersService.createSupervisorProfile(userId, dto);
+  }
+
+  @Post('legal-profile')
+  @Roles(UserRole.LEGAL_CONSULTANT)
+  createLegalConsultantProfile(
+    @GetUser('id') userId: string,
+    @Body()
+    dto: {
+      title: string;
+      field: string;
+      yearsExp?: number;
+      consultationRate?: number;
+      bio?: string;
+      education?: string;
+      certifications?: string;
+      specialties?: string;
+      languages?: string;
+      city?: string;
+      phone?: string;
+      linkedinUrl?: string;
+      barAssociationNo?: string;
+    },
+  ) {
+    return this.usersService.createLegalConsultantProfile(userId, dto);
   }
 }
