@@ -29,7 +29,7 @@ import { InvoicesModule } from './invoices/invoices.module';
 import { WalletModule } from './wallet/wallet.module';
 import { TasksModule } from './tasks/tasks.module';
 import { BusinessSettingsModule } from './business-settings/business-settings.module';
-
+import { MatchingModule } from './matching/matching.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -64,8 +64,9 @@ import { BusinessSettingsModule } from './business-settings/business-settings.mo
     InvoicesModule,
     WalletModule,
     TasksModule,
-    BusinessSettingsModule,
-  ],
+   BusinessSettingsModule,
+  MatchingModule,
+],
   controllers: [],
   providers: [],
 })
