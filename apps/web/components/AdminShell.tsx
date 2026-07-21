@@ -34,7 +34,8 @@ const NAV = [
   { key: 'ads', href: '/admin/ads', label: 'الإعلانات', icon: 'star' },
   { key: 'recommendations', href: '/admin/recommendations', label: 'طلبات الترشيح', icon: 'sparkles' },
   { key: 'invitations', href: '/admin/invitations', label: 'دعوات خارجية', icon: 'users' },
-  { key: 'kyc', href: '/admin/kyc', label: 'توثيق الهوية', icon: 'badgeCheck' },
+{ key: 'kyc', href: '/admin/kyc', label: 'توثيق الهوية', icon: 'badgeCheck' },
+{ key: 'legal', href: '/admin/legal', label: 'الطلبات القانونية', icon: 'landmark' },
   { key: 'audit', href: '/admin/audit', label: 'سجل التدقيق', icon: 'eye' },
   { key: 'team', href: '/admin/team', label: 'صلاحيات الفريق', icon: 'lock' },
 ];
