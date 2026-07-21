@@ -30,6 +30,9 @@ import { WalletModule } from './wallet/wallet.module';
 import { TasksModule } from './tasks/tasks.module';
 import { BusinessSettingsModule } from './business-settings/business-settings.module';
 import { MatchingModule } from './matching/matching.module';
+import { AuditModule } from './audit/audit.module';
+import { AuditInterceptor } from './audit/audit.interceptor';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -66,8 +69,12 @@ import { MatchingModule } from './matching/matching.module';
     TasksModule,
    BusinessSettingsModule,
   MatchingModule,
+  AuditModule,
 ],
+  ],
   controllers: [],
-  providers: [],
+providers: [
+  { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
+],
 })
 export class AppModule {}
