@@ -506,4 +506,23 @@ export const en: Record<string, string> = {
 'asp.assignments': 'Supervision assignments',
 'asp.approve': 'Approve supervisor',
 'asp.revoke': 'Revoke approval',
+
+// ===== Admin: complaints =====
+'acx.title': 'Complaints & disputes',
+'acx.empty': 'No complaints at the moment.',
+'acx.th.code': 'Code',
+'acx.th.type': 'Type',
+'acx.open': 'Open file',
+'acx.type.DELIVERY_DELAY': 'Delivery delay',
+'acx.type.AGREEMENT_VIOLATION': 'Agreement violation',
+'acx.type.PAYMENT_ISSUE': 'Payment issue',
+'acx.type.UNPROFESSIONAL': 'Unprofessional conduct',
+'acx.type.OTHER': 'Other',
+'acx.status.OPEN': 'Open',
+'acx.status.AWAITING_RESPONSE': 'Awaiting response',
+'acx.status.UNDER_REVIEW': 'Under review',
+'acx.status.IN_ARBITRATION': 'In arbitration',
+'acx.status.RESOLVED': 'Resolved',
+'acx.status.REJECTED': 'Rejected',
+'acx.status.CLOSED': 'Closed',
 };
