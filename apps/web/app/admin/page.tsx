@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 import { api } from '@/lib/api';
 import Icon from '@/components/Icon';
+import { useI18n } from '@/lib/i18n';
 
 type Stats = {
   users: {
@@ -43,6 +44,7 @@ function BarRow({ label, value, total }: { label: string; value: number; total: 
 }
 
 export default function AdminOverviewPage() {
+  const { tr } = useI18n();
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -56,20 +58,20 @@ export default function AdminOverviewPage() {
 
   const cards = stats
     ? [
-        { icon: 'users', label: 'إجمالي المستخدمين', value: stats.users.total, tone: 'green' },
-        { icon: 'badgeCheck', label: 'حسابات موثّقة', value: stats.users.verified, tone: 'blue' },
-        { icon: 'folder', label: 'إجمالي المشاريع', value: stats.projects.total, tone: 'green' },
-        { icon: 'clock', label: 'مشاريع جارية', value: stats.projects.inProgress, tone: 'amber' },
-        { icon: 'fileText', label: 'إجمالي العروض', value: stats.offers.total, tone: 'blue' },
-        { icon: 'fileCheck', label: 'اتفاقيات مؤكدة', value: stats.offers.confirmedAgreements, tone: 'green' },
-        { icon: 'scale', label: 'شكاوى مفتوحة', value: stats.complaints.open, tone: 'red' },
-        { icon: 'shield', label: 'إشراف نشط', value: stats.supervision.activeAssignments, tone: 'green' },
+        { icon: 'users', label: tr('adm.card.totalUsers', 'إجمالي المستخدمين'), value: stats.users.total, tone: 'green' },
+        { icon: 'badgeCheck', label: tr('adm.card.verified', 'حسابات موثّقة'), value: stats.users.verified, tone: 'blue' },
+        { icon: 'folder', label: tr('adm.card.totalProjects', 'إجمالي المشاريع'), value: stats.projects.total, tone: 'green' },
+        { icon: 'clock', label: tr('adm.card.inProgress', 'مشاريع جارية'), value: stats.projects.inProgress, tone: 'amber' },
+        { icon: 'fileText', label: tr('adm.card.totalOffers', 'إجمالي العروض'), value: stats.offers.total, tone: 'blue' },
+        { icon: 'fileCheck', label: tr('adm.card.confirmedAgreements', 'اتفاقيات مؤكدة'), value: stats.offers.confirmedAgreements, tone: 'green' },
+        { icon: 'scale', label: tr('adm.card.openComplaints', 'شكاوى مفتوحة'), value: stats.complaints.open, tone: 'red' },
+        { icon: 'shield', label: tr('adm.card.activeSupervision', 'إشراف نشط'), value: stats.supervision.activeAssignments, tone: 'green' },
       ]
     : [];
 
   return (
-    <AdminShell active="overview" title="نظرة عامة">
-      {loading && <div className="ad-loading">جاري تحميل الإحصائيات...</div>}
+    <AdminShell active="overview" title={tr('co.title', 'نظرة عامة')}>
+      {loading && <div className="ad-loading">{tr('adm.loadingStats', 'جاري تحميل الإحصائيات...')}</div>}
       {error && <div className="ad-error">{error}</div>}
 
       {stats && (
@@ -90,22 +92,22 @@ export default function AdminOverviewPage() {
 
           <div className="ad-grid2">
             <div className="ad-panel">
-              <div className="ad-panel-title">توزيع المستخدمين</div>
+              <div className="ad-panel-title">{tr('adm.dist.users', 'توزيع المستخدمين')}</div>
               <ul className="ad-bars">
-                <BarRow label="عملاء" value={stats.users.clients} total={stats.users.total} />
-                <BarRow label="مقدمو خدمة" value={stats.users.providers} total={stats.users.total} />
-                <BarRow label="مشرفون" value={stats.users.supervisors} total={stats.users.total} />
-                <BarRow label="أدمن" value={stats.users.admins} total={stats.users.total} />
+                <BarRow label={tr('adm.bar.clients', 'عملاء')} value={stats.users.clients} total={stats.users.total} />
+                <BarRow label={tr('adm.bar.providers', 'مقدمو خدمة')} value={stats.users.providers} total={stats.users.total} />
+                <BarRow label={tr('adm.bar.supervisors', 'مشرفون')} value={stats.users.supervisors} total={stats.users.total} />
+                <BarRow label={tr('adm.bar.admins', 'أدمن')} value={stats.users.admins} total={stats.users.total} />
               </ul>
             </div>
 
             <div className="ad-panel">
-              <div className="ad-panel-title">حالة المشاريع</div>
+              <div className="ad-panel-title">{tr('adm.dist.projects', 'حالة المشاريع')}</div>
               <ul className="ad-bars">
-                <BarRow label="مفتوحة" value={stats.projects.open} total={stats.projects.total} />
-                <BarRow label="جارية" value={stats.projects.inProgress} total={stats.projects.total} />
-                <BarRow label="مكتملة" value={stats.projects.completed} total={stats.projects.total} />
-                <BarRow label="متنازع عليها" value={stats.projects.disputed} total={stats.projects.total} />
+                <BarRow label={tr('adm.bar.open', 'مفتوحة')} value={stats.projects.open} total={stats.projects.total} />
+                <BarRow label={tr('adm.bar.running', 'جارية')} value={stats.projects.inProgress} total={stats.projects.total} />
+                <BarRow label={tr('adm.bar.completed', 'مكتملة')} value={stats.projects.completed} total={stats.projects.total} />
+                <BarRow label={tr('adm.bar.disputed', 'متنازع عليها')} value={stats.projects.disputed} total={stats.projects.total} />
               </ul>
             </div>
           </div>
