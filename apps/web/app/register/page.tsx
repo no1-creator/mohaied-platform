@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, saveToken } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
+import LangSwitch from '@/components/LangSwitch';
 
 const LOGO = (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -25,17 +27,18 @@ const LOGO = (
 );
 
 const ROLES = [
-  { value: 'CLIENT', label: 'عميل — عايز أنفّذ مشروع' },
-  { value: 'PROVIDER', label: 'مقدم خدمة / فريلانسر' },
-  { value: 'SUPERVISOR', label: 'مشرف متخصص' },
-  { value: 'LEGAL_CONSULTANT', label: 'مستشار قانوني' },
-   { value: 'INVESTOR', label: 'مستثمر — أبحث عن فرص للتمويل' },
-  { value: 'EMPLOYER', label: 'شركة — أوظّف مواهب مصرية عن بُعد' },
-  { value: 'EMPLOYEE', label: 'باحث عن عمل — وظائف عن بُعد' },
+  { value: 'CLIENT', label: 'auth.role.CLIENT' },
+  { value: 'PROVIDER', label: 'auth.role.PROVIDER' },
+  { value: 'SUPERVISOR', label: 'auth.role.SUPERVISOR' },
+  { value: 'LEGAL_CONSULTANT', label: 'auth.role.LEGAL_CONSULTANT' },
+  { value: 'INVESTOR', label: 'auth.role.INVESTOR' },
+  { value: 'EMPLOYER', label: 'auth.role.EMPLOYER' },
+  { value: 'EMPLOYEE', label: 'auth.role.EMPLOYEE' },
 ];
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { tr } = useI18n();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,16 +57,16 @@ export default function RegisterPage() {
         body: { fullName, email, password, role },
       });
       saveToken(res.accessToken);
- if (role === 'ADMIN') router.push('/admin');
-else if (role === 'PROVIDER') router.push('/provider');
-else if (role === 'SUPERVISOR') router.push('/supervisor');
-else if (role === 'LEGAL_CONSULTANT') router.push('/legal/setup');
-else if (role === 'INVESTOR') router.push('/invest');
-else if (role === 'EMPLOYER') router.push('/employer');
-else if (role === 'EMPLOYEE') router.push('/jobs');
-else if (role === 'CLIENT') router.push('/client');
-else router.push('/dashboard');
-} catch (err: any) {
+      if (role === 'ADMIN') router.push('/admin');
+      else if (role === 'PROVIDER') router.push('/provider');
+      else if (role === 'SUPERVISOR') router.push('/supervisor');
+      else if (role === 'LEGAL_CONSULTANT') router.push('/legal/setup');
+      else if (role === 'INVESTOR') router.push('/invest');
+      else if (role === 'EMPLOYER') router.push('/employer');
+      else if (role === 'EMPLOYEE') router.push('/jobs');
+      else if (role === 'CLIENT') router.push('/client');
+      else router.push('/dashboard');
+    } catch (err: any) {
       setError(err.message);
       setLoading(false);
     }
@@ -76,40 +79,42 @@ else router.push('/dashboard');
           <span className="logo-mark">{LOGO}</span>
           محايد
         </div>
-        <h2>ابدأ أول مشروع موثّق على محايد</h2>
+        <h2>{tr('auth.register.brand.h', 'ابدأ أول مشروع موثّق على محايد')}</h2>
         <p>
-          سجّل مجانًا وابدأ رحلتك سواء كنت عميل أو مقدم خدمة — كل خطوة موثّقة
-          وحقوقك محفوظة.
+          {tr('auth.register.brand.p', 'سجّل مجانًا وابدأ رحلتك سواء كنت عميل أو مقدم خدمة — كل خطوة موثّقة وحقوقك محفوظة.')}
         </p>
         <ul className="auth-points">
-          <li>تسجيل مجاني بالكامل</li>
-          <li>بيئة عمل موثّقة وآمنة</li>
-          <li>تحت إشراف الحكومة المصرية</li>
+          <li>{tr('auth.register.point1', 'تسجيل مجاني بالكامل')}</li>
+          <li>{tr('auth.register.point2', 'بيئة عمل موثّقة وآمنة')}</li>
+          <li>{tr('auth.point.gov', 'تحت إشراف الحكومة المصرية')}</li>
         </ul>
       </div>
 
       <div className="auth-form-wrap">
         <div className="auth-box">
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
+            <LangSwitch />
+          </div>
           <div className="auth-head">
             <span className="logo-mark">{LOGO}</span>
-            <h1 className="auth-title">إنشاء حساب</h1>
-            <p className="auth-sub">ابدأ رحلتك على محايد</p>
+            <h1 className="auth-title">{tr('common.register', 'إنشاء حساب')}</h1>
+            <p className="auth-sub">{tr('auth.register.sub', 'ابدأ رحلتك على محايد')}</p>
           </div>
 
           {error && <div className="auth-error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
             <div className="field">
-              <label>الاسم بالكامل</label>
+              <label>{tr('auth.field.fullName', 'الاسم بالكامل')}</label>
               <input
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="اكتب اسمك"
+                placeholder={tr('auth.field.fullName.ph', 'اكتب اسمك')}
                 required
               />
             </div>
             <div className="field">
-              <label>البريد الإلكتروني</label>
+              <label>{tr('auth.field.email', 'البريد الإلكتروني')}</label>
               <input
                 type="email"
                 value={email}
@@ -119,7 +124,7 @@ else router.push('/dashboard');
               />
             </div>
             <div className="field">
-              <label>كلمة المرور</label>
+              <label>{tr('auth.field.password', 'كلمة المرور')}</label>
               <input
                 type="password"
                 value={password}
@@ -130,22 +135,22 @@ else router.push('/dashboard');
               />
             </div>
             <div className="field">
-              <label>نوع الحساب</label>
+              <label>{tr('auth.field.accountType', 'نوع الحساب')}</label>
               <select value={role} onChange={(e) => setRole(e.target.value)}>
                 {ROLES.map((r) => (
                   <option key={r.value} value={r.value}>
-                    {r.label}
+                    {tr(r.label)}
                   </option>
                 ))}
               </select>
             </div>
             <button type="submit" className="auth-submit" disabled={loading}>
-              {loading ? 'جاري الإنشاء...' : 'إنشاء الحساب'}
+              {loading ? tr('auth.register.loading', 'جاري الإنشاء...') : tr('auth.register.submit', 'إنشاء الحساب')}
             </button>
           </form>
 
           <div className="auth-switch">
-            عندك حساب بالفعل؟ <Link href="/login">تسجيل الدخول</Link>
+            {tr('auth.register.switch', 'عندك حساب بالفعل؟')} <Link href="/login">{tr('common.login', 'تسجيل الدخول')}</Link>
           </div>
         </div>
       </div>
