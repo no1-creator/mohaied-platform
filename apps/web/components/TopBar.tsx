@@ -38,12 +38,14 @@ CLIENT: [
   { href: '/projects', label: 'مشاريعي' },
   { href: '/projects/new', label: '+ مشروع جديد' },
   { href: '/legal-services', label: 'الخدمات القانونية' },
+  { href: '/fundraise', label: 'تمويل مشروعك' },
 ],
-  PROVIDER: [
-    { href: '/dashboard', label: 'الرئيسية' },
-    { href: '/projects/open', label: 'مشاريع مفتوحة' },
-    { href: '/offers/mine', label: 'عروضي' },
-  ],
+ PROVIDER: [
+  { href: '/dashboard', label: 'الرئيسية' },
+  { href: '/projects/open', label: 'مشاريع مفتوحة' },
+  { href: '/offers/mine', label: 'عروضي' },
+  { href: '/fundraise', label: 'تمويل مشروعك' },
+],
   SUPERVISOR: [
     { href: '/dashboard', label: 'الرئيسية' },
     { href: '/supervisor/assignments', label: 'تكليفاتي' },
@@ -52,10 +54,14 @@ CLIENT: [
     { href: '/dashboard', label: 'الرئيسية' },
     { href: '/admin', label: 'لوحة التحكم' },
   ],
-  LEGAL_CONSULTANT: [
+   LEGAL_CONSULTANT: [
     { href: '/dashboard', label: 'الرئيسية' },
     { href: '/legal/requests', label: 'طلباتي القانونية' },
     { href: '/legal/setup', label: 'ملفي المهني' },
+  ],
+  INVESTOR: [
+    { href: '/dashboard', label: 'الرئيسية' },
+    { href: '/invest', label: 'فرص الاستثمار' },
   ],
 };
 
