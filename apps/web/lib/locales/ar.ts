@@ -498,4 +498,12 @@ export const ar: Record<string, string> = {
 'adp.th.provider': 'مقدم الخدمة',
 'adp.th.offers': 'عروض',
 'adp.th.complaints': 'شكاوى',
+
+// ===== الأدمن: المشرفون =====
+'asp.empty': 'مفيش مشرفين مسجّلين لسه.',
+'asp.years': 'سنوات الخبرة',
+'asp.rating': 'التقييم',
+'asp.assignments': 'مهام الإشراف',
+'asp.approve': 'اعتماد المشرف',
+'asp.revoke': 'إلغاء الاعتماد',
 };
