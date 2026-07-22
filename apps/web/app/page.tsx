@@ -5,6 +5,8 @@ import { useEffect } from 'react';
 import Icon from '@/components/Icon';
 import AdBanners from '@/components/AdBanners';
 import { useSiteContent } from '@/lib/content';
+import { useI18n } from '@/lib/i18n';
+import LangSwitch from '@/components/LangSwitch';
 const STEPS = [
   { t: 'اطرح مشروعك', d: 'اكتب اللي محتاجه بوضوح — المطلوب، الميزانية، والمدة المتوقّعة.' },
   { t: 'اتفاق موثّق', d: 'يتحدد نطاق الشغل والمراحل والحقوق المالية في اتفاق رسمي مسجّل.' },
@@ -67,7 +69,8 @@ const LOGO = (
 );
 
 export default function LandingPage() {
-  const { t } = useSiteContent();
+ const { t } = useSiteContent();
+const { tr } = useI18n();
   const logoUrl = t('site.logo.url', '');
   const logoMark = logoUrl ? (
     <img
