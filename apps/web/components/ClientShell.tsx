@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { api, getToken, clearToken } from '@/lib/api';
 import Icon from '@/components/Icon';
 import NotificationBell from '@/components/NotificationBell';
+import { useI18n } from '@/lib/i18n';
 
 type Me = { fullName: string; role: string; avatarUrl?: string | null };
 
@@ -16,11 +17,11 @@ const LOGO = (
 );
 
 const NAV = [
-  { key: 'overview', href: '/client', label: 'نظرة عامة', icon: 'grid' },
-  { key: 'projects', href: '/projects', label: 'مشاريعي', icon: 'folder' },
-  { key: 'new', href: '/projects/start', label: 'مشروع جديد', icon: 'plus' },
-  { key: 'complaints', href: '/complaints/mine', label: 'شكاويّ ونزاعاتي', icon: 'scale' },
-  { key: 'profile', href: '/profile', label: 'ملفي الشخصي', icon: 'user' },
+  { key: 'overview', href: '/client', label: 'co.title', icon: 'grid' },
+  { key: 'projects', href: '/projects', label: 'co.action.projects.t', icon: 'folder' },
+  { key: 'new', href: '/projects/start', label: 'co.action.new.t', icon: 'plus' },
+  { key: 'complaints', href: '/complaints/mine', label: 'co.action.complaints.t', icon: 'scale' },
+  { key: 'profile', href: '/profile', label: 'co.action.profile.t', icon: 'user' },
 ];
 
 export default function ClientShell({
@@ -33,6 +34,7 @@ export default function ClientShell({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const { tr } = useI18n();
   const [me, setMe] = useState<Me | null>(null);
   const [state, setState] = useState<'loading' | 'ok' | 'denied'>('loading');
 
@@ -70,7 +72,7 @@ export default function ClientShell({
     return (
       <div className="cl-boot">
         <style>{CLIENT_CSS}</style>
-        جاري التحميل...
+        {tr('cls.loading', 'جاري التحميل...')}
       </div>
     );
   }
@@ -80,9 +82,9 @@ export default function ClientShell({
       <div className="cl-boot">
         <style>{CLIENT_CSS}</style>
         <div style={{ textAlign: 'center' }}>
-          <p style={{ marginBottom: 14 }}>حصل خطأ في تحميل حسابك.</p>
+          <p style={{ marginBottom: 14 }}>{tr('cls.denied', 'حصل خطأ في تحميل حسابك.')}</p>
           <button className="cl-logout" onClick={() => router.push('/login')}>
-            تسجيل الدخول
+            {tr('common.login', 'تسجيل الدخول')}
           </button>
         </div>
       </div>
@@ -98,7 +100,7 @@ export default function ClientShell({
           <div className="cl-brand-logo">{LOGO}</div>
           <div>
             <div className="cl-brand-name">محايد</div>
-            <div className="cl-brand-sub">بيئة العميل</div>
+            <div className="cl-brand-sub">{tr('cls.env', 'بيئة العميل')}</div>
           </div>
         </div>
 
@@ -108,12 +110,12 @@ export default function ClientShell({
               <span className="cl-nav-icon">
                 <Icon name={n.icon} size={18} />
               </span>
-              {n.label}
+              {tr(n.label)}
             </Link>
           ))}
         </nav>
 
-        <div className="cl-sidebar-foot">تحت إشراف الحكومة المصرية</div>
+        <div className="cl-sidebar-foot">{tr('auth.point.gov', 'تحت إشراف الحكومة المصرية')}</div>
       </aside>
 
       <div className="cl-main">
@@ -123,7 +125,7 @@ export default function ClientShell({
             <NotificationBell />
             <span className="cl-uname">{me?.fullName}</span>
             <button className="cl-logout" onClick={logout}>
-              خروج
+              {tr('tb.logout', 'خروج')}
             </button>
           </div>
         </header>
@@ -134,7 +136,7 @@ export default function ClientShell({
 }
 
 const CLIENT_CSS = `
-.cl-shell{display:flex;min-height:100vh;background:#f2f6f4;direction:rtl;font-family:'Noto Sans Arabic',sans-serif;}
+.cl-shell{display:flex;min-height:100vh;background:#f2f6f4;font-family:'Noto Sans Arabic',sans-serif;}
 .cl-boot{min-height:100vh;display:flex;align-items:center;justify-content:center;color:#70807b;background:#f2f6f4;font-family:'Noto Sans Arabic',sans-serif;}
 .cl-sidebar{width:250px;flex-shrink:0;background:linear-gradient(180deg,#216c63,#184f48);color:#fff;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;}
 .cl-brand{display:flex;align-items:center;gap:12px;padding:6px 8px 22px;}
