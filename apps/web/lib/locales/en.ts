@@ -307,4 +307,9 @@ export const en: Record<string, string> = {
 'co.action.complaints.d': 'File a complaint or track an ongoing dispute',
 'co.action.profile.t': 'My profile',
 'co.action.profile.d': 'Edit your info and verify your account',
+
+// ===== Client shell =====
+'cls.env': 'Client area',
+'cls.loading': 'Loading...',
+'cls.denied': 'An error occurred while loading your account.',
 };
