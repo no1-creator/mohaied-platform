@@ -35,6 +35,7 @@ import { AuditInterceptor } from './audit/audit.interceptor';
 import { AdminTeamModule } from './admin-team/admin-team.module';
 import { LegalModule } from './legal/legal.module';
 import { InvestModule } from './invest/invest.module';
+import { EmploymentModule } from './employment/employment.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
@@ -76,7 +77,9 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     AuditModule,
     AdminTeamModule,
     LegalModule,
-    InvestModule,
+  InvestModule,
+  EmploymentModule,
+],
   ],
   controllers: [],
   providers: [
