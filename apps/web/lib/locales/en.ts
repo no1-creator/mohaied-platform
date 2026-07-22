@@ -497,5 +497,13 @@ export const en: Record<string, string> = {
 'adp.th.client': 'Client',
 'adp.th.provider': 'Provider',
 'adp.th.offers': 'Offers',
-'adp.th.complaints': 'Complaints',  
+'adp.th.complaints': 'Complaints',
+
+// ===== Admin: supervisors =====
+'asp.empty': 'No supervisors registered yet.',
+'asp.years': 'Years of experience',
+'asp.rating': 'Rating',
+'asp.assignments': 'Supervision assignments',
+'asp.approve': 'Approve supervisor',
+'asp.revoke': 'Revoke approval',
 };
