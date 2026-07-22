@@ -307,4 +307,9 @@ export const ar: Record<string, string> = {
 'co.action.complaints.d': 'قدّم شكوى أو تابع نزاع قائم',
 'co.action.profile.t': 'ملفي الشخصي',
 'co.action.profile.d': 'عدّل بياناتك ووثّق حسابك',
+
+// ===== إطار العميل (Shell) =====
+'cls.env': 'بيئة العميل',
+'cls.loading': 'جاري التحميل...',
+'cls.denied': 'حصل خطأ في تحميل حسابك.',
 };
