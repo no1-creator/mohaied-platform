@@ -484,4 +484,18 @@ export const ar: Record<string, string> = {
 'adu.close': 'إغلاق',
 'adu.send': 'إرسال',
 'adu.sending': 'جاري الإرسال...',
+
+// ===== الأدمن: المشاريع =====
+'adp.status.DRAFT': 'مسودة',
+'adp.status.OPEN': 'مفتوح',
+'adp.status.IN_AGREEMENT': 'في الاتفاق',
+'adp.status.IN_PROGRESS': 'جاري',
+'adp.status.COMPLETED': 'مكتمل',
+'adp.status.DISPUTED': 'متنازع',
+'adp.status.CANCELLED': 'ملغي',
+'adp.empty': 'مفيش مشاريع لسه.',
+'adp.th.client': 'العميل',
+'adp.th.provider': 'مقدم الخدمة',
+'adp.th.offers': 'عروض',
+'adp.th.complaints': 'شكاوى',
 };
