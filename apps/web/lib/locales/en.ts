@@ -184,4 +184,22 @@ export const en: Record<string, string> = {
 'auth.role.INVESTOR': 'Investor — looking for funding opportunities',
 'auth.role.EMPLOYER': 'Company — hiring Egyptian talent remotely',
 'auth.role.EMPLOYEE': 'Job seeker — remote jobs',
+
+// ===== Internal navigation bar =====
+'tb.brandSub': 'Rights protection platform',
+'tb.logout': 'Log out',
+'tb.nav.home': 'Home',
+'tb.nav.myProjects': 'My projects',
+'tb.nav.newProject': '+ New project',
+'tb.nav.legalServices': 'Legal services',
+'tb.nav.fundraise': 'Fund your project',
+'tb.nav.openProjects': 'Open projects',
+'tb.nav.myOffers': 'My offers',
+'tb.nav.assignments': 'My assignments',
+'tb.nav.adminPanel': 'Control panel',
+'tb.nav.legalRequests': 'My legal requests',
+'tb.nav.myProfile': 'My professional profile',
+'tb.nav.investOpps': 'Investment opportunities',
+'tb.nav.employerHub': 'Jobs & team',
+'tb.nav.remoteJobs': 'Remote jobs',
 };
