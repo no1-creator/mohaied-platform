@@ -59,9 +59,17 @@ CLIENT: [
     { href: '/legal/requests', label: 'طلباتي القانونية' },
     { href: '/legal/setup', label: 'ملفي المهني' },
   ],
-  INVESTOR: [
+   INVESTOR: [
     { href: '/dashboard', label: 'الرئيسية' },
     { href: '/invest', label: 'فرص الاستثمار' },
+  ],
+  EMPLOYER: [
+    { href: '/dashboard', label: 'الرئيسية' },
+    { href: '/employer', label: 'وظائفي وفريقي' },
+  ],
+  EMPLOYEE: [
+    { href: '/dashboard', label: 'الرئيسية' },
+    { href: '/jobs', label: 'وظائف عن بُعد' },
   ],
 };
 
