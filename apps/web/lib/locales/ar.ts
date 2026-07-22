@@ -582,4 +582,21 @@ export const ar: Record<string, string> = {
 'apl.stInactive': 'متوقفة',
 'apl.edit': 'تعديل',
 'apl.delete': 'حذف',
+
+// ===== الأدمن: قوائم الخيارات =====
+'aop.group.COMPLAINT_TYPE': 'أنواع النزاع',
+'aop.group.DECISION_TYPE': 'أنواع القرار',
+'aop.group.PROJECT_FIELD': 'التصنيفات / التخصصات',
+'aop.hint': 'من هنا بتتحكم في الخيارات اللي بتظهر في نماذج المنصة (زي أنواع النزاع). أي خيار تضيفه هنا هيظهر تلقائيًا في الفورم. الخيار الموقوف مش بيظهر للمستخدمين بس بيفضل محفوظ.',
+'aop.renamePrompt': 'اكتب الاسم الجديد للخيار:',
+'aop.confirmDelete.pre': 'متأكد إنك عايز تحذف «',
+'aop.confirmDelete.post': '»؟',
+'aop.addPh': 'اكتب اسم خيار جديد وأضِفه…',
+'aop.adding': 'جاري الإضافة…',
+'aop.addBtn': 'إضافة خيار',
+'aop.empty': 'مفيش خيارات في المجموعة دي لسه. ضيف أول خيار من فوق.',
+'aop.active': 'مفعّل',
+'aop.stopped': 'موقوف',
+'aop.disable': 'إيقاف',
+'aop.enable': 'تفعيل',
 };
