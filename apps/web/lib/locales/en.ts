@@ -15,9 +15,9 @@ export const en: Record<string, string> = {
   'nav.roles': 'Who uses Mohaied',
   'nav.steps': 'How it works',
 
-  'landing.hero.title': 'A neutral platform that protects the rights of both parties',
-  'landing.hero.subtitle': 'We connect clients with service providers in a documented environment, backed by independent oversight that safeguards everyone.',
-  'landing.hero.cta': 'Get Started',
+  'landing.hero.title': 'Deliver your project with confidence — your rights protected from start to finish',
+'landing.hero.cta1': 'Start your project',
+'landing.hero.cta2': 'See how it works',
   'landing.services.title': 'Our Services',
   'landing.roles.title': 'Who uses Mohaied',
   'landing.steps.title': 'How it works',
