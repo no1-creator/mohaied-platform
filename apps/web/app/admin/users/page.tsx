@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 import Icon from '@/components/Icon';
 import { api } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 
 type User = {
   id: string;
@@ -15,29 +16,30 @@ type User = {
   createdAt: string;
 };
 
-const ROLE_LABELS: Record<string, string> = {
-  CLIENT: 'عميل',
-  PROVIDER: 'مقدم خدمة',
-  SUPERVISOR: 'مشرف',
-  ADMIN: 'أدمن',
+const ROLE_LABEL_KEYS: Record<string, string> = {
+  CLIENT: 'adu.role.CLIENT',
+  PROVIDER: 'adu.role.PROVIDER',
+  SUPERVISOR: 'adu.role.SUPERVISOR',
+  ADMIN: 'adu.role.ADMIN',
 };
 
 const ROLE_FILTERS = [
-  { value: '', label: 'الكل' },
-  { value: 'CLIENT', label: 'عملاء' },
-  { value: 'PROVIDER', label: 'مقدمو خدمة' },
-  { value: 'SUPERVISOR', label: 'مشرفون' },
-  { value: 'ADMIN', label: 'أدمن' },
+  { value: '', labelKey: 'adu.filter.all' },
+  { value: 'CLIENT', labelKey: 'adu.filter.CLIENT' },
+  { value: 'PROVIDER', labelKey: 'adu.filter.PROVIDER' },
+  { value: 'SUPERVISOR', labelKey: 'adu.filter.SUPERVISOR' },
+  { value: 'ADMIN', labelKey: 'adu.filter.ADMIN' },
 ];
 
 const ROLE_OPTIONS = [
-  { value: 'CLIENT', label: 'عميل' },
-  { value: 'PROVIDER', label: 'مقدم خدمة' },
-  { value: 'SUPERVISOR', label: 'مشرف' },
-  { value: 'ADMIN', label: 'أدمن' },
+  { value: 'CLIENT', labelKey: 'adu.role.CLIENT' },
+  { value: 'PROVIDER', labelKey: 'adu.role.PROVIDER' },
+  { value: 'SUPERVISOR', labelKey: 'adu.role.SUPERVISOR' },
+  { value: 'ADMIN', labelKey: 'adu.role.ADMIN' },
 ];
 
 export default function AdminUsersPage() {
+  const { tr } = useI18n();
   const [users, setUsers] = useState<User[]>([]);
   const [role, setRole] = useState('');
   const [q, setQ] = useState('');
@@ -54,6 +56,8 @@ export default function AdminUsersPage() {
   const [nErr, setNErr] = useState('');
   const [nOk, setNOk] = useState('');
   const setN = (k: string, v: string) => setNForm((f) => ({ ...f, [k]: v }));
+
+  const roleLabel = (r: string) => (ROLE_LABEL_KEYS[r] ? tr(ROLE_LABEL_KEYS[r]) : r);
 
   useEffect(() => {
     setLoading(true);
@@ -95,7 +99,7 @@ export default function AdminUsersPage() {
 
   async function changeRole(u: User, newRole: string) {
     if (newRole === u.role) return;
-    if (!confirm(`تغيير دور «${u.fullName}» إلى ${ROLE_LABELS[newRole] || newRole}؟`)) return;
+    if (!confirm(`${tr('adu.confirmRole.pre')}${u.fullName}${tr('adu.confirmRole.to')}${roleLabel(newRole)}${tr('adu.confirmRole.q')}`)) return;
     setBusy(u.id);
     try {
       await api(`/admin/users/${u.id}/role`, { method: 'PATCH', body: { role: newRole } });
@@ -125,7 +129,7 @@ export default function AdminUsersPage() {
 
   async function sendNotify() {
     if (!nForm.title.trim()) {
-      setNErr('اكتب عنوان الرسالة');
+      setNErr(tr('adu.errTitle'));
       return;
     }
     setSending(true);
@@ -141,24 +145,24 @@ export default function AdminUsersPage() {
     else if (nForm.target === 'role') body.role = nForm.role;
     try {
       const res = await api<{ count: number }>('/admin/notify', { method: 'POST', body });
-      setNOk(`تم الإرسال بنجاح إلى ${res.count} مستخدم`);
+      setNOk(`${tr('adu.sentPre')}${res.count}${tr('adu.sentPost')}`);
       setNForm((f) => ({ ...f, title: '', body: '', linkUrl: '' }));
     } catch (e: any) {
-      setNErr(e.message || 'تعذّر الإرسال');
+      setNErr(e.message || tr('adu.sendFail'));
     } finally {
       setSending(false);
     }
   }
 
   return (
-    <AdminShell active="users" title="المستخدمون">
+    <AdminShell active="users" title={tr('ash.nav.users', 'المستخدمون')}>
       <style>{AU_CSS}</style>
 
       <div className="ad-toolbar">
         <div className="ad-tabs">
           {ROLE_FILTERS.map((r) => (
             <button key={r.value} className={role === r.value ? 'active' : ''} onClick={() => setRole(r.value)}>
-              {r.label}
+              {tr(r.labelKey)}
             </button>
           ))}
         </div>
@@ -170,11 +174,11 @@ export default function AdminUsersPage() {
               setReloadKey((k) => k + 1);
             }}
           >
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ابحث بالاسم أو الإيميل..." />
-            <button type="submit">بحث</button>
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr('adu.searchPh', 'ابحث بالاسم أو الإيميل...')} />
+            <button type="submit">{tr('common.search', 'بحث')}</button>
           </form>
           <button className="ad-btn" onClick={openBroadcast}>
-            <Icon name="fileText" size={15} /> رسالة جماعية
+            <Icon name="fileText" size={15} /> {tr('adu.broadcast', 'رسالة جماعية')}
           </button>
         </div>
       </div>
@@ -182,20 +186,20 @@ export default function AdminUsersPage() {
       {error && <div className="ad-error">{error}</div>}
 
       {loading ? (
-        <div className="ad-loading">جاري التحميل...</div>
+        <div className="ad-loading">{tr('cls.loading', 'جاري التحميل...')}</div>
       ) : users.length === 0 ? (
-        <div className="ad-empty">مفيش مستخدمين مطابقين.</div>
+        <div className="ad-empty">{tr('adu.empty', 'مفيش مستخدمين مطابقين.')}</div>
       ) : (
         <div className="ad-table-wrap">
           <table className="ad-table">
             <thead>
               <tr>
-                <th>الاسم</th>
-                <th>الإيميل</th>
-                <th>الدور</th>
-                <th>التوثيق</th>
-                <th>الحالة</th>
-                <th>إجراءات</th>
+                <th>{tr('adu.th.name', 'الاسم')}</th>
+                <th>{tr('adu.th.email', 'الإيميل')}</th>
+                <th>{tr('adu.th.role', 'الدور')}</th>
+                <th>{tr('adu.th.verify', 'التوثيق')}</th>
+                <th>{tr('adu.th.status', 'الحالة')}</th>
+                <th>{tr('adu.th.actions', 'إجراءات')}</th>
               </tr>
             </thead>
             <tbody>
@@ -203,25 +207,25 @@ export default function AdminUsersPage() {
                 <tr key={u.id}>
                   <td>{u.fullName}</td>
                   <td className="ad-mono">{u.email}</td>
-                  <td>{ROLE_LABELS[u.role] || u.role}</td>
+                  <td>{roleLabel(u.role)}</td>
                   <td>
                     {u.isVerified ? (
-                      <span className="ad-badge ok">موثّق</span>
+                      <span className="ad-badge ok">{tr('adu.verified', 'موثّق')}</span>
                     ) : (
-                      <span className="ad-badge muted">غير موثّق</span>
+                      <span className="ad-badge muted">{tr('adu.unverified', 'غير موثّق')}</span>
                     )}
                   </td>
                   <td>
                     {u.isActive ? (
-                      <span className="ad-badge ok">نشط</span>
+                      <span className="ad-badge ok">{tr('adu.active', 'نشط')}</span>
                     ) : (
-                      <span className="ad-badge red">موقوف</span>
+                      <span className="ad-badge red">{tr('adu.suspended', 'موقوف')}</span>
                     )}
                   </td>
                   <td>
                     <div className="ad-row-actions">
                       <button className="ad-btn-mini" disabled={busy === u.id} onClick={() => toggleVerify(u)}>
-                        {u.isVerified ? 'إلغاء التوثيق' : 'توثيق'}
+                        {u.isVerified ? tr('adu.unverifyBtn', 'إلغاء التوثيق') : tr('adu.verifyBtn', 'توثيق')}
                       </button>
                       {u.role !== 'ADMIN' && (
                         <button
@@ -229,7 +233,7 @@ export default function AdminUsersPage() {
                           disabled={busy === u.id}
                           onClick={() => toggleActive(u)}
                         >
-                          {u.isActive ? 'إيقاف' : 'تفعيل'}
+                          {u.isActive ? tr('adu.deactivate', 'إيقاف') : tr('adu.activate', 'تفعيل')}
                         </button>
                       )}
                       <select
@@ -240,12 +244,12 @@ export default function AdminUsersPage() {
                       >
                         {ROLE_OPTIONS.map((o) => (
                           <option key={o.value} value={o.value}>
-                            {o.label}
+                            {tr(o.labelKey)}
                           </option>
                         ))}
                       </select>
                       <button className="ad-btn-mini" onClick={() => openUserNotify(u)}>
-                        تنبيه
+                        {tr('adu.notify', 'تنبيه')}
                       </button>
                     </div>
                   </td>
@@ -260,7 +264,7 @@ export default function AdminUsersPage() {
         <div className="au-overlay" onClick={() => !sending && setNotifyOpen(false)}>
           <div className="au-modal" onClick={(e) => e.stopPropagation()}>
             <div className="au-modal-head">
-              <h2>{notifyUser ? `رسالة إلى ${notifyUser.fullName}` : 'رسالة / تنبيه جماعي'}</h2>
+              <h2>{notifyUser ? `${tr('adu.msgTo.pre', 'رسالة إلى ')}${notifyUser.fullName}` : tr('adu.broadcastTitle', 'رسالة / تنبيه جماعي')}</h2>
               <button className="au-x" onClick={() => !sending && setNotifyOpen(false)}>✕</button>
             </div>
             <div className="au-body">
@@ -270,19 +274,19 @@ export default function AdminUsersPage() {
               {!notifyUser && (
                 <div className="au-row">
                   <label className="au-field">
-                    <span>المستهدفون</span>
+                    <span>{tr('adu.f.target', 'المستهدفون')}</span>
                     <select value={nForm.target} onChange={(e) => setN('target', e.target.value)}>
-                      <option value="all">كل المستخدمين</option>
-                      <option value="role">فئة محددة</option>
+                      <option value="all">{tr('adu.opt.all', 'كل المستخدمين')}</option>
+                      <option value="role">{tr('adu.opt.role', 'فئة محددة')}</option>
                     </select>
                   </label>
                   {nForm.target === 'role' && (
                     <label className="au-field">
-                      <span>الفئة</span>
+                      <span>{tr('adu.f.category', 'الفئة')}</span>
                       <select value={nForm.role} onChange={(e) => setN('role', e.target.value)}>
                         {ROLE_OPTIONS.map((o) => (
                           <option key={o.value} value={o.value}>
-                            {o.label}
+                            {tr(o.labelKey)}
                           </option>
                         ))}
                       </select>
@@ -292,24 +296,24 @@ export default function AdminUsersPage() {
               )}
 
               <label className="au-field">
-                <span>عنوان الرسالة</span>
-                <input value={nForm.title} onChange={(e) => setN('title', e.target.value)} maxLength={140} placeholder="مثلاً: تحديث مهم من إدارة محايد" />
+                <span>{tr('adu.f.title', 'عنوان الرسالة')}</span>
+                <input value={nForm.title} onChange={(e) => setN('title', e.target.value)} maxLength={140} placeholder={tr('adu.ph.title', 'مثلاً: تحديث مهم من إدارة محايد')} />
               </label>
               <label className="au-field">
-                <span>النص (اختياري)</span>
-                <textarea value={nForm.body} onChange={(e) => setN('body', e.target.value)} rows={4} maxLength={2000} placeholder="اكتب نص الرسالة اللي هيوصل للمستخدم..." />
+                <span>{tr('adu.f.body', 'النص (اختياري)')}</span>
+                <textarea value={nForm.body} onChange={(e) => setN('body', e.target.value)} rows={4} maxLength={2000} placeholder={tr('adu.ph.body', 'اكتب نص الرسالة اللي هيوصل للمستخدم...')} />
               </label>
               <label className="au-field">
-                <span>رابط (اختياري)</span>
-                <input value={nForm.linkUrl} onChange={(e) => setN('linkUrl', e.target.value)} placeholder="مثلاً: /provider/plans" />
+                <span>{tr('adu.f.link', 'رابط (اختياري)')}</span>
+                <input value={nForm.linkUrl} onChange={(e) => setN('linkUrl', e.target.value)} placeholder={tr('adu.ph.link', 'مثلاً: /provider/plans')} />
               </label>
 
               <div className="au-actions">
                 <button className="au-cancel" disabled={sending} onClick={() => setNotifyOpen(false)}>
-                  إغلاق
+                  {tr('adu.close', 'إغلاق')}
                 </button>
                 <button className="au-send" disabled={sending} onClick={sendNotify}>
-                  {sending ? 'جاري الإرسال...' : 'إرسال'}
+                  {sending ? tr('adu.sending', 'جاري الإرسال...') : tr('adu.send', 'إرسال')}
                 </button>
               </div>
             </div>
