@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { api, getToken } from '@/lib/api';
 import Icon from '@/components/Icon';
 import ProviderShell from '@/components/ProviderShell';
+import { useI18n } from '@/lib/i18n';
 
 type Me = { id: string; fullName?: string; role?: string; isVerified?: boolean };
 type Plan = {
@@ -36,6 +37,7 @@ type Task = { status?: string; dueDate?: string | null };
 
 export default function ProviderWorkspacePage() {
   const router = useRouter();
+  const { tr, lang } = useI18n();
   const [me, setMe] = useState<Me | null>(null);
   const [sub, setSub] = useState<Sub>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -89,12 +91,13 @@ export default function ProviderWorkspacePage() {
   const plan = sub?.plan || null;
   const directCount = me ? open.filter((p) => p.preferredProviderId === me.id).length : 0;
   const pendingOffers = offers.filter((o) => (o.status || '').toUpperCase() === 'PENDING').length;
+  const dateLocale = lang === 'en' ? 'en-US' : 'ar-EG';
 
   const num = (v?: number | string | null) => {
     const n = Number(v);
     return Number.isNaN(n) ? 0 : n;
   };
-  const egp = (v: number, c?: string) => `${v.toLocaleString('en-US')} ${c || 'ج.م'}`;
+  const egp = (v: number, c?: string) => `${v.toLocaleString('en-US')} ${c || tr('common.currency', 'ج.م')}`;
 
   const activeProjects =
     mineProjects.filter((p) => ['IN_AGREEMENT', 'IN_PROGRESS'].includes((p.status || '').toUpperCase())).length +
@@ -118,66 +121,66 @@ export default function ProviderWorkspacePage() {
   })();
 
   const fmtDate = (d?: string) =>
-    d ? new Date(d).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
+    d ? new Date(d).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
 
   return (
-    <ProviderShell active="overview" title="نظرة عامة">
+    <ProviderShell active="overview" title={tr('co.title', 'نظرة عامة')}>
       <style>{PW_CSS}</style>
       <div className="pw-wrap">
         {loading ? (
-          <div className="pw-loading">جاري التحميل...</div>
+          <div className="pw-loading">{tr('cls.loading', 'جاري التحميل...')}</div>
         ) : (
           <>
             {/* الاشتراك */}
             <div className={`pw-plan ${plan ? 'pw-plan-on' : ''}`}>
               <div className="pw-plan-info">
-                <div className="pw-plan-label">{plan ? 'باقتك الحالية' : 'أنت على الباقة المجانية'}</div>
+                <div className="pw-plan-label">{plan ? tr('pw.plan.current', 'باقتك الحالية') : tr('pw.plan.free', 'أنت على الباقة المجانية')}</div>
                 <div className="pw-plan-name">
-                  {plan?.name || 'مجاني'}
+                  {plan?.name || tr('pw.plan.freeName', 'مجاني')}
                   {plan?.badgeLabel && <span className="pw-badge">{plan.badgeLabel}</span>}
                 </div>
                 {plan ? (
                   <div className="pw-plan-meta">
-                    العمولة {Number(plan.commissionRate ?? 0)}% · تنتهي {fmtDate(sub?.expiresAt)}
+                    {tr('pw.plan.commission', 'العمولة')} {Number(plan.commissionRate ?? 0)}% · {tr('pw.plan.expires', 'تنتهي')} {fmtDate(sub?.expiresAt)}
                   </div>
                 ) : (
-                  <div className="pw-plan-meta">اشترك عشان تقلّل العمولة وتفتح مميزات أكتر.</div>
+                  <div className="pw-plan-meta">{tr('pw.plan.freeMeta', 'اشترك عشان تقلّل العمولة وتفتح مميزات أكتر.')}</div>
                 )}
               </div>
               <Link href="/provider/plans" className="pw-plan-btn">
-                {plan ? 'غيّر باقتك' : 'شوف الباقات وارقّي'}
+                {plan ? tr('pw.plan.change', 'غيّر باقتك') : tr('pw.plan.see', 'شوف الباقات وارقّي')}
               </Link>
             </div>
 
             {/* بيئة عملك */}
-            <div className="pw-section-h">بيئة عملك</div>
+            <div className="pw-section-h">{tr('pw.sec.workspace', 'بيئة عملك')}</div>
             <div className="pw-stats">
-              <Stat label="عملاؤك" value={clients.length} />
-              <Stat label="مشاريع جارية" value={activeProjects} highlight={activeProjects > 0} />
-              <Stat label="الرصيد المتاح" value={egp(num(wallet?.available), wallet?.currency)} money highlight={num(wallet?.available) > 0} />
-              <Stat label="مستحق (فواتير مُرسلة)" value={egp(outstanding)} money warn={outstanding > 0} />
-              <Stat label="مهام تحتاج انتباه" value={tasksAttention} warn={tasksAttention > 0} />
-              <Stat label="محصّل (مدفوع)" value={egp(paidTotal)} money />
+              <Stat label={tr('pw.stat.clients', 'عملاؤك')} value={clients.length} />
+              <Stat label={tr('pw.stat.activeProjects', 'مشاريع جارية')} value={activeProjects} highlight={activeProjects > 0} />
+              <Stat label={tr('pw.stat.available', 'الرصيد المتاح')} value={egp(num(wallet?.available), wallet?.currency)} money highlight={num(wallet?.available) > 0} />
+              <Stat label={tr('pw.stat.outstanding', 'مستحق (فواتير مُرسلة)')} value={egp(outstanding)} money warn={outstanding > 0} />
+              <Stat label={tr('pw.stat.tasksAttention', 'مهام تحتاج انتباه')} value={tasksAttention} warn={tasksAttention > 0} />
+              <Stat label={tr('pw.stat.collected', 'محصّل (مدفوع)')} value={egp(paidTotal)} money />
             </div>
             <div className="pw-actions">
-              <ActionCard href="/provider/clients" icon="users" title="عملائي" desc="أدر عملاءك وبياناتهم" />
-              <ActionCard href="/provider/projects" icon="folder" title="مشاريعي" desc="متابعة كل مشاريعك" />
-              <ActionCard href="/provider/invoices" icon="fileText" title="الفواتير" desc="افوتر وتابع المستحقات" />
-              <ActionCard href="/provider/wallet" icon="landmark" title="المحفظة" desc="أرباحك وطلبات السحب" />
-              <ActionCard href="/provider/tasks" icon="fileCheck" title="المهام" desc="نظّم شغلك ومواعيدك" />
-              <ActionCard href="/provider/profile" icon="user" title="ملفي الاحترافي" desc="عدّل بياناتك ومعرض أعمالك" />
+              <ActionCard href="/provider/clients" icon="users" title={tr('pw.act.clients.t', 'عملائي')} desc={tr('pw.act.clients.d', 'أدر عملاءك وبياناتهم')} />
+              <ActionCard href="/provider/projects" icon="folder" title={tr('pw.act.projects.t', 'مشاريعي')} desc={tr('pw.act.projects.d', 'متابعة كل مشاريعك')} />
+              <ActionCard href="/provider/invoices" icon="fileText" title={tr('pw.act.invoices.t', 'الفواتير')} desc={tr('pw.act.invoices.d', 'افوتر وتابع المستحقات')} />
+              <ActionCard href="/provider/wallet" icon="landmark" title={tr('pw.act.wallet.t', 'المحفظة')} desc={tr('pw.act.wallet.d', 'أرباحك وطلبات السحب')} />
+              <ActionCard href="/provider/tasks" icon="fileCheck" title={tr('pw.act.tasks.t', 'المهام')} desc={tr('pw.act.tasks.d', 'نظّم شغلك ومواعيدك')} />
+              <ActionCard href="/provider/profile" icon="user" title={tr('pw.act.profile.t', 'ملفي الاحترافي')} desc={tr('pw.act.profile.d', 'عدّل بياناتك ومعرض أعمالك')} />
             </div>
 
             {/* مميزات الباقة */}
             {plan && (
               <div className="pw-perks">
-                <Perk icon="creditCard" label="العمولة" value={`${Number(plan.commissionRate ?? 0)}%`} />
-                <Perk icon="briefcase" label="حد العروض" value={plan.maxOffers != null ? String(plan.maxOffers) : 'غير محدود'} />
-                <Perk icon="eye" label="أولوية الدليل" value={String(plan.directoryPriority ?? 0)} />
-                <Perk icon="sparkles" label="رصيد إعلانات" value={String(plan.monthlyAdCredits ?? 0)} />
-                <Perk icon="users" label="أعضاء الفريق" value={String(plan.teamSeats ?? 1)} />
-                <Perk icon="star" label="تحليلات" value={plan.analyticsAccess ? 'مُفعّلة' : '—'} />
-                <Perk icon="shield" label="دعم أولوية" value={plan.prioritySupport ? 'نعم' : '—'} />
+                <Perk icon="creditCard" label={tr('pw.perk.commission', 'العمولة')} value={`${Number(plan.commissionRate ?? 0)}%`} />
+                <Perk icon="briefcase" label={tr('pw.perk.maxOffers', 'حد العروض')} value={plan.maxOffers != null ? String(plan.maxOffers) : tr('pw.unlimited', 'غير محدود')} />
+                <Perk icon="eye" label={tr('pw.perk.priority', 'أولوية الدليل')} value={String(plan.directoryPriority ?? 0)} />
+                <Perk icon="sparkles" label={tr('pw.perk.adCredits', 'رصيد إعلانات')} value={String(plan.monthlyAdCredits ?? 0)} />
+                <Perk icon="users" label={tr('pw.perk.seats', 'أعضاء الفريق')} value={String(plan.teamSeats ?? 1)} />
+                <Perk icon="star" label={tr('pw.perk.analytics', 'تحليلات')} value={plan.analyticsAccess ? tr('pw.enabled', 'مُفعّلة') : '—'} />
+                <Perk icon="shield" label={tr('pw.perk.support', 'دعم أولوية')} value={plan.prioritySupport ? tr('pw.yes', 'نعم') : '—'} />
               </div>
             )}
 
@@ -185,59 +188,59 @@ export default function ProviderWorkspacePage() {
             {adCredits && adCredits.total > 0 && (
               <div className="pw-adcredit">
                 <div className="pw-adcredit-info">
-                  <div className="pw-adcredit-label">رصيد إعلاناتك هذا الشهر</div>
+                  <div className="pw-adcredit-label">{tr('pw.ad.label', 'رصيد إعلاناتك هذا الشهر')}</div>
                   <div className="pw-adcredit-nums">
                     <span className="pw-adcredit-remain">{adCredits.remaining}</span>
-                    <span className="pw-adcredit-of"> متبقّي من {adCredits.total}</span>
+                    <span className="pw-adcredit-of"> {tr('pw.ad.remainOf', 'متبقّي من')} {adCredits.total}</span>
                   </div>
                   <div className="pw-adcredit-hint">
-                    أي إعلان تعمله من رصيدك بيتفعّل فورًا من غير مراجعة. الرصيد بيتجدّد أول كل شهر.
+                    {tr('pw.ad.hint', 'أي إعلان تعمله من رصيدك بيتفعّل فورًا من غير مراجعة. الرصيد بيتجدّد أول كل شهر.')}
                   </div>
                 </div>
-                <Link href="/advertise" className="pw-adcredit-btn">اعمل إعلان</Link>
+                <Link href="/advertise" className="pw-adcredit-btn">{tr('pw.ad.btn', 'اعمل إعلان')}</Link>
               </div>
             )}
 
             {/* إحصائيات المنصة */}
-            <div className="pw-section-h">نشاطك على المنصة</div>
+            <div className="pw-section-h">{tr('pw.sec.activity', 'نشاطك على المنصة')}</div>
             <div className="pw-stats">
-              <Stat label="عروضك" value={offers.length} hint={pendingOffers ? `${pendingOffers} قيد المراجعة` : undefined} />
-              <Stat label="مشاريع متاحة" value={open.length} />
-              <Stat label="طلبات مباشرة ليك" value={directCount} highlight={directCount > 0} />
-              <Stat label="إشعارات غير مقروءة" value={unread} />
+              <Stat label={tr('pw.stat.offers', 'عروضك')} value={offers.length} hint={pendingOffers ? `${pendingOffers} ${tr('pw.stat.pendingReview', 'قيد المراجعة')}` : undefined} />
+              <Stat label={tr('pw.stat.openProjects', 'مشاريع متاحة')} value={open.length} />
+              <Stat label={tr('pw.stat.directRequests', 'طلبات مباشرة ليك')} value={directCount} highlight={directCount > 0} />
+              <Stat label={tr('pw.stat.unread', 'إشعارات غير مقروءة')} value={unread} />
             </div>
 
             {/* روابط سريعة */}
             <div className="pw-actions">
-              <ActionCard href="/projects/open" icon="folder" title="المشاريع المتاحة" desc="اتصفّح وقدّم عروضك" />
-              <ActionCard href="/providers" icon="grid" title="دليل مقدمي الخدمة" desc="شوف ظهورك في الدليل" />
-              <ActionCard href="/offers/mine" icon="fileText" title="عروضي" desc="تابع كل عروضك" />
-              <ActionCard href="/provider/plans" icon="creditCard" title="الباقات والاشتراك" desc="رقّي واحصل على مميزات" />
+              <ActionCard href="/projects/open" icon="folder" title={tr('pw.act.openProjects.t', 'المشاريع المتاحة')} desc={tr('pw.act.openProjects.d', 'اتصفّح وقدّم عروضك')} />
+              <ActionCard href="/providers" icon="grid" title={tr('pw.act.directory.t', 'دليل مقدمي الخدمة')} desc={tr('pw.act.directory.d', 'شوف ظهورك في الدليل')} />
+              <ActionCard href="/offers/mine" icon="fileText" title={tr('pw.act.offers.t', 'عروضي')} desc={tr('pw.act.offers.d', 'تابع كل عروضك')} />
+              <ActionCard href="/provider/plans" icon="creditCard" title={tr('pw.act.plans.t', 'الباقات والاشتراك')} desc={tr('pw.act.plans.d', 'رقّي واحصل على مميزات')} />
               {plan?.analyticsAccess && (
-                <ActionCard href="/provider/analytics" icon="star" title="تحليلات أدائك" desc="عروضك وإعلاناتك بالأرقام" />
+                <ActionCard href="/provider/analytics" icon="star" title={tr('pw.act.analytics.t', 'تحليلات أدائك')} desc={tr('pw.act.analytics.d', 'عروضك وإعلاناتك بالأرقام')} />
               )}
             </div>
 
             {/* أحدث عروضك */}
             <div className="pw-panel">
-              <div className="pw-panel-title">أحدث عروضك</div>
+              <div className="pw-panel-title">{tr('pw.recentOffers', 'أحدث عروضك')}</div>
               {offers.length === 0 ? (
                 <div className="pw-empty">
-                  لسه مقدّمتش أي عرض.{' '}
-                  <Link href="/projects/open" className="pw-link">اتصفّح المشاريع المتاحة ←</Link>
+                  {tr('pw.noOffers', 'لسه مقدّمتش أي عرض.')}{' '}
+                  <Link href="/projects/open" className="pw-link">{tr('pw.browseOpen', 'اتصفّح المشاريع المتاحة ←')}</Link>
                 </div>
               ) : (
                 <div className="pw-list">
                   {offers.slice(0, 6).map((o) => (
                     <div key={o.id} className="pw-item">
-                      <span className="pw-item-title">{o.project?.title || 'مشروع'}</span>
+                      <span className="pw-item-title">{o.project?.title || tr('pw.projectFallback', 'مشروع')}</span>
                       <span className="pw-item-side">
                         {(o.amount ?? o.price) != null && (
                           <span className="pw-item-amount">
-                            {Number(o.amount ?? o.price).toLocaleString('en-US')} ج.م
+                            {Number(o.amount ?? o.price).toLocaleString('en-US')} {tr('common.currency', 'ج.م')}
                           </span>
                         )}
-                        {o.status && <span className="pw-item-status">{statusAr(o.status)}</span>}
+                        {o.status && <span className="pw-item-status">{tr(statusAr(o.status))}</span>}
                       </span>
                     </div>
                   ))}
@@ -299,10 +302,10 @@ function ActionCard({ href, icon, title, desc }: { href: string; icon: string; t
 
 function statusAr(s: string) {
   const map: Record<string, string> = {
-    PENDING: 'قيد المراجعة',
-    ACCEPTED: 'مقبول',
-    REJECTED: 'مرفوض',
-    WITHDRAWN: 'مسحوب',
+    PENDING: 'pw.stat.pendingReview',
+    ACCEPTED: 'pw.status.accepted',
+    REJECTED: 'pw.status.rejected',
+    WITHDRAWN: 'pw.status.withdrawn',
   };
   return map[(s || '').toUpperCase()] || s;
 }
