@@ -8,6 +8,7 @@ import TopBar from '@/components/TopBar';
 import Icon from '@/components/Icon';
 import { LoadingState, ErrorState } from '@/components/PageState';
 import AdBanners from '@/components/AdBanners';
+import { useI18n } from '@/lib/i18n';
 
 type Me = {
   id: string;
@@ -18,10 +19,10 @@ type Me = {
 };
 
 const ROLE_LABELS: Record<string, string> = {
-  CLIENT: 'عميل',
-  PROVIDER: 'مقدم خدمة',
-  SUPERVISOR: 'مشرف متخصص',
-  ADMIN: 'إدارة محايد',
+  CLIENT: 'db.role.CLIENT',
+  PROVIDER: 'db.role.PROVIDER',
+  SUPERVISOR: 'db.role.SUPERVISOR',
+  ADMIN: 'db.role.ADMIN',
 };
 
 type Tile = {
@@ -34,50 +35,50 @@ type Tile = {
 };
 
 const TILES: Tile[] = [
-  { href: '/projects', icon: 'folder', title: 'مشاريعي', desc: 'تابع مشاريعك الحالية وحالتها.', roles: [] },
-{ href: '/projects/start', icon: 'plus', title: 'مشروع جديد', desc: 'اختار طريقتك في إيجاد مقدم الخدمة.', roles: ['CLIENT'], accent: true },
-{ href: '/provider', icon: 'briefcase', title: 'بيئة عملي', desc: 'لوحتك: مشاريعك وعروضك واشتراكك.', roles: ['PROVIDER'], accent: true },
-{ href: '/projects/open', icon: 'search', title: 'مشاريع مفتوحة', desc: 'تصفّح المشاريع وقدّم عروضك.', roles: ['PROVIDER'] },
-  { href: '/offers/mine', icon: 'fileText', title: 'عروضي', desc: 'تابع حالة العروض اللي قدّمتها.', roles: ['PROVIDER'] },
-  { href: '/complaints/mine', icon: 'scale', title: 'شكاويّ ونزاعاتي', desc: 'تابع شكاويك وردود وقرارات إدارة محايد.', roles: ['CLIENT', 'PROVIDER'] },
-  { href: '/subscribe', icon: 'creditCard', title: 'الاشتراك والباقات', desc: 'اشترك لتظهر للعملاء وتقلّل العمولة.', roles: ['PROVIDER'], accent: true },
-  { href: '/advertise', icon: 'star', title: 'أعلن معنا', desc: 'اعرض إعلانك على المنصة ووصّل لعملاء أكتر.', roles: ['PROVIDER'] },
-  { href: '/supervisor/assignments', icon: 'shield', title: 'تكليفاتي', desc: 'المشاريع اللي بتشرف عليها.', roles: ['SUPERVISOR'] },
-  { href: '/supervisor/arbitrations', icon: 'scale', title: 'النزاعات المُسندة لي', desc: 'النزاعات اللي عُيّنت فيها مُحكّمًا تقنيًا.', roles: ['SUPERVISOR'] },
-  { href: '/admin', icon: 'shield', title: 'لوحة التحكم', desc: 'تحكم كامل في المنصة والمستخدمين.', roles: ['ADMIN'], accent: true },
+  { href: '/projects', icon: 'folder', title: 'db.tile.projects.t', desc: 'db.tile.projects.d', roles: [] },
+  { href: '/projects/start', icon: 'plus', title: 'db.tile.newProject.t', desc: 'db.tile.newProject.d', roles: ['CLIENT'], accent: true },
+  { href: '/provider', icon: 'briefcase', title: 'db.tile.providerHub.t', desc: 'db.tile.providerHub.d', roles: ['PROVIDER'], accent: true },
+  { href: '/projects/open', icon: 'search', title: 'db.tile.openProjects.t', desc: 'db.tile.openProjects.d', roles: ['PROVIDER'] },
+  { href: '/offers/mine', icon: 'fileText', title: 'db.tile.myOffers.t', desc: 'db.tile.myOffers.d', roles: ['PROVIDER'] },
+  { href: '/complaints/mine', icon: 'scale', title: 'db.tile.complaints.t', desc: 'db.tile.complaints.d', roles: ['CLIENT', 'PROVIDER'] },
+  { href: '/subscribe', icon: 'creditCard', title: 'db.tile.subscribe.t', desc: 'db.tile.subscribe.d', roles: ['PROVIDER'], accent: true },
+  { href: '/advertise', icon: 'star', title: 'db.tile.advertise.t', desc: 'db.tile.advertise.d', roles: ['PROVIDER'] },
+  { href: '/supervisor/assignments', icon: 'shield', title: 'db.tile.assignments.t', desc: 'db.tile.assignments.d', roles: ['SUPERVISOR'] },
+  { href: '/supervisor/arbitrations', icon: 'scale', title: 'db.tile.arbitrations.t', desc: 'db.tile.arbitrations.d', roles: ['SUPERVISOR'] },
+  { href: '/admin', icon: 'shield', title: 'db.tile.admin.t', desc: 'db.tile.admin.d', roles: ['ADMIN'], accent: true },
 ];
 
 // شارات الثقة في الهيرو
-const TRUST = ['توثيق رسمي لكل خطوة', 'ضمان مالي كامل', 'حل عادل للنزاعات'];
+const TRUST = ['db.trust.1', 'db.trust.2', 'db.trust.3'];
 
 // خدمات محايد للعميل (cross-sell)
 const CLIENT_SERVICES = [
-  { icon: 'badgeCheck', title: 'توثيق رسمي لكل خطوة', desc: 'كل اتفاق ومرحلة بيتوثّق رسميًا على المنصة، فحقّك مسجّل ومحفوظ.' },
-  { icon: 'lock', title: 'ضمان مالي (Escrow)', desc: 'فلوسك بتتحجز بأمان وما تتحرّرش لمقدم الخدمة إلا بعد ما تستلم شغلك.' },
-  { icon: 'scale', title: 'حل عادل للنزاعات', desc: 'لو حصل خلاف، إدارة محايد بتتدخّل كمُحكّم محايد وقرارها مُلزم للطرفين.' },
-  { icon: 'shield', title: 'إشراف تقني اختياري', desc: 'تقدر تطلب مشرف متخصص يتابع جودة الشغل خطوة بخطوة.' },
+  { icon: 'badgeCheck', title: 'db.cs.1.t', desc: 'db.cs.1.d' },
+  { icon: 'lock', title: 'db.cs.2.t', desc: 'db.cs.2.d' },
+  { icon: 'scale', title: 'db.cs.3.t', desc: 'db.cs.3.d' },
+  { icon: 'shield', title: 'db.cs.4.t', desc: 'db.cs.4.d' },
 ];
 
 // مزايا مقدم الخدمة
 const PROVIDER_PERKS = [
-  { icon: 'search', title: 'مشاريع جادّة', desc: 'تصفّح مشاريع حقيقية وقدّم عروضك بثقة.' },
-  { icon: 'creditCard', title: 'عمولة أقل', desc: 'اشترك في باقة وقلّل نسبة العمولة على أرباحك.' },
-  { icon: 'star', title: 'ظهور أوسع', desc: 'حسابك المميّز بيظهر للعملاء بشكل أكبر.' },
-  { icon: 'lock', title: 'حقوقك موثّقة', desc: 'كل اتفاق وحق مالي مسجّل ومحمي رسميًا.' },
+  { icon: 'search', title: 'db.pp.1.t', desc: 'db.pp.1.d' },
+  { icon: 'creditCard', title: 'db.pp.2.t', desc: 'db.pp.2.d' },
+  { icon: 'star', title: 'db.pp.3.t', desc: 'db.pp.3.d' },
+  { icon: 'lock', title: 'db.pp.4.t', desc: 'db.pp.4.d' },
 ];
 
 const HERO_BY_ROLE: Record<string, { tag: string; cta?: { label: string; href: string } }> = {
   CLIENT: {
-    tag: 'نفّذ مشاريعك بثقة — كل خطوة موثّقة وحقوقك محفوظة داخل بيئة محايدة.',
-cta: { label: 'ابدأ مشروع جديد', href: '/projects/start' },
+    tag: 'db.hero.client.tag',
+    cta: { label: 'db.hero.client.cta', href: '/projects/start' },
   },
   PROVIDER: {
-    tag: 'استقبل المشاريع، قدّم عروضك، واشتغل في بيئة موثّقة تحفظ حقوقك المالية والمهنية.',
-    cta: { label: 'تصفّح المشاريع المفتوحة', href: '/projects/open' },
+    tag: 'db.hero.provider.tag',
+    cta: { label: 'db.hero.provider.cta', href: '/projects/open' },
   },
   SUPERVISOR: {
-    tag: 'تابع تكليفاتك والنزاعات المُسندة لك كمُحكّم تقني بحياد كامل.',
-    cta: { label: 'تكليفاتي', href: '/supervisor/assignments' },
+    tag: 'db.hero.supervisor.tag',
+    cta: { label: 'db.hero.supervisor.cta', href: '/supervisor/assignments' },
   },
 };
 
@@ -168,6 +169,7 @@ const DB_CSS = `
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { tr } = useI18n();
   const [me, setMe] = useState<Me | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -179,15 +181,15 @@ export default function DashboardPage() {
     }
     api<Me>('/users/me')
       .then((data) => {
-       if (data.role === 'ADMIN') {
-  router.replace('/admin');
-  return;
-}
-if (data.role === 'CLIENT') {
-  router.replace('/client');
-  return;
-}
-setMe(data);
+        if (data.role === 'ADMIN') {
+          router.replace('/admin');
+          return;
+        }
+        if (data.role === 'CLIENT') {
+          router.replace('/client');
+          return;
+        }
+        setMe(data);
         setLoading(false);
       })
       .catch((err) => {
@@ -200,7 +202,7 @@ setMe(data);
     return (
       <>
         <TopBar />
-        <LoadingState label="جاري تحميل لوحتك..." />
+        <LoadingState label={tr('db.loading', 'جاري تحميل لوحتك...')} />
       </>
     );
   }
@@ -230,19 +232,19 @@ setMe(data);
           <span className="db-hero-orb db-orb-2" />
           <div className="db-hero-content">
             <span className="db-badge">
-              <Icon name="shield" size={14} /> {roleLabel}
+              <Icon name="shield" size={14} /> {roleLabel ? tr(roleLabel) : ''}
             </span>
-            <h1 className="db-greet">أهلًا بيك، {me?.fullName} 👋</h1>
-            <p className="db-tag">{hero.tag}</p>
+            <h1 className="db-greet">{tr('db.greetHi', 'أهلًا بيك،')} {me?.fullName} 👋</h1>
+            <p className="db-tag">{tr(hero.tag)}</p>
             {me && !me.isVerified && (
               <div>
-                <span className="db-unverified">⏳ حسابك بانتظار التوثيق</span>
+                <span className="db-unverified">{tr('db.unverified', '⏳ حسابك بانتظار التوثيق')}</span>
               </div>
             )}
             {hero.cta && (
               <div className="db-hero-actions">
                 <Link href={hero.cta.href} className="db-cta">
-                  {hero.cta.label}
+                  {tr(hero.cta.label)}
                   <Icon name="plus" size={16} />
                 </Link>
               </div>
@@ -250,7 +252,7 @@ setMe(data);
             <div className="db-trust">
               {TRUST.map((t) => (
                 <div className="db-trust-item" key={t}>
-                  <Icon name="badgeCheck" size={15} /> {t}
+                  <Icon name="badgeCheck" size={15} /> {tr(t)}
                 </div>
               ))}
             </div>
@@ -261,15 +263,15 @@ setMe(data);
         {role === 'CLIENT' && <AdBanners placement="CLIENT_DASHBOARD" />}
 
         {/* الاختصارات */}
-        <h2 className="db-section-title fade-up d1">اختصاراتك</h2>
+        <h2 className="db-section-title fade-up d1">{tr('db.shortcuts', 'اختصاراتك')}</h2>
         <div className="db-grid fade-up d1">
           {tiles.map((t) => (
             <Link key={t.href} href={t.href} className={`db-tile${t.accent ? ' accent' : ''}`}>
               <span className="db-tile-icon">
                 <Icon name={t.icon} size={22} />
               </span>
-              <span className="db-tile-title">{t.title}</span>
-              <span className="db-tile-desc">{t.desc}</span>
+              <span className="db-tile-title">{tr(t.title)}</span>
+              <span className="db-tile-desc">{tr(t.desc)}</span>
             </Link>
           ))}
         </div>
@@ -277,15 +279,15 @@ setMe(data);
         {/* قسم العميل */}
         {role === 'CLIENT' && (
           <>
-            <h2 className="db-section-title fade-up d2">خدمات محايد اللي بتحميك</h2>
+            <h2 className="db-section-title fade-up d2">{tr('db.clientSvcTitle', 'خدمات محايد اللي بتحميك')}</h2>
             <div className="db-svc-grid fade-up d2">
               {CLIENT_SERVICES.map((s) => (
                 <div className="db-svc-card" key={s.title}>
                   <div className="db-svc-icon">
                     <Icon name={s.icon} size={24} />
                   </div>
-                  <div className="db-svc-h">{s.title}</div>
-                  <div className="db-svc-p">{s.desc}</div>
+                  <div className="db-svc-h">{tr(s.title)}</div>
+                  <div className="db-svc-p">{tr(s.desc)}</div>
                 </div>
               ))}
             </div>
@@ -293,10 +295,10 @@ setMe(data);
             <div className="db-band fade-up d3">
               <span className="db-band-orb" />
               <div className="db-band-content">
-                <h3>عندك مشروع في بالك؟</h3>
-                <p>انشره دلوقتي واستقبل عروض من أفضل مقدمي الخدمات — كله موثّق ومضمون من محايد.</p>
-<Link href="/projects/start" className="db-band-btn">
-                ابدأ مشروعك الآن
+                <h3>{tr('db.clientBand.h', 'عندك مشروع في بالك؟')}</h3>
+                <p>{tr('db.clientBand.p', 'انشره دلوقتي واستقبل عروض من أفضل مقدمي الخدمات — كله موثّق ومضمون من محايد.')}</p>
+                <Link href="/projects/start" className="db-band-btn">
+                  {tr('db.clientBand.btn', 'ابدأ مشروعك الآن')}
                   <Icon name="plus" size={16} />
                 </Link>
               </div>
@@ -307,15 +309,15 @@ setMe(data);
         {/* قسم مقدم الخدمة */}
         {role === 'PROVIDER' && (
           <>
-            <h2 className="db-section-title fade-up d2">نمّي شغلك مع محايد</h2>
+            <h2 className="db-section-title fade-up d2">{tr('db.providerSvcTitle', 'نمّي شغلك مع محايد')}</h2>
             <div className="db-svc-grid fade-up d2">
               {PROVIDER_PERKS.map((s) => (
                 <div className="db-svc-card" key={s.title}>
                   <div className="db-svc-icon">
                     <Icon name={s.icon} size={24} />
                   </div>
-                  <div className="db-svc-h">{s.title}</div>
-                  <div className="db-svc-p">{s.desc}</div>
+                  <div className="db-svc-h">{tr(s.title)}</div>
+                  <div className="db-svc-p">{tr(s.desc)}</div>
                 </div>
               ))}
             </div>
@@ -323,10 +325,10 @@ setMe(data);
             <div className="db-band green fade-up d3">
               <span className="db-band-orb" />
               <div className="db-band-content">
-                <h3>اشترك وكبّر شغلك</h3>
-                <p>باقة الاشتراك بتخلّيك تظهر للعملاء أكتر، وتقلّل العمولة على أرباحك، وتديك أولوية في المشاريع.</p>
+                <h3>{tr('db.providerBand.h', 'اشترك وكبّر شغلك')}</h3>
+                <p>{tr('db.providerBand.p', 'باقة الاشتراك بتخلّيك تظهر للعملاء أكتر، وتقلّل العمولة على أرباحك، وتديك أولوية في المشاريع.')}</p>
                 <Link href="/subscribe" className="db-band-btn">
-                  شوف الباقات
+                  {tr('db.providerBand.btn', 'شوف الباقات')}
                   <Icon name="creditCard" size={16} />
                 </Link>
               </div>
