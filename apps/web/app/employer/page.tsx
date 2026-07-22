@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
+import { WORK_MODE, JOB_STATUS, APP_STATUS, EMPLOYMENT_STATUS, LOG_STATUS, TYPES, MODES, money, fdate } from '@/lib/employment';
 
 type Office = { id: string; name: string; city: string };
 type Job = {
@@ -28,44 +29,7 @@ type Log = {
   employerNote?: string | null; employee?: { fullName: string } | null;
 };
 
-const WORK_MODE: Record<string, string> = { ONSITE: 'من مكتب محايد', REMOTE: 'عن بُعد', HYBRID: 'مختلط' };
-const JOB_STATUS: Record<string, { label: string; tone: string }> = {
-  OPEN: { label: 'مفتوحة', tone: 'ok' },
-  PAUSED: { label: 'موقوفة', tone: 'amber' },
-  CLOSED: { label: 'مغلقة', tone: 'muted' },
-  FILLED: { label: 'مكتملة', tone: 'blue' },
-};
-const APP_STATUS: Record<string, { label: string; tone: string }> = {
-  SUBMITTED: { label: 'تم التقديم', tone: 'amber' },
-  SHORTLISTED: { label: 'قائمة مختصرة', tone: 'blue' },
-  INTERVIEW: { label: 'مقابلة', tone: 'blue' },
-  OFFERED: { label: 'عرض عمل', tone: 'ok' },
-  HIRED: { label: 'تم التعيين', tone: 'ok' },
-  REJECTED: { label: 'مرفوض', tone: 'red' },
-  WITHDRAWN: { label: 'مسحوب', tone: 'muted' },
-};
-const EMPLOYMENT_STATUS: Record<string, { label: string; tone: string }> = {
-  ACTIVE: { label: 'نشط', tone: 'ok' },
-  PAUSED: { label: 'موقوف', tone: 'amber' },
-  ENDED: { label: 'منتهي', tone: 'muted' },
-};
-const LOG_STATUS: Record<string, { label: string; tone: string }> = {
-  SUBMITTED: { label: 'بانتظار المراجعة', tone: 'amber' },
-  APPROVED: { label: 'معتمد', tone: 'ok' },
-  REJECTED: { label: 'مرفوض', tone: 'red' },
-};
-const TYPES = [
-  { value: 'FULL_TIME', label: 'دوام كامل' },
-  { value: 'PART_TIME', label: 'دوام جزئي' },
-  { value: 'CONTRACT', label: 'عقد مؤقت' },
-];
-const MODES = [
-  { value: 'REMOTE', label: 'عن بُعد' },
-  { value: 'ONSITE', label: 'من مكتب محايد' },
-  { value: 'HYBRID', label: 'مختلط' },
-];
-const money = (v: any, c?: string | null) => `${Number(v || 0).toLocaleString('en')} ${c || 'USD'}`;
-const fdate = (s: string) => { try { return new Date(s).toLocaleDateString('en-GB'); } catch { return ''; } };
+// ثوابت وخرايط التوظيف موحّدة في: lib/employment.ts
 
 const EM_CSS = `
 .em-wrap{max-width:1000px;margin:0 auto;width:100%;padding:26px 20px 90px;}
