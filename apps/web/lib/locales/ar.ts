@@ -184,4 +184,22 @@ export const ar: Record<string, string> = {
 'auth.role.INVESTOR': 'مستثمر — أبحث عن فرص للتمويل',
 'auth.role.EMPLOYER': 'شركة — أوظّف مواهب مصرية عن بُعد',
 'auth.role.EMPLOYEE': 'باحث عن عمل — وظائف عن بُعد',
+
+// ===== شريط التنقّل الداخلي =====
+'tb.brandSub': 'منصة حماية الحقوق',
+'tb.logout': 'خروج',
+'tb.nav.home': 'الرئيسية',
+'tb.nav.myProjects': 'مشاريعي',
+'tb.nav.newProject': '+ مشروع جديد',
+'tb.nav.legalServices': 'الخدمات القانونية',
+'tb.nav.fundraise': 'تمويل مشروعك',
+'tb.nav.openProjects': 'مشاريع مفتوحة',
+'tb.nav.myOffers': 'عروضي',
+'tb.nav.assignments': 'تكليفاتي',
+'tb.nav.adminPanel': 'لوحة التحكم',
+'tb.nav.legalRequests': 'طلباتي القانونية',
+'tb.nav.myProfile': 'ملفي المهني',
+'tb.nav.investOpps': 'فرص الاستثمار',
+'tb.nav.employerHub': 'وظائفي وفريقي',
+'tb.nav.remoteJobs': 'وظائف عن بُعد',
 };
