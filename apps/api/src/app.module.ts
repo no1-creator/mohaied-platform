@@ -77,9 +77,8 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     AuditModule,
     AdminTeamModule,
     LegalModule,
-  InvestModule,
-  EmploymentModule,
-],
+    InvestModule,
+    EmploymentModule,
   ],
   controllers: [],
   providers: [
