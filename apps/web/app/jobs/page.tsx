@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
+import { EMP_TYPE, WORK_MODE, APP_STATUS, EMPLOYMENT_STATUS, LOG_STATUS, money, fdate } from '@/lib/employment';
 
 type Job = {
   id: string; code: string; title: string; description: string; skills?: string | null;
@@ -25,29 +26,7 @@ type Log = {
   id: string; date: string; hours?: number | null; summary: string; status: string; employerNote?: string | null;
 };
 
-const EMP_TYPE: Record<string, string> = { FULL_TIME: 'دوام كامل', PART_TIME: 'دوام جزئي', CONTRACT: 'عقد مؤقت' };
-const WORK_MODE: Record<string, string> = { ONSITE: 'من مكتب محايد', REMOTE: 'عن بُعد', HYBRID: 'مختلط' };
-const APP_STATUS: Record<string, { label: string; tone: string }> = {
-  SUBMITTED: { label: 'تم التقديم', tone: 'amber' },
-  SHORTLISTED: { label: 'قائمة مختصرة', tone: 'blue' },
-  INTERVIEW: { label: 'مقابلة', tone: 'blue' },
-  OFFERED: { label: 'عرض عمل', tone: 'ok' },
-  HIRED: { label: 'تم التعيين', tone: 'ok' },
-  REJECTED: { label: 'مرفوض', tone: 'red' },
-  WITHDRAWN: { label: 'مسحوب', tone: 'muted' },
-};
-const EMPLOYMENT_STATUS: Record<string, { label: string; tone: string }> = {
-  ACTIVE: { label: 'نشط', tone: 'ok' },
-  PAUSED: { label: 'موقوف', tone: 'amber' },
-  ENDED: { label: 'منتهي', tone: 'muted' },
-};
-const LOG_STATUS: Record<string, { label: string; tone: string }> = {
-  SUBMITTED: { label: 'بانتظار المراجعة', tone: 'amber' },
-  APPROVED: { label: 'معتمد', tone: 'ok' },
-  REJECTED: { label: 'مرفوض', tone: 'red' },
-};
-const money = (v: any, c?: string | null) => `${Number(v || 0).toLocaleString('en')} ${c || 'USD'}`;
-const fdate = (s: string) => { try { return new Date(s).toLocaleDateString('en-GB'); } catch { return ''; } };
+// ثوابت وخرايط التوظيف موحّدة في: lib/employment.ts
 
 const EM_CSS = `
 .em-wrap{max-width:1000px;margin:0 auto;width:100%;padding:26px 20px 90px;}
