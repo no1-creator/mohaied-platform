@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 import { api } from '@/lib/api';
 import Icon from '@/components/Icon';
+import { useI18n } from '@/lib/i18n';
 
 type Supervisor = {
   id: string;
@@ -22,6 +23,7 @@ type Supervisor = {
 };
 
 export default function AdminSupervisorsPage() {
+  const { tr } = useI18n();
   const [items, setItems] = useState<Supervisor[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -52,13 +54,13 @@ export default function AdminSupervisorsPage() {
   }
 
   return (
-    <AdminShell active="supervisors" title="المشرفون">
+    <AdminShell active="supervisors" title={tr('ash.nav.supervisors', 'المشرفون')}>
       {loading ? (
-        <div className="ad-loading">جاري التحميل...</div>
+        <div className="ad-loading">{tr('cls.loading', 'جاري التحميل...')}</div>
       ) : error ? (
         <div className="ad-error">{error}</div>
       ) : items.length === 0 ? (
-        <div className="ad-empty">مفيش مشرفين مسجّلين لسه.</div>
+        <div className="ad-empty">{tr('asp.empty', 'مفيش مشرفين مسجّلين لسه.')}</div>
       ) : (
         <div className="ad-cards">
           {items.map((s) => (
@@ -70,31 +72,31 @@ export default function AdminSupervisorsPage() {
                 <div>
                   <div className="ad-sup-name">{s.fullName}</div>
                   <div className="ad-sup-title">
-                    {s.supervisorProfile?.title || 'مشرف متخصص'}
+                    {s.supervisorProfile?.title || tr('auth.role.SUPERVISOR', 'مشرف متخصص')}
                   </div>
                 </div>
                 <span className={`ad-badge ${s.isVerified ? 'ok' : 'muted'}`}>
-                  {s.isVerified ? 'موثّق' : 'غير موثّق'}
+                  {s.isVerified ? tr('adu.verified', 'موثّق') : tr('adu.unverified', 'غير موثّق')}
                 </span>
               </div>
 
               <ul className="ad-sup-meta">
                 <li>
-                  <span>المجال</span>
+                  <span>{tr('co.th.field', 'المجال')}</span>
                   <b>{s.supervisorProfile?.field || '—'}</b>
                 </li>
                 <li>
-                  <span>سنوات الخبرة</span>
+                  <span>{tr('asp.years', 'سنوات الخبرة')}</span>
                   <b>{s.supervisorProfile?.yearsExp ?? 0}</b>
                 </li>
                 <li>
-                  <span>التقييم</span>
+                  <span>{tr('asp.rating', 'التقييم')}</span>
                   <b style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                     <Icon name="star" size={14} /> {s.supervisorProfile?.rating ?? 0}
                   </b>
                 </li>
                 <li>
-                  <span>مهام الإشراف</span>
+                  <span>{tr('asp.assignments', 'مهام الإشراف')}</span>
                   <b>{s._count.supervisorAssignments}</b>
                 </li>
               </ul>
@@ -104,7 +106,7 @@ export default function AdminSupervisorsPage() {
                 onClick={() => toggleVerify(s)}
                 disabled={busy === s.id}
               >
-                {s.isVerified ? 'إلغاء الاعتماد' : 'اعتماد المشرف'}
+                {s.isVerified ? tr('asp.revoke', 'إلغاء الاعتماد') : tr('asp.approve', 'اعتماد المشرف')}
               </button>
             </div>
           ))}
