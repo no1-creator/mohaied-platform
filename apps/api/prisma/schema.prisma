@@ -1092,3 +1092,146 @@ model InvestmentInterest {
   @@index([opportunityId])
   @@index([investorId])
 }
+// ==================== REMOTE EMPLOYMENT (التوظيف الخليجي عن بُعد) ====================
+
+enum EmploymentType {
+  FULL_TIME   // دوام كامل
+  PART_TIME   // دوام جزئي
+  CONTRACT    // عقد مؤقت
+}
+
+enum WorkMode {
+  ONSITE   // من مكتب محايد
+  REMOTE   // عن بُعد
+  HYBRID   // مختلط
+}
+
+enum RemoteJobStatus {
+  OPEN
+  PAUSED
+  CLOSED
+  FILLED
+}
+
+enum JobApplicationStatus {
+  SUBMITTED
+  SHORTLISTED
+  INTERVIEW
+  OFFERED
+  HIRED
+  REJECTED
+  WITHDRAWN
+}
+
+enum EmploymentStatus {
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+enum WorkLogStatus {
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+model Office {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  city        String
+  address     String?
+  capacity    Int?
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([city])
+  @@index([active])
+}
+
+model RemoteJob {
+  id             String          @id @default(uuid())
+  code           String          @unique
+  employerId     String
+  title          String
+  description    String
+  skills         String?
+  seniority      String?
+  employmentType EmploymentType  @default(FULL_TIME)
+  workMode       WorkMode        @default(REMOTE)
+  monthlySalary  Decimal
+  currency       String?         @default("USD")
+  headcount      Int             @default(1)
+  location       String?
+  officeId       String?
+  status         RemoteJobStatus @default(OPEN)
+  featured       Boolean         @default(false)
+  adminNote      String?
+  viewsCount     Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([employerId])
+  @@index([status])
+  @@index([workMode])
+}
+
+model JobApplication {
+  id             String               @id @default(uuid())
+  jobId          String
+  employeeId     String
+  coverLetter    String?
+  expectedSalary Decimal?
+  cvUrl          String?
+  status         JobApplicationStatus @default(SUBMITTED)
+  employerNote   String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@unique([jobId, employeeId])
+  @@index([jobId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+model Employment {
+  id            String           @id @default(uuid())
+  code          String           @unique
+  jobId         String?
+  employerId    String
+  employeeId    String
+  title         String
+  monthlySalary Decimal
+  currency      String?          @default("USD")
+  workMode      WorkMode         @default(REMOTE)
+  officeId      String?
+  startDate     DateTime         @default(now())
+  endDate       DateTime?
+  status        EmploymentStatus @default(ACTIVE)
+  notes         String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([employerId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+model WorkLog {
+  id           String        @id @default(uuid())
+  employmentId String
+  employeeId   String
+  date         DateTime      @default(now())
+  hours        Float?
+  summary      String
+  status       WorkLogStatus @default(SUBMITTED)
+  employerNote String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([employmentId])
+  @@index([employeeId])
+  @@index([status])
+}
