@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 import { api } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 
 type Opt = {
   id: string;
@@ -14,9 +15,9 @@ type Opt = {
 };
 
 const GROUPS = [
-  { key: 'COMPLAINT_TYPE', label: 'أنواع النزاع' },
-  { key: 'DECISION_TYPE', label: 'أنواع القرار' },
-  { key: 'PROJECT_FIELD', label: 'التصنيفات / التخصصات' },
+  { key: 'COMPLAINT_TYPE', labelKey: 'aop.group.COMPLAINT_TYPE' },
+  { key: 'DECISION_TYPE', labelKey: 'aop.group.DECISION_TYPE' },
+  { key: 'PROJECT_FIELD', labelKey: 'aop.group.PROJECT_FIELD' },
 ];
 
 const OPT_CSS = `
@@ -27,6 +28,7 @@ const OPT_CSS = `
 `;
 
 export default function AdminOptionsPage() {
+  const { tr } = useI18n();
   const [group, setGroup] = useState(GROUPS[0].key);
   const [items, setItems] = useState<Opt[]>([]);
   const [newLabel, setNewLabel] = useState('');
@@ -84,7 +86,7 @@ export default function AdminOptionsPage() {
   }
 
   async function rename(o: Opt) {
-    const next = window.prompt('اكتب الاسم الجديد للخيار:', o.label);
+    const next = window.prompt(tr('aop.renamePrompt', 'اكتب الاسم الجديد للخيار:'), o.label);
     if (next == null || !next.trim() || next.trim() === o.label) return;
     setBusy(o.id);
     setError('');
@@ -101,7 +103,7 @@ export default function AdminOptionsPage() {
   }
 
   async function remove(o: Opt) {
-    if (!window.confirm(`متأكد إنك عايز تحذف «${o.label}»؟`)) return;
+    if (!window.confirm(`${tr('aop.confirmDelete.pre', 'متأكد إنك عايز تحذف «')}${o.label}${tr('aop.confirmDelete.post', '»؟')}`)) return;
     setBusy(o.id);
     setError('');
     try {
@@ -115,11 +117,11 @@ export default function AdminOptionsPage() {
   }
 
   return (
-    <AdminShell active="options" title="قوائم الخيارات">
+    <AdminShell active="options" title={tr('ash.nav.options', 'قوائم الخيارات')}>
       <style>{OPT_CSS}</style>
 
       <div className="op-hint">
-        من هنا بتتحكم في الخيارات اللي بتظهر في نماذج المنصة (زي أنواع النزاع). أي خيار تضيفه هنا هيظهر تلقائيًا في الفورم. الخيار الموقوف مش بيظهر للمستخدمين بس بيفضل محفوظ.
+        {tr('aop.hint', 'من هنا بتتحكم في الخيارات اللي بتظهر في نماذج المنصة (زي أنواع النزاع). أي خيار تضيفه هنا هيظهر تلقائيًا في الفورم. الخيار الموقوف مش بيظهر للمستخدمين بس بيفضل محفوظ.')}
       </div>
 
       <div className="ad-toolbar">
@@ -130,7 +132,7 @@ export default function AdminOptionsPage() {
               className={group === g.key ? 'active' : ''}
               onClick={() => setGroup(g.key)}
             >
-              {g.label}
+              {tr(g.labelKey)}
             </button>
           ))}
         </div>
@@ -140,7 +142,7 @@ export default function AdminOptionsPage() {
         <input
           value={newLabel}
           onChange={(e) => setNewLabel(e.target.value)}
-          placeholder="اكتب اسم خيار جديد وأضِفه…"
+          placeholder={tr('aop.addPh', 'اكتب اسم خيار جديد وأضِفه…')}
           onKeyDown={(e) => {
             if (e.key === 'Enter') add();
           }}
@@ -150,25 +152,25 @@ export default function AdminOptionsPage() {
           onClick={add}
           disabled={busy === 'add' || !newLabel.trim()}
         >
-          {busy === 'add' ? 'جاري الإضافة…' : 'إضافة خيار'}
+          {busy === 'add' ? tr('aop.adding', 'جاري الإضافة…') : tr('aop.addBtn', 'إضافة خيار')}
         </button>
       </div>
 
       {error && <div className="ad-error">{error}</div>}
 
       {loading ? (
-        <div className="ad-loading">جاري التحميل…</div>
+        <div className="ad-loading">{tr('cls.loading', 'جاري التحميل...')}</div>
       ) : items.length === 0 ? (
-        <div className="op-empty">مفيش خيارات في المجموعة دي لسه. ضيف أول خيار من فوق.</div>
+        <div className="op-empty">{tr('aop.empty', 'مفيش خيارات في المجموعة دي لسه. ضيف أول خيار من فوق.')}</div>
       ) : (
         <div className="ad-table-wrap">
           <table className="ad-table">
             <thead>
               <tr>
-                <th>الاسم</th>
-                <th>الكود</th>
-                <th>الحالة</th>
-                <th>إجراءات</th>
+                <th>{tr('adu.th.name', 'الاسم')}</th>
+                <th>{tr('acx.th.code', 'الكود')}</th>
+                <th>{tr('co.th.status', 'الحالة')}</th>
+                <th>{tr('apl.th.actions', 'إجراءات')}</th>
               </tr>
             </thead>
             <tbody>
@@ -178,7 +180,7 @@ export default function AdminOptionsPage() {
                   <td className="ad-mono">{o.value}</td>
                   <td>
                     <span className={`ad-badge ${o.isActive ? 'ok' : 'muted'}`}>
-                      {o.isActive ? 'مفعّل' : 'موقوف'}
+                      {o.isActive ? tr('aop.active', 'مفعّل') : tr('aop.stopped', 'موقوف')}
                     </span>
                   </td>
                   <td>
@@ -188,21 +190,21 @@ export default function AdminOptionsPage() {
                         onClick={() => rename(o)}
                         disabled={busy === o.id}
                       >
-                        تعديل
+                        {tr('apl.edit', 'تعديل')}
                       </button>
                       <button
                         className="ad-btn-mini"
                         onClick={() => toggle(o)}
                         disabled={busy === o.id}
                       >
-                        {o.isActive ? 'إيقاف' : 'تفعيل'}
+                        {o.isActive ? tr('aop.disable', 'إيقاف') : tr('aop.enable', 'تفعيل')}
                       </button>
                       <button
                         className="ad-btn-mini danger"
                         onClick={() => remove(o)}
                         disabled={busy === o.id}
                       >
-                        حذف
+                        {tr('apl.delete', 'حذف')}
                       </button>
                     </div>
                   </td>
