@@ -484,5 +484,18 @@ export const en: Record<string, string> = {
 'adu.close': 'Close',
 'adu.send': 'Send',
 'adu.sending': 'Sending...',
-  
+
+// ===== Admin: projects =====
+'adp.status.DRAFT': 'Draft',
+'adp.status.OPEN': 'Open',
+'adp.status.IN_AGREEMENT': 'In agreement',
+'adp.status.IN_PROGRESS': 'In progress',
+'adp.status.COMPLETED': 'Completed',
+'adp.status.DISPUTED': 'Disputed',
+'adp.status.CANCELLED': 'Cancelled',
+'adp.empty': 'No projects yet.',
+'adp.th.client': 'Client',
+'adp.th.provider': 'Provider',
+'adp.th.offers': 'Offers',
+'adp.th.complaints': 'Complaints',  
 };
