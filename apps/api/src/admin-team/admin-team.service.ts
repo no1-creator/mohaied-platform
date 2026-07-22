@@ -20,7 +20,10 @@ export const ADMIN_SECTIONS = [
   { key: 'recommendations', label: 'طلبات الترشيح' },
   { key: 'invitations', label: 'دعوات خارجية' },
   { key: 'kyc', label: 'توثيق الهوية' },
-  { key: 'audit', label: 'سجل التدقيق' },
+{ key: 'legal', label: 'الطلبات القانونية' },
+{ key: 'invest', label: 'الاستثمار' },
+{ key: 'employment', label: 'التوظيف الخليجي' },
+{ key: 'audit', label: 'سجل التدقيق' },
 ];
 
 @Injectable()
