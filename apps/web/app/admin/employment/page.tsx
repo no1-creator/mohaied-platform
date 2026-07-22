@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import AdminShell from '@/components/AdminShell';
+import { WORK_MODE, JOB_STATUS, money } from '@/lib/employment';
 
 type Office = {
   id: string; code: string; name: string; city: string; address?: string | null;
@@ -16,15 +17,8 @@ type Job = {
   office?: { name: string; city: string } | null;
 };
 
-const WORK_MODE: Record<string, string> = { ONSITE: 'من مكتب محايد', REMOTE: 'عن بُعد', HYBRID: 'مختلط' };
-const JOB_STATUS: Record<string, { label: string; tone: string }> = {
-  OPEN: { label: 'مفتوحة', tone: 'ok' },
-  PAUSED: { label: 'موقوفة', tone: 'amber' },
-  CLOSED: { label: 'مغلقة', tone: 'muted' },
-  FILLED: { label: 'مكتملة', tone: 'blue' },
-};
+// خرايط الحالات و money موحّدة في: lib/employment.ts
 const JOB_STATUSES = ['OPEN', 'PAUSED', 'CLOSED', 'FILLED'];
-const money = (v: any, c?: string | null) => `${Number(v || 0).toLocaleString('en')} ${c || 'USD'}`;
 
 const AEM_CSS = `
 .aem-tabs{display:flex;gap:6px;background:#fff;border:1px solid var(--line);padding:5px;border-radius:12px;width:fit-content;margin-bottom:16px;flex-wrap:wrap;}
