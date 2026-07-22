@@ -18,6 +18,7 @@ enum UserRole {
   SUPERVISOR
   ADMIN
   LEGAL_CONSULTANT
+  INVESTOR
 }
 
 enum ProviderType {
@@ -1019,4 +1020,73 @@ model LegalRequest {
   @@index([clientId])
   @@index([status])
   @@index([category])
+}
+// ==================== INVESTMENT PORTAL (بوابة الاستثمار) ====================
+
+enum InvestmentStage {
+  IDEA        // فكرة
+  PROTOTYPE   // نموذج أولي
+  MVP         // منتج أولي قابل للتشغيل
+  REVENUE     // بيحقق إيرادات
+  SCALING     // مرحلة التوسّع
+}
+
+enum InvestmentStatus {
+  OPEN        // مطروح للتمويل
+  IN_TALKS    // في مرحلة تفاوض
+  FUNDED      // تم تمويله
+  CLOSED      // مغلق
+  REJECTED    // مرفوض من الإدارة
+}
+
+enum InvestmentInterestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  WITHDRAWN
+}
+
+model InvestmentOpportunity {
+  id            String           @id @default(uuid())
+  code          String           @unique
+  founderId     String
+  title         String
+  summary       String
+  description   String
+  sector        String
+  stage         InvestmentStage  @default(IDEA)
+  amountSought  Decimal
+  currency      String?          @default("EGP")
+  equityOffered Float?
+  useOfFunds    String?
+  location      String?
+  website       String?
+  pitchDeckUrl  String?
+  coverImage    String?
+  status        InvestmentStatus @default(OPEN)
+  featured      Boolean          @default(false)
+  adminNote     String?
+  viewsCount    Int              @default(0)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([founderId])
+  @@index([status])
+  @@index([sector])
+}
+
+model InvestmentInterest {
+  id            String                   @id @default(uuid())
+  opportunityId String
+  investorId    String
+  amountOffered Decimal?
+  message       String?
+  status        InvestmentInterestStatus @default(PENDING)
+  founderNote   String?
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+
+  @@unique([opportunityId, investorId])
+  @@index([opportunityId])
+  @@index([investorId])
 }
