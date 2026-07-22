@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, getToken, clearToken } from '@/lib/api';
 import Icon from '@/components/Icon';
+import { useI18n } from '@/lib/i18n';
 
 type Me = {
   fullName: string;
@@ -21,25 +22,25 @@ const LOGO = (
 );
 
 const NAV = [
-  { key: 'overview', href: '/admin', label: 'نظرة عامة', icon: 'grid' },
-  { key: 'users', href: '/admin/users', label: 'المستخدمون', icon: 'users' },
-  { key: 'notifications', href: '/admin/notifications', label: 'سجل الإشعارات', icon: 'clock' },
-  { key: 'projects', href: '/admin/projects', label: 'المشاريع', icon: 'folder' },
-  { key: 'supervisors', href: '/admin/supervisors', label: 'المشرفون', icon: 'shield' },
-  { key: 'complaints', href: '/admin/complaints', label: 'الشكاوى', icon: 'scale' },
-  { key: 'plans', href: '/admin/plans', label: 'الباقات والعمولة', icon: 'creditCard' },
-  { key: 'options', href: '/admin/options', label: 'قوائم الخيارات', icon: 'grid' },
-  { key: 'content', href: '/admin/content', label: 'نصوص الواجهات', icon: 'fileText' },
-  { key: 'media', href: '/admin/media', label: 'مكتبة الوسائط', icon: 'palette' },
-  { key: 'ads', href: '/admin/ads', label: 'الإعلانات', icon: 'star' },
-  { key: 'recommendations', href: '/admin/recommendations', label: 'طلبات الترشيح', icon: 'sparkles' },
-  { key: 'invitations', href: '/admin/invitations', label: 'دعوات خارجية', icon: 'users' },
-{ key: 'kyc', href: '/admin/kyc', label: 'توثيق الهوية', icon: 'badgeCheck' },
-{ key: 'legal', href: '/admin/legal', label: 'الطلبات القانونية', icon: 'landmark' },
-{ key: 'invest', href: '/admin/invest', label: 'بوابة الاستثمار', icon: 'rocket' },
-{ key: 'employment', href: '/admin/employment', label: 'التوظيف الخليجي', icon: 'briefcase' },
-{ key: 'audit', href: '/admin/audit', label: 'سجل التدقيق', icon: 'eye' },
-  { key: 'team', href: '/admin/team', label: 'صلاحيات الفريق', icon: 'lock' },
+  { key: 'overview', href: '/admin', label: 'co.title', icon: 'grid' },
+  { key: 'users', href: '/admin/users', label: 'ash.nav.users', icon: 'users' },
+  { key: 'notifications', href: '/admin/notifications', label: 'ash.nav.notifications', icon: 'clock' },
+  { key: 'projects', href: '/admin/projects', label: 'ash.nav.projects', icon: 'folder' },
+  { key: 'supervisors', href: '/admin/supervisors', label: 'ash.nav.supervisors', icon: 'shield' },
+  { key: 'complaints', href: '/admin/complaints', label: 'ash.nav.complaints', icon: 'scale' },
+  { key: 'plans', href: '/admin/plans', label: 'ash.nav.plans', icon: 'creditCard' },
+  { key: 'options', href: '/admin/options', label: 'ash.nav.options', icon: 'grid' },
+  { key: 'content', href: '/admin/content', label: 'ash.nav.content', icon: 'fileText' },
+  { key: 'media', href: '/admin/media', label: 'ash.nav.media', icon: 'palette' },
+  { key: 'ads', href: '/admin/ads', label: 'pvs.nav.ads', icon: 'star' },
+  { key: 'recommendations', href: '/admin/recommendations', label: 'ash.nav.recommendations', icon: 'sparkles' },
+  { key: 'invitations', href: '/admin/invitations', label: 'ash.nav.invitations', icon: 'users' },
+  { key: 'kyc', href: '/admin/kyc', label: 'pvs.nav.kyc', icon: 'badgeCheck' },
+  { key: 'legal', href: '/admin/legal', label: 'ash.nav.legal', icon: 'landmark' },
+  { key: 'invest', href: '/admin/invest', label: 'ash.nav.invest', icon: 'rocket' },
+  { key: 'employment', href: '/admin/employment', label: 'ash.nav.employment', icon: 'briefcase' },
+  { key: 'audit', href: '/admin/audit', label: 'ash.nav.audit', icon: 'eye' },
+  { key: 'team', href: '/admin/team', label: 'ash.nav.team', icon: 'lock' },
 ];
 
 function parseScopes(s?: string | null): string[] | null {
@@ -74,6 +75,7 @@ export default function AdminShell({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const { tr } = useI18n();
   const [me, setMe] = useState<Me | null>(null);
   const [state, setState] = useState<'loading' | 'ok' | 'denied'>('loading');
 
@@ -103,7 +105,7 @@ export default function AdminShell({
     return (
       <div className="ad-boot">
         <style>{ADMIN_CSS}</style>
-        جاري التحميل...
+        {tr('cls.loading', 'جاري التحميل...')}
       </div>
     );
   }
@@ -116,9 +118,9 @@ export default function AdminShell({
           <div style={{ color: 'var(--green-dark)', marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
             <Icon name="lock" size={40} />
           </div>
-          <p>الصفحة دي متاحة للأدمن بس.</p>
+          <p>{tr('ash.denied', 'الصفحة دي متاحة للأدمن بس.')}</p>
           <button className="ad-btn" onClick={() => router.push('/dashboard')}>
-            رجوع للوحة
+            {tr('ash.backToDash', 'رجوع للوحة')}
           </button>
         </div>
       </div>
@@ -136,7 +138,7 @@ export default function AdminShell({
           <div className="ad-brand-logo">{LOGO}</div>
           <div>
             <div className="ad-brand-name">محايد</div>
-            <div className="ad-brand-sub">لوحة التحكم</div>
+            <div className="ad-brand-sub">{tr('ash.panel', 'لوحة التحكم')}</div>
           </div>
         </div>
 
@@ -146,14 +148,14 @@ export default function AdminShell({
               <span className="ad-nav-icon">
                 <Icon name={n.icon} size={18} />
               </span>
-              {n.label}
+              {tr(n.label)}
             </Link>
           ))}
         </nav>
 
         <div className="ad-sidebar-foot">
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            <Icon name="landmark" size={14} /> تحت إشراف الحكومة المصرية
+            <Icon name="landmark" size={14} /> {tr('auth.point.gov', 'تحت إشراف الحكومة المصرية')}
           </span>
         </div>
       </aside>
@@ -164,7 +166,7 @@ export default function AdminShell({
           <div className="ad-user">
             <span>{me?.fullName}</span>
             <button className="ad-logout" onClick={logout}>
-              خروج
+              {tr('tb.logout', 'خروج')}
             </button>
           </div>
         </div>
@@ -175,7 +177,7 @@ export default function AdminShell({
 }
 
 const ADMIN_CSS = `
-.ad-shell{display:flex;min-height:100vh;background:#f2f6f4;direction:rtl;font-family:'Noto Sans Arabic',sans-serif;}
+.ad-shell{display:flex;min-height:100vh;background:#f2f6f4;font-family:'Noto Sans Arabic',sans-serif;}
 .ad-boot{min-height:100vh;display:flex;align-items:center;justify-content:center;color:#70807b;background:#f2f6f4;font-family:'Noto Sans Arabic',sans-serif;}
 
 .ad-sidebar{width:260px;flex-shrink:0;background:linear-gradient(180deg,#216c63,#184f48);color:#fff;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;}
