@@ -506,4 +506,23 @@ export const ar: Record<string, string> = {
 'asp.assignments': 'مهام الإشراف',
 'asp.approve': 'اعتماد المشرف',
 'asp.revoke': 'إلغاء الاعتماد',
+
+// ===== الأدمن: الشكاوى =====
+'acx.title': 'الشكاوى والنزاعات',
+'acx.empty': 'مفيش شكاوى حاليًا.',
+'acx.th.code': 'الكود',
+'acx.th.type': 'النوع',
+'acx.open': 'فتح الملف',
+'acx.type.DELIVERY_DELAY': 'تأخير في التسليم',
+'acx.type.AGREEMENT_VIOLATION': 'مخالفة للاتفاق',
+'acx.type.PAYMENT_ISSUE': 'مشكلة في الدفع',
+'acx.type.UNPROFESSIONAL': 'سلوك غير مهني',
+'acx.type.OTHER': 'نوع آخر',
+'acx.status.OPEN': 'مفتوحة',
+'acx.status.AWAITING_RESPONSE': 'بانتظار الرد',
+'acx.status.UNDER_REVIEW': 'قيد المراجعة',
+'acx.status.IN_ARBITRATION': 'في التحكيم',
+'acx.status.RESOLVED': 'تم الحل',
+'acx.status.REJECTED': 'مرفوضة',
+'acx.status.CLOSED': 'مغلقة',
 };
