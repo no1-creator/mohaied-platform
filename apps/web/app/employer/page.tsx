@@ -402,4 +402,17 @@ export default function EmployerPage() {
                               <button className="em-mini danger" onClick={() => reviewLog(c.id, l.id, 'REJECTED')}>رفض</button>
                             </div>
                           )}
-                          {l.employer
+                          {l.employerNote && <div className="em-note"><b>ملاحظتك:</b> {l.employerNote}</div>}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
