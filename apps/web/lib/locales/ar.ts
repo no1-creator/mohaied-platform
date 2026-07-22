@@ -379,4 +379,16 @@ export const ar: Record<string, string> = {
 'pw.status.accepted': 'مقبول',
 'pw.status.rejected': 'مرفوض',
 'pw.status.withdrawn': 'مسحوب',
+
+// ===== شِل مقدم الخدمة =====
+'pvs.env': 'بيئة العمل',
+'pvs.redirecting': 'جاري التحويل...',
+'pvs.verified': 'موثّق',
+'pvs.nav.browse': 'تصفّح المشاريع',
+'pvs.nav.reports': 'التقارير',
+'pvs.nav.plan': 'الاشتراك والباقة',
+'pvs.nav.analytics': 'التحليلات',
+'pvs.nav.ads': 'الإعلانات',
+'pvs.nav.kyc': 'توثيق الهوية',
+'pvs.nav.settings': 'إعدادات النشاط',
 };
