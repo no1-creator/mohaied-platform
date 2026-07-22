@@ -37,7 +37,8 @@ const NAV = [
 { key: 'kyc', href: '/admin/kyc', label: 'توثيق الهوية', icon: 'badgeCheck' },
 { key: 'legal', href: '/admin/legal', label: 'الطلبات القانونية', icon: 'landmark' },
 { key: 'invest', href: '/admin/invest', label: 'بوابة الاستثمار', icon: 'rocket' },
-  { key: 'audit', href: '/admin/audit', label: 'سجل التدقيق', icon: 'eye' },
+{ key: 'employment', href: '/admin/employment', label: 'التوظيف الخليجي', icon: 'briefcase' },
+{ key: 'audit', href: '/admin/audit', label: 'سجل التدقيق', icon: 'eye' },
   { key: 'team', href: '/admin/team', label: 'صلاحيات الفريق', icon: 'lock' },
 ];
 
