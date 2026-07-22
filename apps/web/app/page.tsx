@@ -132,6 +132,7 @@ const { tr } = useI18n();
 <a href="#gov">الإشراف الحكومي</a>
           </nav>
           <div className="nav-actions">
+          <LangSwitch />
             <Link href="/login" className="nav-login">تسجيل الدخول</Link>
             <Link href="/register" className="nav-cta">ابدأ الآن</Link>
           </div>
@@ -145,14 +146,14 @@ const { tr } = useI18n();
         <div className="hero-inner">
           <div className="hero-text">
             <span className="hero-badge">منصة تعمل تحت إشراف الحكومة المصرية</span>
-            <h1>نفّذ مشروعك بثقة، وحقوقك محفوظة من الأول للآخر</h1>
+{tr('landing.hero.title', 'نفّذ مشروعك بثقة، وحقوقك محفوظة من الأول للآخر')}
             <p>
               محايد منصة مستقلة تربط العميل بالمهندس أو الشركة داخل بيئة موثّقة:
               اتفاق واضح، متابعة بالمراحل، وإشراف متخصص يحمي كل الأطراف ويحل النزاعات بعدالة.
             </p>
             <div className="hero-buttons">
-              <Link href="/register" className="lp-btn-primary">ابدأ مشروعك</Link>
-              <a href="#how" className="lp-btn-ghost">اعرف كيف تعمل</a>
+{tr('landing.hero.cta1', 'ابدأ مشروعك')}
+{tr('landing.hero.cta2', 'اعرف كيف تعمل')}
             </div>
             <div className="hero-stats">
               <div><b>100%</b><span>توثيق للاتفاقات</span></div>
