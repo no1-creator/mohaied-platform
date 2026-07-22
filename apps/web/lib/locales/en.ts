@@ -379,4 +379,16 @@ export const en: Record<string, string> = {
 'pw.status.accepted': 'Accepted',
 'pw.status.rejected': 'Rejected',
 'pw.status.withdrawn': 'Withdrawn',
+
+// ===== Provider shell =====
+'pvs.env': 'Workspace',
+'pvs.redirecting': 'Redirecting...',
+'pvs.verified': 'Verified',
+'pvs.nav.browse': 'Browse projects',
+'pvs.nav.reports': 'Reports',
+'pvs.nav.plan': 'Subscription & plan',
+'pvs.nav.analytics': 'Analytics',
+'pvs.nav.ads': 'Ads',
+'pvs.nav.kyc': 'Identity verification',
+'pvs.nav.settings': 'Business settings',
 };
