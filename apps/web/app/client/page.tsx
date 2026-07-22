@@ -5,6 +5,7 @@ import Link from 'next/link';
 import ClientShell from '@/components/ClientShell';
 import Icon from '@/components/Icon';
 import { api } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 
 type Me = { fullName: string; role: string; isVerified?: boolean };
 type Project = {
@@ -16,11 +17,11 @@ type Project = {
 };
 
 const STATUS_LABEL: Record<string, string> = {
-  OPEN: 'مفتوح',
-  IN_PROGRESS: 'قيد التنفيذ',
-  DISPUTED: 'نزاع',
-  COMPLETED: 'مكتمل',
-  CANCELLED: 'ملغي',
+  OPEN: 'co.status.OPEN',
+  IN_PROGRESS: 'co.status.IN_PROGRESS',
+  DISPUTED: 'co.status.DISPUTED',
+  COMPLETED: 'co.status.COMPLETED',
+  CANCELLED: 'co.status.CANCELLED',
 };
 
 const STATUS_TONE: Record<string, string> = {
@@ -32,15 +33,15 @@ const STATUS_TONE: Record<string, string> = {
 };
 
 const ACTIONS = [
-  { href: '/projects/start', icon: 'plus', title: 'مشروع جديد', desc: 'ابدأ مشروع واطلب مقدّم خدمة موثوق' },
-  { href: '/projects', icon: 'folder', title: 'مشاريعي', desc: 'تابع كل مشاريعك الحالية والسابقة' },
-  { href: '/complaints/mine', icon: 'scale', title: 'شكاويّ ونزاعاتي', desc: 'قدّم شكوى أو تابع نزاع قائم' },
-  { href: '/profile', icon: 'user', title: 'ملفي الشخصي', desc: 'عدّل بياناتك ووثّق حسابك' },
+  { href: '/projects/start', icon: 'plus', title: 'co.action.new.t', desc: 'co.action.new.d' },
+  { href: '/projects', icon: 'folder', title: 'co.action.projects.t', desc: 'co.action.projects.d' },
+  { href: '/complaints/mine', icon: 'scale', title: 'co.action.complaints.t', desc: 'co.action.complaints.d' },
+  { href: '/profile', icon: 'user', title: 'co.action.profile.t', desc: 'co.action.profile.d' },
 ];
 
-function fmtDate(s: string) {
+function fmtDate(s: string, locale: string) {
   try {
-    return new Date(s).toLocaleDateString('ar-EG', {
+    return new Date(s).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -51,6 +52,7 @@ function fmtDate(s: string) {
 }
 
 export default function ClientOverviewPage() {
+  const { tr, lang } = useI18n();
   const [me, setMe] = useState<Me | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [state, setState] = useState<'loading' | 'ok' | 'error'>('loading');
@@ -65,6 +67,8 @@ export default function ClientOverviewPage() {
       .catch(() => setState('error'));
   }, []);
 
+  const dateLocale = lang === 'en' ? 'en-US' : 'ar-EG';
+
   const total = projects.length;
   const inProgress = projects.filter((p) => p.status === 'IN_PROGRESS').length;
   const completed = projects.filter((p) => p.status === 'COMPLETED').length;
@@ -75,19 +79,19 @@ export default function ClientOverviewPage() {
     .slice(0, 5);
 
   const STATS = [
-    { label: 'إجمالي المشاريع', value: total, icon: 'folder', tone: '' },
-    { label: 'قيد التنفيذ', value: inProgress, icon: 'clock', tone: 'amber' },
-    { label: 'مكتملة', value: completed, icon: 'badgeCheck', tone: 'ok' },
-    { label: 'نزاعات', value: disputed, icon: 'scale', tone: 'red' },
+    { label: tr('co.stat.total', 'إجمالي المشاريع'), value: total, icon: 'folder', tone: '' },
+    { label: tr('co.stat.inProgress', 'قيد التنفيذ'), value: inProgress, icon: 'clock', tone: 'amber' },
+    { label: tr('co.stat.completed', 'مكتملة'), value: completed, icon: 'badgeCheck', tone: 'ok' },
+    { label: tr('co.stat.disputed', 'نزاعات'), value: disputed, icon: 'scale', tone: 'red' },
   ];
 
   return (
-    <ClientShell active="overview" title="نظرة عامة">
+    <ClientShell active="overview" title={tr('co.title', 'نظرة عامة')}>
       <style>{CO_CSS}</style>
 
-      {state === 'loading' && <div className="co-boot">جاري تحميل لوحتك...</div>}
+      {state === 'loading' && <div className="co-boot">{tr('co.loading', 'جاري تحميل لوحتك...')}</div>}
       {state === 'error' && (
-        <div className="co-boot">حصل خطأ في تحميل البيانات. حدّث الصفحة وحاول تاني.</div>
+        <div className="co-boot">{tr('co.error', 'حصل خطأ في تحميل البيانات. حدّث الصفحة وحاول تاني.')}</div>
       )}
 
       {state === 'ok' && (
@@ -95,18 +99,18 @@ export default function ClientOverviewPage() {
           {/* هيرو ترحيبي */}
           <div className="co-hero">
             <div>
-              <div className="co-hello">أهلاً، {me?.fullName || 'عميلنا العزيز'} 👋</div>
+              <div className="co-hello">{tr('co.hello', 'أهلاً،')} {me?.fullName || tr('co.dearClient', 'عميلنا العزيز')} 👋</div>
               <p className="co-hero-sub">
-                من هنا تقدر تبدأ مشروع جديد، تتابع مشاريعك، وتدير نزاعاتك — كل ده تحت إشراف محايد.
+                {tr('co.heroSub', 'من هنا تقدر تبدأ مشروع جديد، تتابع مشاريعك، وتدير نزاعاتك — كل ده تحت إشراف محايد.')}
               </p>
               {me && !me.isVerified && (
                 <div className="co-verify">
-                  <Icon name="badgeCheck" size={16} /> حسابك لسه غير موثّق — وثّقه عشان تزيد ثقة مقدمي الخدمة فيك.
+                  <Icon name="badgeCheck" size={16} /> {tr('co.verify', 'حسابك لسه غير موثّق — وثّقه عشان تزيد ثقة مقدمي الخدمة فيك.')}
                 </div>
               )}
             </div>
             <Link href="/projects/start" className="co-hero-cta">
-              <Icon name="plus" size={18} /> مشروع جديد
+              <Icon name="plus" size={18} /> {tr('co.action.new.t', 'مشروع جديد')}
             </Link>
           </div>
 
@@ -132,8 +136,8 @@ export default function ClientOverviewPage() {
                 <div className="co-action-icon">
                   <Icon name={a.icon} size={22} />
                 </div>
-                <div className="co-action-title">{a.title}</div>
-                <div className="co-action-desc">{a.desc}</div>
+                <div className="co-action-title">{tr(a.title)}</div>
+                <div className="co-action-desc">{tr(a.desc)}</div>
               </Link>
             ))}
           </div>
@@ -141,18 +145,18 @@ export default function ClientOverviewPage() {
           {/* آخر المشاريع */}
           <div className="co-panel">
             <div className="co-panel-head">
-              <h2>آخر مشاريعك</h2>
+              <h2>{tr('co.recentTitle', 'آخر مشاريعك')}</h2>
               <Link href="/projects" className="co-link">
-                عرض الكل
+                {tr('co.viewAll', 'عرض الكل')}
               </Link>
             </div>
 
             {recent.length === 0 ? (
               <div className="co-empty">
                 <Icon name="folder" size={34} />
-                <p>لسه مبدأتش أي مشروع.</p>
+                <p>{tr('co.emptyText', 'لسه مبدأتش أي مشروع.')}</p>
                 <Link href="/projects/start" className="co-empty-cta">
-                  ابدأ أول مشروع
+                  {tr('co.emptyCta', 'ابدأ أول مشروع')}
                 </Link>
               </div>
             ) : (
@@ -160,10 +164,10 @@ export default function ClientOverviewPage() {
                 <table className="co-table">
                   <thead>
                     <tr>
-                      <th>المشروع</th>
-                      <th>المجال</th>
-                      <th>الحالة</th>
-                      <th>التاريخ</th>
+                      <th>{tr('co.th.project', 'المشروع')}</th>
+                      <th>{tr('co.th.field', 'المجال')}</th>
+                      <th>{tr('co.th.status', 'الحالة')}</th>
+                      <th>{tr('co.th.date', 'التاريخ')}</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -174,13 +178,13 @@ export default function ClientOverviewPage() {
                         <td>{p.field || '—'}</td>
                         <td>
                           <span className={`co-badge tone-${STATUS_TONE[p.status] || 'muted'}`}>
-                            {STATUS_LABEL[p.status] || p.status}
+                            {STATUS_LABEL[p.status] ? tr(STATUS_LABEL[p.status]) : p.status}
                           </span>
                         </td>
-                        <td className="co-td-date">{fmtDate(p.createdAt)}</td>
+                        <td className="co-td-date">{fmtDate(p.createdAt, dateLocale)}</td>
                         <td>
                           <Link href={`/projects/${p.id}`} className="co-row-link">
-                            تفاصيل
+                            {tr('co.details', 'تفاصيل')}
                           </Link>
                         </td>
                       </tr>
