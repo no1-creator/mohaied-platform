@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { api, clearToken, getToken } from '@/lib/api';
 import NotificationBell from '@/components/NotificationBell';
 import LangSwitch from '@/components/LangSwitch';
+import { useI18n } from '@/lib/i18n';
+
 const LOGO = (
   <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
@@ -34,43 +36,43 @@ type Me = {
 };
 
 const NAV: Record<string, { href: string; label: string }[]> = {
-CLIENT: [
-  { href: '/dashboard', label: 'الرئيسية' },
-  { href: '/projects', label: 'مشاريعي' },
-  { href: '/projects/new', label: '+ مشروع جديد' },
-  { href: '/legal-services', label: 'الخدمات القانونية' },
-  { href: '/fundraise', label: 'تمويل مشروعك' },
-],
- PROVIDER: [
-  { href: '/dashboard', label: 'الرئيسية' },
-  { href: '/projects/open', label: 'مشاريع مفتوحة' },
-  { href: '/offers/mine', label: 'عروضي' },
-  { href: '/fundraise', label: 'تمويل مشروعك' },
-],
+  CLIENT: [
+    { href: '/dashboard', label: 'tb.nav.home' },
+    { href: '/projects', label: 'tb.nav.myProjects' },
+    { href: '/projects/new', label: 'tb.nav.newProject' },
+    { href: '/legal-services', label: 'tb.nav.legalServices' },
+    { href: '/fundraise', label: 'tb.nav.fundraise' },
+  ],
+  PROVIDER: [
+    { href: '/dashboard', label: 'tb.nav.home' },
+    { href: '/projects/open', label: 'tb.nav.openProjects' },
+    { href: '/offers/mine', label: 'tb.nav.myOffers' },
+    { href: '/fundraise', label: 'tb.nav.fundraise' },
+  ],
   SUPERVISOR: [
-    { href: '/dashboard', label: 'الرئيسية' },
-    { href: '/supervisor/assignments', label: 'تكليفاتي' },
+    { href: '/dashboard', label: 'tb.nav.home' },
+    { href: '/supervisor/assignments', label: 'tb.nav.assignments' },
   ],
-   ADMIN: [
-    { href: '/dashboard', label: 'الرئيسية' },
-    { href: '/admin', label: 'لوحة التحكم' },
+  ADMIN: [
+    { href: '/dashboard', label: 'tb.nav.home' },
+    { href: '/admin', label: 'tb.nav.adminPanel' },
   ],
-   LEGAL_CONSULTANT: [
-    { href: '/dashboard', label: 'الرئيسية' },
-    { href: '/legal/requests', label: 'طلباتي القانونية' },
-    { href: '/legal/setup', label: 'ملفي المهني' },
+  LEGAL_CONSULTANT: [
+    { href: '/dashboard', label: 'tb.nav.home' },
+    { href: '/legal/requests', label: 'tb.nav.legalRequests' },
+    { href: '/legal/setup', label: 'tb.nav.myProfile' },
   ],
-   INVESTOR: [
-    { href: '/dashboard', label: 'الرئيسية' },
-    { href: '/invest', label: 'فرص الاستثمار' },
+  INVESTOR: [
+    { href: '/dashboard', label: 'tb.nav.home' },
+    { href: '/invest', label: 'tb.nav.investOpps' },
   ],
   EMPLOYER: [
-    { href: '/dashboard', label: 'الرئيسية' },
-    { href: '/employer', label: 'وظائفي وفريقي' },
+    { href: '/dashboard', label: 'tb.nav.home' },
+    { href: '/employer', label: 'tb.nav.employerHub' },
   ],
   EMPLOYEE: [
-    { href: '/dashboard', label: 'الرئيسية' },
-    { href: '/jobs', label: 'وظائف عن بُعد' },
+    { href: '/dashboard', label: 'tb.nav.home' },
+    { href: '/jobs', label: 'tb.nav.remoteJobs' },
   ],
 };
 
@@ -105,13 +107,14 @@ const TB_CSS = `
 export default function TopBar({ name }: { name?: string }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { tr } = useI18n();
   const [me, setMe] = useState<Me>({ fullName: name });
 
   useEffect(() => {
     if (!getToken()) return;
     api<Me>('/users/me')
       .then((data) => {
-setMe({ fullName: data.fullName, role: data.role, avatarUrl: data.avatarUrl });
+        setMe({ fullName: data.fullName, role: data.role, avatarUrl: data.avatarUrl });
         // بوابة إكمال البروفايل: مقدم خدمة/مشرف لسه ملوش بروفايل → روح للفورم
         const needsProvider = data.role === 'PROVIDER' && !data.providerProfile;
         const needsSupervisor = data.role === 'SUPERVISOR' && !data.supervisorProfile;
@@ -135,12 +138,11 @@ setMe({ fullName: data.fullName, role: data.role, avatarUrl: data.avatarUrl });
       <style>{TB_CSS}</style>
       <div className="tb-inner">
         <div className="tb-start">
-    
           <Link href="/dashboard" className="tb-brand">
             <span className="tb-logo">{LOGO}</span>
             <span className="tb-brand-text">
               <span className="tb-brand-name">محايد</span>
-              <span className="tb-brand-sub">منصة حماية الحقوق</span>
+              <span className="tb-brand-sub">{tr('tb.brandSub', 'منصة حماية الحقوق')}</span>
             </span>
           </Link>
         </div>
@@ -152,29 +154,29 @@ setMe({ fullName: data.fullName, role: data.role, avatarUrl: data.avatarUrl });
               href={l.href}
               className={`tb-link ${pathname === l.href ? 'active' : ''}`}
             >
-              {l.label}
+              {tr(l.label)}
             </Link>
           ))}
         </nav>
 
         <div className="tb-end">
-<LangSwitch />
+          <LangSwitch />
           <NotificationBell />
-  <Link href="/profile" className="tb-profile">
-    <span className="tb-avatar">
-      {me.avatarUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={me.avatarUrl} alt="" />
-      ) : (
-        (displayName || '؟').charAt(0)
-      )}
-    </span>
-    {displayName && <span className="tb-user">{displayName}</span>}
-  </Link>
-  <button className="tb-logout" onClick={logout}>
-    خروج
-  </button>
-</div>
+          <Link href="/profile" className="tb-profile">
+            <span className="tb-avatar">
+              {me.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={me.avatarUrl} alt="" />
+              ) : (
+                (displayName || '؟').charAt(0)
+              )}
+            </span>
+            {displayName && <span className="tb-user">{displayName}</span>}
+          </Link>
+          <button className="tb-logout" onClick={logout}>
+            {tr('tb.logout', 'خروج')}
+          </button>
+        </div>
       </div>
     </header>
   );
