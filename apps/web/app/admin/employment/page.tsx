@@ -27,12 +27,12 @@ const JOB_STATUSES = ['OPEN', 'PAUSED', 'CLOSED', 'FILLED'];
 const money = (v: any, c?: string | null) => `${Number(v || 0).toLocaleString('en')} ${c || 'USD'}`;
 
 const AEM_CSS = `
-.aem-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
-.aem-tabs button{border:1px solid var(--line);background:#fff;padding:8px 16px;border-radius:9px;font-family:inherit;font-weight:700;font-size:13.5px;color:var(--muted);cursor:pointer;}
-.aem-tabs button.active{background:var(--green);color:#fff;border-color:var(--green);}
-.aem-panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:18px;}
+.aem-tabs{display:flex;gap:6px;background:#fff;border:1px solid var(--line);padding:5px;border-radius:12px;width:fit-content;margin-bottom:16px;flex-wrap:wrap;}
+.aem-tabs button{border:none;background:transparent;padding:9px 18px;border-radius:9px;font-family:inherit;font-weight:700;font-size:13.5px;color:var(--muted);cursor:pointer;}
+.aem-tabs button.active{background:var(--green);color:#fff;}
+.aem-panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px;box-shadow:0 10px 26px rgba(24,70,61,.04);}
 .aem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
-.aem-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;}
+.aem-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 26px rgba(24,70,61,.05);}
 .aem-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
 .aem-title{font-size:15px;font-weight:800;color:var(--ink);margin:0;}
 .aem-meta{font-size:12.5px;color:var(--muted);margin:0;}
@@ -42,7 +42,7 @@ const AEM_CSS = `
 .aem-area{min-height:70px;resize:vertical;line-height:1.6;}
 .aem-row{display:flex;gap:10px;flex-wrap:wrap;}
 .aem-row .aem-field{flex:1;min-width:120px;}
-.aem-btn{border:none;background:var(--green);color:#fff;padding:9px 16px;border-radius:9px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13.5px;}
+.aem-btn{border:none;background:var(--green);color:#fff;padding:11px 18px;border-radius:10px;font-weight:800;cursor:pointer;font-family:inherit;font-size:13.5px;}
 .aem-btn:disabled{opacity:.6;cursor:default;}
 .aem-mini{border:1px solid var(--line);background:#fff;color:var(--green-dark);padding:6px 12px;border-radius:8px;font-family:inherit;font-weight:700;font-size:12.5px;cursor:pointer;}
 .aem-mini:hover{background:var(--mint);}
