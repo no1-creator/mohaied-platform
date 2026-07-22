@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, clearToken, getToken } from '@/lib/api';
 import NotificationBell from '@/components/NotificationBell';
+import LangSwitch from '@/components/LangSwitch';
 const LOGO = (
   <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
@@ -157,7 +158,8 @@ setMe({ fullName: data.fullName, role: data.role, avatarUrl: data.avatarUrl });
         </nav>
 
         <div className="tb-end">
-  <NotificationBell />
+<LangSwitch />
+          <NotificationBell />
   <Link href="/profile" className="tb-profile">
     <span className="tb-avatar">
       {me.avatarUrl ? (
