@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 import { api } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 
 type Project = {
   id: string;
@@ -15,14 +16,14 @@ type Project = {
   _count: { offers: number; complaints: number; milestones: number };
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  DRAFT: 'مسودة',
-  OPEN: 'مفتوح',
-  IN_AGREEMENT: 'في الاتفاق',
-  IN_PROGRESS: 'جاري',
-  COMPLETED: 'مكتمل',
-  DISPUTED: 'متنازع',
-  CANCELLED: 'ملغي',
+const STATUS_LABEL_KEYS: Record<string, string> = {
+  DRAFT: 'adp.status.DRAFT',
+  OPEN: 'adp.status.OPEN',
+  IN_AGREEMENT: 'adp.status.IN_AGREEMENT',
+  IN_PROGRESS: 'adp.status.IN_PROGRESS',
+  COMPLETED: 'adp.status.COMPLETED',
+  DISPUTED: 'adp.status.DISPUTED',
+  CANCELLED: 'adp.status.CANCELLED',
 };
 
 const STATUS_TONE: Record<string, string> = {
@@ -36,6 +37,7 @@ const STATUS_TONE: Record<string, string> = {
 };
 
 export default function AdminProjectsPage() {
+  const { tr } = useI18n();
   const [items, setItems] = useState<Project[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -47,26 +49,28 @@ export default function AdminProjectsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const statusLabel = (s: string) => (STATUS_LABEL_KEYS[s] ? tr(STATUS_LABEL_KEYS[s]) : s);
+
   return (
-    <AdminShell active="projects" title="المشاريع">
+    <AdminShell active="projects" title={tr('ash.nav.projects', 'المشاريع')}>
       {loading ? (
-        <div className="ad-loading">جاري التحميل...</div>
+        <div className="ad-loading">{tr('cls.loading', 'جاري التحميل...')}</div>
       ) : error ? (
         <div className="ad-error">{error}</div>
       ) : items.length === 0 ? (
-        <div className="ad-empty">مفيش مشاريع لسه.</div>
+        <div className="ad-empty">{tr('adp.empty', 'مفيش مشاريع لسه.')}</div>
       ) : (
         <div className="ad-table-wrap">
           <table className="ad-table">
             <thead>
               <tr>
-                <th>المشروع</th>
-                <th>المجال</th>
-                <th>العميل</th>
-                <th>مقدم الخدمة</th>
-                <th>الحالة</th>
-                <th>عروض</th>
-                <th>شكاوى</th>
+                <th>{tr('co.th.project', 'المشروع')}</th>
+                <th>{tr('co.th.field', 'المجال')}</th>
+                <th>{tr('adp.th.client', 'العميل')}</th>
+                <th>{tr('adp.th.provider', 'مقدم الخدمة')}</th>
+                <th>{tr('co.th.status', 'الحالة')}</th>
+                <th>{tr('adp.th.offers', 'عروض')}</th>
+                <th>{tr('adp.th.complaints', 'شكاوى')}</th>
               </tr>
             </thead>
             <tbody>
@@ -78,7 +82,7 @@ export default function AdminProjectsPage() {
                   <td>{p.provider?.fullName || '—'}</td>
                   <td>
                     <span className={`ad-badge ${STATUS_TONE[p.status] || 'muted'}`}>
-                      {STATUS_LABELS[p.status] || p.status}
+                      {statusLabel(p.status)}
                     </span>
                   </td>
                   <td>{p._count.offers}</td>
