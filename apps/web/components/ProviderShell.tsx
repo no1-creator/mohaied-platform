@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { api, getToken, clearToken } from '@/lib/api';
 import Icon from '@/components/Icon';
 import NotificationBell from '@/components/NotificationBell';
+import { useI18n } from '@/lib/i18n';
 
 type Me = {
   fullName?: string;
@@ -16,21 +17,21 @@ type Me = {
 };
 
 const NAV = [
-  { key: 'overview', href: '/provider', label: 'نظرة عامة', icon: 'grid' },
-  { key: 'projects', href: '/projects/open', label: 'تصفّح المشاريع', icon: 'search' },
-{ key: 'offers', href: '/offers/mine', label: 'عروضي', icon: 'fileText' },
-{ key: 'myprojects', href: '/provider/projects', label: 'مشاريعي', icon: 'folder' },
-{ key: 'clients', href: '/provider/clients', label: 'عملائي', icon: 'users' },
-{ key: 'invoices', href: '/provider/invoices', label: 'الفواتير', icon: 'fileText' },
-{ key: 'wallet', href: '/provider/wallet', label: 'المحفظة', icon: 'landmark' },
-{ key: 'tasks', href: '/provider/tasks', label: 'المهام', icon: 'fileCheck' },
-{ key: 'reports', href: '/provider/reports', label: 'التقارير', icon: 'award' },
-  { key: 'plan', href: '/provider/plans', label: 'الاشتراك والباقة', icon: 'creditCard' },
-  { key: 'analytics', href: '/provider/analytics', label: 'التحليلات', icon: 'sparkles' },
-  { key: 'ads', href: '/advertise', label: 'الإعلانات', icon: 'star' },
-  { key: 'kyc', href: '/kyc', label: 'توثيق الهوية', icon: 'badgeCheck' },
-{ key: 'profile', href: '/provider/profile', label: 'ملفي الاحترافي', icon: 'user' },
-{ key: 'settings', href: '/provider/settings', label: 'إعدادات النشاط', icon: 'building' },
+  { key: 'overview', href: '/provider', label: 'co.title', icon: 'grid' },
+  { key: 'projects', href: '/projects/open', label: 'pvs.nav.browse', icon: 'search' },
+  { key: 'offers', href: '/offers/mine', label: 'pw.act.offers.t', icon: 'fileText' },
+  { key: 'myprojects', href: '/provider/projects', label: 'pw.act.projects.t', icon: 'folder' },
+  { key: 'clients', href: '/provider/clients', label: 'pw.act.clients.t', icon: 'users' },
+  { key: 'invoices', href: '/provider/invoices', label: 'pw.act.invoices.t', icon: 'fileText' },
+  { key: 'wallet', href: '/provider/wallet', label: 'pw.act.wallet.t', icon: 'landmark' },
+  { key: 'tasks', href: '/provider/tasks', label: 'pw.act.tasks.t', icon: 'fileCheck' },
+  { key: 'reports', href: '/provider/reports', label: 'pvs.nav.reports', icon: 'award' },
+  { key: 'plan', href: '/provider/plans', label: 'pvs.nav.plan', icon: 'creditCard' },
+  { key: 'analytics', href: '/provider/analytics', label: 'pvs.nav.analytics', icon: 'sparkles' },
+  { key: 'ads', href: '/advertise', label: 'pvs.nav.ads', icon: 'star' },
+  { key: 'kyc', href: '/kyc', label: 'pvs.nav.kyc', icon: 'badgeCheck' },
+  { key: 'profile', href: '/provider/profile', label: 'pw.act.profile.t', icon: 'user' },
+  { key: 'settings', href: '/provider/settings', label: 'pvs.nav.settings', icon: 'building' },
 ];
 
 export default function ProviderShell({
@@ -43,6 +44,7 @@ export default function ProviderShell({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const { tr } = useI18n();
   const [me, setMe] = useState<Me | null>(null);
   const [state, setState] = useState<'loading' | 'ok' | 'redirecting'>('loading');
 
@@ -85,7 +87,7 @@ export default function ProviderShell({
     return (
       <div className="pv-boot">
         <style>{PROVIDER_CSS}</style>
-        {state === 'loading' ? 'جاري التحميل...' : 'جاري التحويل...'}
+        {state === 'loading' ? tr('cls.loading', 'جاري التحميل...') : tr('pvs.redirecting', 'جاري التحويل...')}
       </div>
     );
   }
@@ -101,7 +103,7 @@ export default function ProviderShell({
           </span>
           <span className="pv-brand-text">
             <span className="pv-brand-name">محايد</span>
-            <span className="pv-brand-sub">بيئة العمل</span>
+            <span className="pv-brand-sub">{tr('pvs.env', 'بيئة العمل')}</span>
           </span>
         </Link>
 
@@ -115,15 +117,15 @@ export default function ProviderShell({
               <span className="pv-nav-icon">
                 <Icon name={n.icon} size={18} />
               </span>
-              <span className="pv-nav-label">{n.label}</span>
+              <span className="pv-nav-label">{tr(n.label)}</span>
               {n.key === 'kyc' && me?.isVerified && (
-                <span className="pv-nav-dot" title="موثّق" />
+                <span className="pv-nav-dot" title={tr('pvs.verified', 'موثّق')} />
               )}
             </Link>
           ))}
         </nav>
 
-        <div className="pv-sidebar-foot">تحت إشراف الحكومة المصرية</div>
+        <div className="pv-sidebar-foot">{tr('auth.point.gov', 'تحت إشراف الحكومة المصرية')}</div>
       </aside>
 
       <div className="pv-main">
@@ -132,7 +134,7 @@ export default function ProviderShell({
           <div className="pv-user">
             {me?.isVerified && (
               <span className="pv-verified">
-                <Icon name="badgeCheck" size={15} /> موثّق
+                <Icon name="badgeCheck" size={15} /> {tr('pvs.verified', 'موثّق')}
               </span>
             )}
             <NotificationBell />
@@ -148,7 +150,7 @@ export default function ProviderShell({
               {me?.fullName && <span className="pv-name">{me.fullName}</span>}
             </Link>
             <button className="pv-logout" onClick={logout}>
-              خروج
+              {tr('tb.logout', 'خروج')}
             </button>
           </div>
         </header>
@@ -159,7 +161,7 @@ export default function ProviderShell({
 }
 
 const PROVIDER_CSS = `
-.pv-shell{display:flex;min-height:100vh;background:var(--background);direction:rtl;font-family:'Noto Sans Arabic',sans-serif;}
+.pv-shell{display:flex;min-height:100vh;background:var(--background);font-family:'Noto Sans Arabic',sans-serif;}
 .pv-boot{min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--muted);background:var(--background);font-family:'Noto Sans Arabic',sans-serif;}
 
 .pv-sidebar{width:258px;flex-shrink:0;background:linear-gradient(180deg,var(--green-dark),#184f48);color:#fff;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;}
