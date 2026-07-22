@@ -29,7 +29,9 @@ const ROLES = [
   { value: 'PROVIDER', label: 'مقدم خدمة / فريلانسر' },
   { value: 'SUPERVISOR', label: 'مشرف متخصص' },
   { value: 'LEGAL_CONSULTANT', label: 'مستشار قانوني' },
-  { value: 'INVESTOR', label: 'مستثمر — أبحث عن فرص للتمويل' },
+   { value: 'INVESTOR', label: 'مستثمر — أبحث عن فرص للتمويل' },
+  { value: 'EMPLOYER', label: 'شركة — أوظّف مواهب مصرية عن بُعد' },
+  { value: 'EMPLOYEE', label: 'باحث عن عمل — وظائف عن بُعد' },
 ];
 
 export default function RegisterPage() {
@@ -57,6 +59,8 @@ else if (role === 'PROVIDER') router.push('/provider');
 else if (role === 'SUPERVISOR') router.push('/supervisor');
 else if (role === 'LEGAL_CONSULTANT') router.push('/legal/setup');
 else if (role === 'INVESTOR') router.push('/invest');
+else if (role === 'EMPLOYER') router.push('/employer');
+else if (role === 'EMPLOYEE') router.push('/jobs');
 else if (role === 'CLIENT') router.push('/client');
 else router.push('/dashboard');
 } catch (err: any) {
