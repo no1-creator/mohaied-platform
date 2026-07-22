@@ -15,9 +15,9 @@ export const ar: Record<string, string> = {
   'nav.roles': 'مين بيستخدم محايد',
   'nav.steps': 'إزاي بتشتغل',
 
-  'landing.hero.title': 'منصة محايدة تحمي حقوق الطرفين',
-  'landing.hero.subtitle': 'نربط العميل بمقدّم الخدمة داخل بيئة موثّقة، مع إشراف مستقل يحفظ الحقوق.',
-  'landing.hero.cta': 'ابدأ الآن',
+  'landing.hero.title': 'نفّذ مشروعك بثقة، وحقوقك محفوظة من الأول للآخر',
+'landing.hero.cta1': 'ابدأ مشروعك',
+'landing.hero.cta2': 'اعرف كيف تعمل',
   'landing.services.title': 'خدماتنا',
   'landing.roles.title': 'مين بيستخدم محايد',
   'landing.steps.title': 'إزاي بتشتغل',
