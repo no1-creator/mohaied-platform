@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, getToken } from '@/lib/api';
 import AdminShell from '@/components/AdminShell';
+import { useI18n } from '@/lib/i18n';
 
 type Complaint = {
   id: string;
@@ -16,25 +17,26 @@ type Complaint = {
   decision?: { type: string } | null;
 };
 
-const TYPE_LABELS: Record<string, string> = {
-  DELIVERY_DELAY: 'تأخير في التسليم',
-  AGREEMENT_VIOLATION: 'مخالفة للاتفاق',
-  PAYMENT_ISSUE: 'مشكلة في الدفع',
-  UNPROFESSIONAL: 'سلوك غير مهني',
-  OTHER: 'نوع آخر',
+const TYPE_LABEL_KEYS: Record<string, string> = {
+  DELIVERY_DELAY: 'acx.type.DELIVERY_DELAY',
+  AGREEMENT_VIOLATION: 'acx.type.AGREEMENT_VIOLATION',
+  PAYMENT_ISSUE: 'acx.type.PAYMENT_ISSUE',
+  UNPROFESSIONAL: 'acx.type.UNPROFESSIONAL',
+  OTHER: 'acx.type.OTHER',
 };
 
-const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
-  OPEN: { label: 'مفتوحة', cls: 'blue' },
-  AWAITING_RESPONSE: { label: 'بانتظار الرد', cls: 'amber' },
-  UNDER_REVIEW: { label: 'قيد المراجعة', cls: 'amber' },
-  IN_ARBITRATION: { label: 'في التحكيم', cls: 'blue' },
-  RESOLVED: { label: 'تم الحل', cls: 'ok' },
-  REJECTED: { label: 'مرفوضة', cls: 'red' },
-  CLOSED: { label: 'مغلقة', cls: 'muted' },
+const STATUS_BADGE: Record<string, { labelKey: string; cls: string }> = {
+  OPEN: { labelKey: 'acx.status.OPEN', cls: 'blue' },
+  AWAITING_RESPONSE: { labelKey: 'acx.status.AWAITING_RESPONSE', cls: 'amber' },
+  UNDER_REVIEW: { labelKey: 'acx.status.UNDER_REVIEW', cls: 'amber' },
+  IN_ARBITRATION: { labelKey: 'acx.status.IN_ARBITRATION', cls: 'blue' },
+  RESOLVED: { labelKey: 'acx.status.RESOLVED', cls: 'ok' },
+  REJECTED: { labelKey: 'acx.status.REJECTED', cls: 'red' },
+  CLOSED: { labelKey: 'acx.status.CLOSED', cls: 'muted' },
 };
 
 export default function AdminComplaintsPage() {
+  const { tr } = useI18n();
   const router = useRouter();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [error, setError] = useState('');
@@ -52,42 +54,46 @@ export default function AdminComplaintsPage() {
   }, [router]);
 
   return (
-    <AdminShell active="complaints" title="الشكاوى والنزاعات">
-      {loading && <div className="ad-loading">جاري التحميل…</div>}
+    <AdminShell active="complaints" title={tr('acx.title', 'الشكاوى والنزاعات')}>
+      {loading && <div className="ad-loading">{tr('cls.loading', 'جاري التحميل...')}</div>}
       {error && <div className="ad-error">{error}</div>}
       {!loading && !error && complaints.length === 0 && (
-        <div className="ad-empty">مفيش شكاوى حاليًا.</div>
+        <div className="ad-empty">{tr('acx.empty', 'مفيش شكاوى حاليًا.')}</div>
       )}
       {!loading && !error && complaints.length > 0 && (
         <div className="ad-table-wrap">
           <table className="ad-table">
             <thead>
               <tr>
-                <th>الكود</th>
-                <th>النوع</th>
-                <th>المشروع</th>
-                <th>الحالة</th>
+                <th>{tr('acx.th.code', 'الكود')}</th>
+                <th>{tr('acx.th.type', 'النوع')}</th>
+                <th>{tr('co.th.project', 'المشروع')}</th>
+                <th>{tr('co.th.status', 'الحالة')}</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {complaints.map((c) => {
-                const s = STATUS_BADGE[c.status] || { label: c.status, cls: 'muted' };
+                const s = STATUS_BADGE[c.status];
+                const statusText = s ? tr(s.labelKey) : c.status;
+                const statusCls = s ? s.cls : 'muted';
                 const typeText =
                   c.type === 'OTHER'
-                    ? c.customType || 'نوع آخر'
-                    : TYPE_LABELS[c.type] || c.type;
+                    ? c.customType || tr('acx.type.OTHER', 'نوع آخر')
+                    : TYPE_LABEL_KEYS[c.type]
+                      ? tr(TYPE_LABEL_KEYS[c.type])
+                      : c.type;
                 return (
                   <tr key={c.id}>
                     <td className="ad-mono">#{c.code}</td>
                     <td>{typeText}</td>
                     <td>{c.project?.title || '—'}</td>
                     <td>
-                      <span className={`ad-badge ${s.cls}`}>{s.label}</span>
+                      <span className={`ad-badge ${statusCls}`}>{statusText}</span>
                     </td>
                     <td>
                       <Link href={`/admin/complaints/${c.id}`} className="ad-btn-mini">
-                        فتح الملف
+                        {tr('acx.open', 'فتح الملف')}
                       </Link>
                     </td>
                   </tr>
