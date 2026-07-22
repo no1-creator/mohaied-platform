@@ -582,4 +582,21 @@ export const en: Record<string, string> = {
 'apl.stInactive': 'Inactive',
 'apl.edit': 'Edit',
 'apl.delete': 'Delete',
+
+// ===== Admin: option lists =====
+'aop.group.COMPLAINT_TYPE': 'Dispute types',
+'aop.group.DECISION_TYPE': 'Decision types',
+'aop.group.PROJECT_FIELD': 'Categories / specialties',
+'aop.hint': 'From here you control the options that appear in the platform forms (like dispute types). Any option you add appears in the form automatically. A disabled option is hidden from users but stays saved.',
+'aop.renamePrompt': 'Enter the new name for the option:',
+'aop.confirmDelete.pre': 'Are you sure you want to delete «',
+'aop.confirmDelete.post': '»?',
+'aop.addPh': 'Type a new option name and add it…',
+'aop.adding': 'Adding…',
+'aop.addBtn': 'Add option',
+'aop.empty': 'No options in this group yet. Add the first one above.',
+'aop.active': 'Active',
+'aop.stopped': 'Disabled',
+'aop.disable': 'Disable',
+'aop.enable': 'Enable',
 };
