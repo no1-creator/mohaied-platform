@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, saveToken } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
+import LangSwitch from '@/components/LangSwitch';
 
 const LOGO = (
   <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -26,6 +28,7 @@ const LOGO = (
 
 export default function LoginPage() {
   const router = useRouter();
+  const { tr } = useI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -41,16 +44,16 @@ export default function LoginPage() {
         body: { email: mail, password: pass },
       });
       saveToken(res.accessToken);
-try {
-  const me = await api<{ role?: string }>('/users/me');
-  const role = (me?.role || '').toUpperCase();
-  if (role === 'ADMIN') router.push('/admin');
-  else if (role === 'PROVIDER') router.push('/provider');
-  else if (role === 'SUPERVISOR') router.push('/supervisor');
-  else router.push('/dashboard');
-} catch {
-  router.push('/dashboard');
-}
+      try {
+        const me = await api<{ role?: string }>('/users/me');
+        const role = (me?.role || '').toUpperCase();
+        if (role === 'ADMIN') router.push('/admin');
+        else if (role === 'PROVIDER') router.push('/provider');
+        else if (role === 'SUPERVISOR') router.push('/supervisor');
+        else router.push('/dashboard');
+      } catch {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
@@ -75,31 +78,33 @@ try {
           <span className="logo-mark">{LOGO}</span>
           محايد
         </div>
-        <h2>نفّذ مشروعك بثقة، وحقوقك محفوظة</h2>
+        <h2>{tr('auth.login.brand.h', 'نفّذ مشروعك بثقة، وحقوقك محفوظة')}</h2>
         <p>
-          منصة محايدة تربط العميل بالمهندس أو الشركة داخل بيئة موثّقة، مع اتفاق
-          واضح ومتابعة للمراحل وحل عادل للنزاعات.
+          {tr('auth.login.brand.p', 'منصة محايدة تربط العميل بالمهندس أو الشركة داخل بيئة موثّقة، مع اتفاق واضح ومتابعة للمراحل وحل عادل للنزاعات.')}
         </p>
         <ul className="auth-points">
-          <li>اتفاق موثّق لكل مرحلة</li>
-          <li>حماية حقوق كل الأطراف</li>
-          <li>تحت إشراف الحكومة المصرية</li>
+          <li>{tr('auth.login.point1', 'اتفاق موثّق لكل مرحلة')}</li>
+          <li>{tr('auth.login.point2', 'حماية حقوق كل الأطراف')}</li>
+          <li>{tr('auth.point.gov', 'تحت إشراف الحكومة المصرية')}</li>
         </ul>
       </div>
 
       <div className="auth-form-wrap">
         <div className="auth-box">
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
+            <LangSwitch />
+          </div>
           <div className="auth-head">
             <span className="logo-mark">{LOGO}</span>
-            <h1 className="auth-title">تسجيل الدخول</h1>
-            <p className="auth-sub">أهلًا بيك تاني في محايد</p>
+            <h1 className="auth-title">{tr('common.login', 'تسجيل الدخول')}</h1>
+            <p className="auth-sub">{tr('auth.login.sub', 'أهلًا بيك تاني في محايد')}</p>
           </div>
 
           {error && <div className="auth-error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
             <div className="field">
-              <label>البريد الإلكتروني</label>
+              <label>{tr('auth.field.email', 'البريد الإلكتروني')}</label>
               <input
                 type="email"
                 value={email}
@@ -109,7 +114,7 @@ try {
               />
             </div>
             <div className="field">
-              <label>كلمة المرور</label>
+              <label>{tr('auth.field.password', 'كلمة المرور')}</label>
               <input
                 type="password"
                 value={password}
@@ -119,21 +124,21 @@ try {
               />
             </div>
             <button type="submit" className="auth-submit" disabled={loading}>
-              {loading ? 'جاري الدخول...' : 'دخول'}
+              {loading ? tr('auth.login.loading', 'جاري الدخول...') : tr('auth.login.submit', 'دخول')}
             </button>
           </form>
 
           <div className="auth-switch">
-            لسه معندكش حساب؟ <Link href="/register">إنشاء حساب</Link>
+            {tr('auth.login.switch', 'لسه معندكش حساب؟')} <Link href="/register">{tr('common.register', 'إنشاء حساب')}</Link>
           </div>
 
           <div className="quick-login">
-            <h4>حسابات تجريبية (اضغط للدخول السريع)</h4>
+            <h4>{tr('auth.login.quickHead', 'حسابات تجريبية (اضغط للدخول السريع)')}</h4>
             <div className="quick-grid">
-              <button onClick={() => quick('admin@mohaied.test')}>أدمن</button>
-              <button onClick={() => quick('client@mohaied.test')}>عميل</button>
-              <button onClick={() => quick('provider@mohaied.test')}>مقدم خدمة</button>
-              <button onClick={() => quick('supervisor@mohaied.test')}>مشرف</button>
+              <button onClick={() => quick('admin@mohaied.test')}>{tr('auth.login.quick.admin', 'أدمن')}</button>
+              <button onClick={() => quick('client@mohaied.test')}>{tr('auth.login.quick.client', 'عميل')}</button>
+              <button onClick={() => quick('provider@mohaied.test')}>{tr('auth.login.quick.provider', 'مقدم خدمة')}</button>
+              <button onClick={() => quick('supervisor@mohaied.test')}>{tr('auth.login.quick.supervisor', 'مشرف')}</button>
             </div>
           </div>
         </div>
