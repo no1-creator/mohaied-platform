@@ -146,14 +146,14 @@ const { tr } = useI18n();
         <div className="hero-inner">
           <div className="hero-text">
             <span className="hero-badge">منصة تعمل تحت إشراف الحكومة المصرية</span>
-{tr('landing.hero.title', 'نفّذ مشروعك بثقة، وحقوقك محفوظة من الأول للآخر')}
+<h1>{tr('landing.hero.title', 'نفّذ مشروعك بثقة، وحقوقك محفوظة من الأول للآخر')}</h1>
             <p>
               محايد منصة مستقلة تربط العميل بالمهندس أو الشركة داخل بيئة موثّقة:
               اتفاق واضح، متابعة بالمراحل، وإشراف متخصص يحمي كل الأطراف ويحل النزاعات بعدالة.
             </p>
             <div className="hero-buttons">
-{tr('landing.hero.cta1', 'ابدأ مشروعك')}
-{tr('landing.hero.cta2', 'اعرف كيف تعمل')}
+<Link href="/register" className="lp-btn-primary">{tr('landing.hero.cta1', 'ابدأ مشروعك')}</Link>
+<a href="#how" className="lp-btn-ghost">{tr('landing.hero.cta2', 'اعرف كيف تعمل')}</a>
             </div>
             <div className="hero-stats">
               <div><b>100%</b><span>توثيق للاتفاقات</span></div>
