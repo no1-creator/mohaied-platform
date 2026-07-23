@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import AdminShell from '@/components/AdminShell';
+import { useI18n } from '@/lib/i18n';
 
 type Opp = {
   id: string; code: string; title: string; summary: string; description: string;
@@ -12,12 +13,12 @@ type Opp = {
   createdAt: string; founder?: { fullName: string; email: string } | null;
 };
 
-const STATUS_LABEL: Record<string, string> = {
-  OPEN: 'مطروح للتمويل',
-  IN_TALKS: 'في تفاوض',
-  FUNDED: 'تم تمويله',
-  CLOSED: 'مغلق',
-  REJECTED: 'مرفوض',
+const STATUS_LABEL_KEYS: Record<string, string> = {
+  OPEN: 'aiv.status.OPEN',
+  IN_TALKS: 'aiv.status.IN_TALKS',
+  FUNDED: 'aiv.status.FUNDED',
+  CLOSED: 'aiv.status.CLOSED',
+  REJECTED: 'aiv.status.REJECTED',
 };
 const STATUS_TONE: Record<string, string> = {
   OPEN: 'ok',
@@ -26,17 +27,17 @@ const STATUS_TONE: Record<string, string> = {
   CLOSED: 'muted',
   REJECTED: 'red',
 };
-const STATUS_OPTIONS = Object.keys(STATUS_LABEL);
+const STATUS_OPTIONS = Object.keys(STATUS_LABEL_KEYS);
 const TABS = [
-  { key: 'ALL', label: 'الكل' },
-  { key: 'OPEN', label: 'مطروح' },
-  { key: 'IN_TALKS', label: 'في تفاوض' },
-  { key: 'FUNDED', label: 'تم تمويله' },
-  { key: 'CLOSED', label: 'مغلق' },
-  { key: 'REJECTED', label: 'مرفوض' },
+  { key: 'ALL', labelKey: 'aky.status.ALL' },
+  { key: 'OPEN', labelKey: 'aiv.tabOpen' },
+  { key: 'IN_TALKS', labelKey: 'aiv.status.IN_TALKS' },
+  { key: 'FUNDED', labelKey: 'aiv.status.FUNDED' },
+  { key: 'CLOSED', labelKey: 'aiv.status.CLOSED' },
+  { key: 'REJECTED', labelKey: 'aiv.status.REJECTED' },
 ];
-const money = (v: any, c?: string | null) =>
-  `${Number(v || 0).toLocaleString('en')} ${c || 'ج.م'}`;
+const money = (v: any, c?: string | null, cur?: string) =>
+  `${Number(v || 0).toLocaleString('en')} ${c || cur || 'ج.م'}`;
 
 const AI_CSS = `
 .ai-editor{background:#fff;border:1px solid var(--green-light);border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 10px 26px rgba(24,70,61,.08);}
@@ -55,6 +56,7 @@ const AI_CSS = `
 `;
 
 export default function AdminInvestPage() {
+  const { tr } = useI18n();
   const [rows, setRows] = useState<Opp[]>([]);
   const [tab, setTab] = useState('ALL');
   const [q, setQ] = useState('');
@@ -102,20 +104,20 @@ export default function AdminInvestPage() {
       setSel(null);
       await load();
     } catch (e: any) {
-      alert(e?.message || 'حصل خطأ أثناء الحفظ');
+      alert(e?.message || tr('alg.errSave', 'حصل خطأ أثناء الحفظ'));
     }
     setSaving(false);
   }
 
   return (
-    <AdminShell active="invest" title="بوابة الاستثمار">
+    <AdminShell active="invest" title={tr('aiv.title', 'بوابة الاستثمار')}>
       <style>{AI_CSS}</style>
 
       <div className="ad-toolbar">
         <div className="ad-tabs">
           {TABS.map((t) => (
             <button key={t.key} className={tab === t.key ? 'active' : ''} onClick={() => setTab(t.key)}>
-              {t.label}
+              {tr(t.labelKey)}
             </button>
           ))}
         </div>
@@ -124,68 +126,68 @@ export default function AdminInvestPage() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && load()}
-            placeholder="بحث بالعنوان أو الكود..."
+            placeholder={tr('aiv.searchPh', 'بحث بالعنوان أو الكود...')}
           />
-          <button onClick={load}>بحث</button>
+          <button onClick={load}>{tr('common.search', 'بحث')}</button>
         </div>
       </div>
 
       {sel && (
         <div className="ai-editor">
           <h3>{sel.title}</h3>
-          <div className="ai-code">{sel.code} · {sel.sector} · {money(sel.amountSought, sel.currency)}</div>
+          <div className="ai-code">{sel.code} · {sel.sector} · {money(sel.amountSought, sel.currency, tr('common.currency', 'ج.م'))}</div>
           <div className="ai-grid">
             <div className="ai-detail">
               {sel.summary}
               {'\n\n'}
               {sel.description}
-              {sel.founder ? `\n\nصاحب المشروع: ${sel.founder.fullName} (${sel.founder.email})` : ''}
-              {sel.website ? `\nرابط: ${sel.website}` : ''}
+              {sel.founder ? `\n\n${tr('aiv.founder', 'صاحب المشروع:')} ${sel.founder.fullName} (${sel.founder.email})` : ''}
+              {sel.website ? `\n${tr('aiv.link', 'رابط:')} ${sel.website}` : ''}
             </div>
             <div className="ai-fld">
-              <label>الحالة</label>
+              <label>{tr('co.th.status', 'الحالة')}</label>
               <select value={dStatus} onChange={(e) => setDStatus(e.target.value)}>
                 {STATUS_OPTIONS.map((s) => (
-                  <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+                  <option key={s} value={s}>{tr(STATUS_LABEL_KEYS[s])}</option>
                 ))}
               </select>
             </div>
             <div className="ai-fld">
-              <label>تمييز الفرصة</label>
+              <label>{tr('aiv.featureLabel', 'تمييز الفرصة')}</label>
               <label className="ai-check">
                 <input type="checkbox" checked={dFeatured} onChange={(e) => setDFeatured(e.target.checked)} />
-                عرضها في المقدّمة
+                {tr('aiv.featureCheck', 'عرضها في المقدّمة')}
               </label>
             </div>
             <div className="ai-fld full">
-              <label>ملاحظة إدارية (اختياري)</label>
-              <textarea value={dNote} onChange={(e) => setDNote(e.target.value)} placeholder="ملاحظة داخلية / للمتابعة" />
+              <label>{tr('aiv.adminNote', 'ملاحظة إدارية (اختياري)')}</label>
+              <textarea value={dNote} onChange={(e) => setDNote(e.target.value)} placeholder={tr('aiv.notePh', 'ملاحظة داخلية / للمتابعة')} />
             </div>
           </div>
           <div className="ai-actions">
             <button className="ad-btn" onClick={save} disabled={saving}>
-              {saving ? 'جاري الحفظ...' : 'حفظ'}
+              {saving ? tr('apl.saving', 'جاري الحفظ...') : tr('common.save', 'حفظ')}
             </button>
-            <button className="ai-cancel" onClick={() => setSel(null)}>إلغاء</button>
+            <button className="ai-cancel" onClick={() => setSel(null)}>{tr('common.cancel', 'إلغاء')}</button>
           </div>
         </div>
       )}
 
       {loading ? (
-        <div className="ad-loading">جاري التحميل...</div>
+        <div className="ad-loading">{tr('cls.loading', 'جاري التحميل...')}</div>
       ) : rows.length === 0 ? (
-        <div className="ad-empty">لا توجد فرص في هذا القسم.</div>
+        <div className="ad-empty">{tr('aiv.empty', 'لا توجد فرص في هذا القسم.')}</div>
       ) : (
         <div className="ad-table-wrap">
           <table className="ad-table">
             <thead>
               <tr>
-                <th>الكود</th>
-                <th>العنوان</th>
-                <th>القطاع</th>
-                <th>التمويل</th>
-                <th>صاحبها</th>
-                <th>الحالة</th>
+                <th>{tr('acx.th.code', 'الكود')}</th>
+                <th>{tr('aad.fTitle', 'العنوان')}</th>
+                <th>{tr('aiv.thSector', 'القطاع')}</th>
+                <th>{tr('aiv.thFunding', 'التمويل')}</th>
+                <th>{tr('aiv.thFounder', 'صاحبها')}</th>
+                <th>{tr('co.th.status', 'الحالة')}</th>
                 <th></th>
               </tr>
             </thead>
@@ -195,16 +197,16 @@ export default function AdminInvestPage() {
                   <td className="ad-mono">{o.code}</td>
                   <td>{o.featured ? '⭐ ' : ''}{o.title}</td>
                   <td>{o.sector}</td>
-                  <td>{money(o.amountSought, o.currency)}</td>
+                  <td>{money(o.amountSought, o.currency, tr('common.currency', 'ج.م'))}</td>
                   <td>{o.founder?.fullName || '—'}</td>
                   <td>
                     <span className={`ad-badge ${STATUS_TONE[o.status] || 'muted'}`}>
-                      {STATUS_LABEL[o.status] || o.status}
+                      {STATUS_LABEL_KEYS[o.status] ? tr(STATUS_LABEL_KEYS[o.status]) : o.status}
                     </span>
                   </td>
                   <td>
                     <div className="ad-row-actions">
-                      <button className="ad-btn-mini" onClick={() => openEditor(o)}>إدارة</button>
+                      <button className="ad-btn-mini" onClick={() => openEditor(o)}>{tr('ainv.manage', 'إدارة')}</button>
                     </div>
                   </td>
                 </tr>
