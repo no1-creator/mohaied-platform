@@ -622,4 +622,14 @@ export const en: Record<string, string> = {
 'act.resetBtn': 'Reset to default',
 'act.dirty': 'Unsaved',
 'act.overridden': 'Modified',
+
+// ===== Admin: media library =====
+'amd.intro': 'Upload images here and use them anywhere on the site — copy the image link or pick it directly from the "UI texts" editor.',
+'amd.uploaded': 'Image uploaded ✅',
+'amd.copied': 'Link copied ✅',
+'amd.confirmDelete': 'Are you sure you want to delete this image?',
+'amd.deleted': 'Deleted ✅',
+'amd.uploadNew': '+ Upload new image',
+'amd.empty': 'No images in the library yet.',
+'amd.copyBtn': 'Copy link',
 };
