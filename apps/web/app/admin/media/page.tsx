@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 import { api } from '@/lib/api';
 import { toast } from '@/components/Toast';
+import { useI18n } from '@/lib/i18n';
 
 type MediaItem = {
   id: string;
@@ -31,6 +32,7 @@ const MD_CSS = `
 `;
 
 export default function AdminMediaPage() {
+  const { tr } = useI18n();
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -49,11 +51,11 @@ export default function AdminMediaPage() {
 
   async function onPick(file: File) {
     if (!file.type.startsWith('image/')) {
-      toast.error('لازم تختار صورة');
+      toast.error(tr('act.errImage', 'لازم تختار صورة'));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('حجم الصورة أكبر من 5 ميجا');
+      toast.error(tr('act.errSize', 'حجم الصورة أكبر من 5 ميجا'));
       return;
     }
     setUploading(true);
@@ -61,14 +63,14 @@ export default function AdminMediaPage() {
       const dataUrl: string = await new Promise((res, rej) => {
         const r = new FileReader();
         r.onload = () => res(r.result as string);
-        r.onerror = () => rej(new Error('فشل قراءة الصورة'));
+        r.onerror = () => rej(new Error(tr('act.errRead', 'فشل قراءة الصورة')));
         r.readAsDataURL(file);
       });
       await api('/files/media', {
         method: 'POST',
         body: { name: file.name, mimeType: file.type, dataUrl },
       });
-      toast.success('اترفعت الصورة ✅');
+      toast.success(tr('amd.uploaded', 'اترفعت الصورة ✅'));
       load();
     } catch (e: any) {
       toast.error(e.message);
@@ -81,18 +83,18 @@ export default function AdminMediaPage() {
     const abs = `${API_BASE}${it.url}`;
     try {
       await navigator.clipboard.writeText(abs);
-      toast.success('اتنسخ الرابط ✅');
+      toast.success(tr('amd.copied', 'اتنسخ الرابط ✅'));
     } catch {
       toast.info(abs);
     }
   }
 
   async function remove(it: MediaItem) {
-    if (!confirm('متأكد إنك عايز تمسح الصورة دي؟')) return;
+    if (!confirm(tr('amd.confirmDelete', 'متأكد إنك عايز تمسح الصورة دي؟'))) return;
     try {
       await api(`/files/media/${it.id}`, { method: 'DELETE' });
       setItems((prev) => prev.filter((x) => x.id !== it.id));
-      toast.success('اتمسحت ✅');
+      toast.success(tr('amd.deleted', 'اتمسحت ✅'));
     } catch (e: any) {
       toast.error(e.message);
     }
@@ -106,16 +108,15 @@ export default function AdminMediaPage() {
   }
 
   return (
-    <AdminShell active="media" title="مكتبة الوسائط">
+    <AdminShell active="media" title={tr('ash.nav.media', 'مكتبة الوسائط')}>
       <style>{MD_CSS}</style>
       <p className="md-intro">
-        ارفع الصور هنا واستخدمها في أي مكان بالموقع — انسخ رابط الصورة أو اختارها
-        مباشرة من محرر «نصوص الواجهات».
+        {tr('amd.intro', 'ارفع الصور هنا واستخدمها في أي مكان بالموقع — انسخ رابط الصورة أو اختارها مباشرة من محرر «نصوص الواجهات».')}
       </p>
 
       <div className="md-bar">
         <label className="md-upload">
-          {uploading ? 'جاري الرفع…' : '+ رفع صورة جديدة'}
+          {uploading ? tr('act.uploading', 'جاري الرفع…') : tr('amd.uploadNew', '+ رفع صورة جديدة')}
           <input
             type="file"
             accept="image/*"
@@ -130,11 +131,11 @@ export default function AdminMediaPage() {
       </div>
 
       {loading ? (
-        <div className="ad-loading">جاري التحميل…</div>
+        <div className="ad-loading">{tr('cls.loading', 'جاري التحميل...')}</div>
       ) : error ? (
         <div className="ad-error">{error}</div>
       ) : items.length === 0 ? (
-        <div className="ad-empty">لسه مفيش صور في المكتبة.</div>
+        <div className="ad-empty">{tr('amd.empty', 'لسه مفيش صور في المكتبة.')}</div>
       ) : (
         <div className="md-grid">
           {items.map((it) => (
@@ -148,13 +149,13 @@ export default function AdminMediaPage() {
               <div className="md-meta">{fmtSize(it.size)}</div>
               <div className="md-actions">
                 <button className="ad-btn-mini" onClick={() => copyUrl(it)}>
-                  نسخ الرابط
+                  {tr('amd.copyBtn', 'نسخ الرابط')}
                 </button>
                 <button
                   className="ad-btn-mini danger"
                   onClick={() => remove(it)}
                 >
-                  حذف
+                  {tr('apl.delete', 'حذف')}
                 </button>
               </div>
             </div>
