@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 import Icon from '@/components/Icon';
 import { api } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 
 type Req = {
   id: string;
@@ -37,9 +38,9 @@ type Match = {
 };
 
 function statusBadge(s: string) {
-  if (s === 'RESPONDED') return { cls: 'ok', label: 'تم الترشيح' };
-  if (s === 'CLOSED') return { cls: 'muted', label: 'مغلق' };
-  return { cls: 'amber', label: 'بانتظار الرد' };
+  if (s === 'RESPONDED') return { cls: 'ok', labelKey: 'arc.status.RESPONDED' };
+  if (s === 'CLOSED') return { cls: 'muted', labelKey: 'arc.status.CLOSED' };
+  return { cls: 'amber', labelKey: 'arc.status.PENDING' };
 }
 
 function scoreTone(score: number) {
@@ -49,6 +50,7 @@ function scoreTone(score: number) {
 }
 
 export default function AdminRecommendationsPage() {
+  const { tr } = useI18n();
   const [reqs, setReqs] = useState<Req[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadErr, setLoadErr] = useState('');
@@ -68,7 +70,7 @@ export default function AdminRecommendationsPage() {
     setLoadErr('');
     api<Req[]>('/recommendations/admin')
       .then((d) => setReqs(Array.isArray(d) ? d : []))
-      .catch((e) => setLoadErr(e?.message || 'تعذّر تحميل الطلبات'))
+      .catch((e) => setLoadErr(e?.message || tr('arc.errLoad', 'تعذّر تحميل الطلبات')))
       .finally(() => setLoading(false));
   }
 
@@ -108,7 +110,7 @@ export default function AdminRecommendationsPage() {
         method: 'PATCH',
         body: { adminNote: note.trim(), recommendedProviderIds: chosen },
       });
-      setMsg({ type: 'ok', text: 'تم إرسال الترشيح للعميل بنجاح ✅' });
+      setMsg({ type: 'ok', text: tr('arc.sentOk', 'تم إرسال الترشيح للعميل بنجاح ✅') });
       setReqs((prev) =>
         prev.map((r) =>
           r.id === selected.id
@@ -120,18 +122,18 @@ export default function AdminRecommendationsPage() {
         prev ? { ...prev, status: 'RESPONDED', adminNote: note.trim(), recommendedProviderIds: chosen } : prev,
       );
     } catch (e: any) {
-      setMsg({ type: 'err', text: e?.message || 'حصل خطأ أثناء الإرسال' });
+      setMsg({ type: 'err', text: e?.message || tr('arc.sendErr', 'حصل خطأ أثناء الإرسال') });
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <AdminShell active="recommendations" title="طلبات الترشيح الذكية">
+    <AdminShell active="recommendations" title={tr('arc.title', 'طلبات الترشيح الذكية')}>
       <style>{RECO_CSS}</style>
 
       {loading ? (
-        <div className="ad-loading">جاري التحميل...</div>
+        <div className="ad-loading">{tr('cls.loading', 'جاري التحميل...')}</div>
       ) : loadErr ? (
         <div className="ad-error">{loadErr}</div>
       ) : (
@@ -139,11 +141,11 @@ export default function AdminRecommendationsPage() {
           {/* قائمة الطلبات */}
           <div className="rq-list">
             <div className="rq-list-head">
-              <span>الطلبات ({reqs.length})</span>
-              <button className="ad-btn-mini" onClick={loadList}>تحديث</button>
+              <span>{tr('arc.listHead', 'الطلبات')} ({reqs.length})</span>
+              <button className="ad-btn-mini" onClick={loadList}>{tr('arc.refresh', 'تحديث')}</button>
             </div>
             {reqs.length === 0 ? (
-              <div className="ad-empty">مفيش طلبات ترشيح لسه.</div>
+              <div className="ad-empty">{tr('arc.empty', 'مفيش طلبات ترشيح لسه.')}</div>
             ) : (
               reqs.map((r) => {
                 const b = statusBadge(r.status);
@@ -156,7 +158,7 @@ export default function AdminRecommendationsPage() {
                   >
                     <div className="rq-item-top">
                       <span className="rq-item-title">{r.title}</span>
-                      <span className={`ad-badge ${b.cls}`}>{b.label}</span>
+                      <span className={`ad-badge ${b.cls}`}>{tr(b.labelKey)}</span>
                     </div>
                     <div className="rq-item-meta">
                       <span><Icon name="briefcase" size={13} /> {r.field}</span>
@@ -171,24 +173,24 @@ export default function AdminRecommendationsPage() {
           {/* تفاصيل الطلب + المطابقة الذكية */}
           <div className="rq-detail">
             {!selected ? (
-              <div className="ad-empty">اختار طلب من الشمال عشان تشوف تفاصيله والترشيحات الذكية.</div>
+              <div className="ad-empty">{tr('arc.pickHint', 'اختار طلب من الشمال عشان تشوف تفاصيله والترشيحات الذكية.')}</div>
             ) : (
               <>
                 <div className="rq-card">
                   <div className="rq-detail-head">
                     <h2>{selected.title}</h2>
                     <span className={`ad-badge ${statusBadge(selected.status).cls}`}>
-                      {statusBadge(selected.status).label}
+                      {tr(statusBadge(selected.status).labelKey)}
                     </span>
                   </div>
                   <p className="rq-desc">{selected.description}</p>
                   <ul className="rq-facts">
-                    <li><span>المجال</span><b>{selected.field}</b></li>
-                    {selected.client && <li><span>العميل</span><b>{selected.client.fullName}</b></li>}
+                    <li><span>{tr('co.th.field', 'المجال')}</span><b>{selected.field}</b></li>
+                    {selected.client && <li><span>{tr('adp.th.client', 'العميل')}</span><b>{selected.client.fullName}</b></li>}
                     {(selected.budgetMin || selected.budgetMax) && (
-                      <li><span>الميزانية</span><b>{selected.budgetMin || '—'} — {selected.budgetMax || '—'} ج.م</b></li>
+                      <li><span>{tr('arc.budget', 'الميزانية')}</span><b>{selected.budgetMin || '—'} — {selected.budgetMax || '—'} {tr('common.currency', 'ج.م')}</b></li>
                     )}
-                    {selected.durationDays ? <li><span>المدة</span><b>{selected.durationDays} يوم</b></li> : null}
+                    {selected.durationDays ? <li><span>{tr('arc.duration', 'المدة')}</span><b>{selected.durationDays} {tr('arc.daysUnit', 'يوم')}</b></li> : null}
                   </ul>
                 </div>
 
@@ -196,21 +198,21 @@ export default function AdminRecommendationsPage() {
                   <div className="rq-match-head">
                     <div className="rq-match-title">
                       <Icon name="sparkles" size={17} />
-                      <span>ترشيحات محايد الذكية</span>
+                      <span>{tr('arc.matchTitle', 'ترشيحات محايد الذكية')}</span>
                     </div>
                     <button
                       className="ad-btn-mini"
                       onClick={() => fetchMatches(selected.id)}
                       disabled={loadingMatches}
                     >
-                      {loadingMatches ? 'جاري الحساب...' : 'إعادة الحساب'}
+                      {loadingMatches ? tr('arc.calculating', 'جاري الحساب...') : tr('arc.recalc', 'إعادة الحساب')}
                     </button>
                   </div>
 
                   {loadingMatches ? (
-                    <div className="ad-loading">المحرّك بيرتّب أنسب مقدمي الخدمة...</div>
+                    <div className="ad-loading">{tr('arc.calcRunning', 'المحرّك بيرتّب أنسب مقدمي الخدمة...')}</div>
                   ) : matches.length === 0 ? (
-                    <div className="ad-empty">مفيش مقدمي خدمة مطابقين للمجال ده حاليًا.</div>
+                    <div className="ad-empty">{tr('arc.noMatches', 'مفيش مقدمي خدمة مطابقين للمجال ده حاليًا.')}</div>
                   ) : (
                     <div className="rq-matches">
                       {matches.map((m, i) => {
@@ -247,7 +249,7 @@ export default function AdminRecommendationsPage() {
                               className={`rq-m-pick${picked ? ' on' : ''}`}
                               onClick={() => toggle(m.id)}
                             >
-                              {picked ? 'مرشّح ✓' : 'رشّح'}
+                              {picked ? tr('arc.picked', 'مرشّح ✓') : tr('arc.pick', 'رشّح')}
                             </button>
                           </div>
                         );
@@ -257,12 +259,12 @@ export default function AdminRecommendationsPage() {
                 </div>
 
                 <div className="rq-card">
-                  <label className="rq-label">ملاحظة للعميل (اختياري)</label>
+                  <label className="rq-label">{tr('arc.noteLabel', 'ملاحظة للعميل (اختياري)')}</label>
                   <textarea
                     className="rq-area"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    placeholder="اكتب سبب الترشيح أو أي توضيح للعميل..."
+                    placeholder={tr('arc.notePh', 'اكتب سبب الترشيح أو أي توضيح للعميل...')}
                   />
                   {msg && (
                     <div className={msg.type === 'ok' ? 'rq-ok' : 'ad-error'} style={{ marginTop: 12 }}>
@@ -270,7 +272,7 @@ export default function AdminRecommendationsPage() {
                     </div>
                   )}
                   <button className="ad-btn rq-send" onClick={respond} disabled={saving}>
-                    {saving ? 'جاري الإرسال...' : `إرسال الترشيح (${chosen.length})`}
+                    {saving ? tr('arc.sending', 'جاري الإرسال...') : `${tr('arc.sendBtn', 'إرسال الترشيح')} (${chosen.length})`}
                   </button>
                 </div>
               </>
