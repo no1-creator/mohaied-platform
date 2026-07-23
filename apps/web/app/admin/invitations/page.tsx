@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 import { api } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 
 type Client = { id?: string; fullName?: string; email?: string } | null;
 
@@ -25,20 +26,20 @@ type Invitation = {
   client?: Client;
 };
 
-const STATUS: Record<string, { label: string; cls: string }> = {
-  PENDING: { label: 'قيد المراجعة', cls: 'amber' },
-  CONTACTED: { label: 'تم التواصل', cls: 'blue' },
-  ACCEPTED: { label: 'قَبِل', cls: 'ok' },
-  DECLINED: { label: 'اعتذر', cls: 'red' },
-  CLOSED: { label: 'مغلقة', cls: 'muted' },
+const STATUS: Record<string, { labelKey: string; cls: string }> = {
+  PENDING: { labelKey: 'ainv.status.PENDING', cls: 'amber' },
+  CONTACTED: { labelKey: 'ainv.status.CONTACTED', cls: 'blue' },
+  ACCEPTED: { labelKey: 'ainv.status.ACCEPTED', cls: 'ok' },
+  DECLINED: { labelKey: 'ainv.status.DECLINED', cls: 'red' },
+  CLOSED: { labelKey: 'ainv.status.CLOSED', cls: 'muted' },
 };
 
-const STATUS_OPTIONS: { value: string; label: string }[] = [
-  { value: 'PENDING', label: 'قيد المراجعة' },
-  { value: 'CONTACTED', label: 'تم التواصل مع مقدم الخدمة' },
-  { value: 'ACCEPTED', label: 'قَبِل الدعوة' },
-  { value: 'DECLINED', label: 'اعتذر' },
-  { value: 'CLOSED', label: 'مغلقة' },
+const STATUS_OPTIONS: { value: string; labelKey: string }[] = [
+  { value: 'PENDING', labelKey: 'ainv.opt.PENDING' },
+  { value: 'CONTACTED', labelKey: 'ainv.opt.CONTACTED' },
+  { value: 'ACCEPTED', labelKey: 'ainv.opt.ACCEPTED' },
+  { value: 'DECLINED', labelKey: 'ainv.opt.DECLINED' },
+  { value: 'CLOSED', labelKey: 'ainv.opt.CLOSED' },
 ];
 
 const IX_CSS = `
@@ -61,6 +62,7 @@ const IX_CSS = `
 `;
 
 export default function AdminInvitationsPage() {
+  const { tr } = useI18n();
   const [items, setItems] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -74,7 +76,7 @@ export default function AdminInvitationsPage() {
     setLoading(true);
     api<Invitation[]>('/invitations/admin')
       .then((d) => setItems(Array.isArray(d) ? d : []))
-      .catch((e: any) => setError(e?.message || 'تعذّر تحميل الدعوات'))
+      .catch((e: any) => setError(e?.message || tr('ainv.errLoad', 'تعذّر تحميل الدعوات')))
       .finally(() => setLoading(false));
   }
   useEffect(() => {
@@ -103,35 +105,37 @@ export default function AdminInvitationsPage() {
       close();
       load();
     } catch (e: any) {
-      setSaveErr(e?.message || 'تعذّر حفظ التحديث.');
+      setSaveErr(e?.message || tr('ainv.errSave', 'تعذّر حفظ التحديث.'));
       setSaving(false);
     }
   }
 
   return (
-    <AdminShell active="invitations" title="الدعوات الخارجية">
+    <AdminShell active="invitations" title={tr('ainv.title', 'الدعوات الخارجية')}>
       <style>{IX_CSS}</style>
-      {loading && <div className="ad-loading">جاري تحميل الدعوات...</div>}
+      {loading && <div className="ad-loading">{tr('ainv.loading', 'جاري تحميل الدعوات...')}</div>}
       {error && <div className="ad-error">{error}</div>}
       {!loading && !error && items.length === 0 && (
-        <div className="ad-empty">مفيش دعوات خارجية لسه.</div>
+        <div className="ad-empty">{tr('ainv.empty', 'مفيش دعوات خارجية لسه.')}</div>
       )}
       {!loading && !error && items.length > 0 && (
         <div className="ad-table-wrap">
           <table className="ad-table">
             <thead>
               <tr>
-                <th>العميل</th>
-                <th>المدعوّ</th>
-                <th>التواصل</th>
-                <th>المشروع</th>
-                <th>الحالة</th>
+                <th>{tr('adp.th.client', 'العميل')}</th>
+                <th>{tr('ainv.th.invitee', 'المدعوّ')}</th>
+                <th>{tr('ainv.th.contact', 'التواصل')}</th>
+                <th>{tr('co.th.project', 'المشروع')}</th>
+                <th>{tr('co.th.status', 'الحالة')}</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {items.map((inv) => {
-                const st = STATUS[inv.status] || { label: inv.status, cls: 'muted' };
+                const stDef = STATUS[inv.status];
+                const stLabel = stDef ? tr(stDef.labelKey) : inv.status;
+                const stCls = stDef ? stDef.cls : 'muted';
                 const contact = inv.inviteeEmail || inv.inviteePhone || '—';
                 return (
                   <tr key={inv.id}>
@@ -140,12 +144,12 @@ export default function AdminInvitationsPage() {
                     <td className="ad-mono">{contact}</td>
                     <td>{inv.projectTitle}</td>
                     <td>
-                      <span className={`ad-badge ${st.cls}`}>{st.label}</span>
+                      <span className={`ad-badge ${stCls}`}>{stLabel}</span>
                     </td>
                     <td>
                       <div className="ad-row-actions">
                         <button className="ad-btn-mini" onClick={() => open(inv)}>
-                          إدارة
+                          {tr('ainv.manage', 'إدارة')}
                         </button>
                       </div>
                     </td>
@@ -165,40 +169,40 @@ export default function AdminInvitationsPage() {
               <button className="rx-x" onClick={close}>×</button>
             </div>
             <div className="rx-body">
-              <div className="rx-row"><span className="rx-k">العميل</span><span className="rx-v">{active.client?.fullName || '—'}{active.client?.email ? ` · ${active.client.email}` : ''}</span></div>
-              <div className="rx-row"><span className="rx-k">المدعوّ</span><span className="rx-v">{active.inviteeName}{active.inviteeType ? ` (${active.inviteeType})` : ''}</span></div>
-              {active.inviteeEmail && <div className="rx-row"><span className="rx-k">الإيميل</span><span className="rx-v">{active.inviteeEmail}</span></div>}
-              {active.inviteePhone && <div className="rx-row"><span className="rx-k">التليفون</span><span className="rx-v">{active.inviteePhone}</span></div>}
-              {active.field && <div className="rx-row"><span className="rx-k">المجال</span><span className="rx-v">{active.field}</span></div>}
+              <div className="rx-row"><span className="rx-k">{tr('adp.th.client', 'العميل')}</span><span className="rx-v">{active.client?.fullName || '—'}{active.client?.email ? ` · ${active.client.email}` : ''}</span></div>
+              <div className="rx-row"><span className="rx-k">{tr('ainv.th.invitee', 'المدعوّ')}</span><span className="rx-v">{active.inviteeName}{active.inviteeType ? ` (${active.inviteeType})` : ''}</span></div>
+              {active.inviteeEmail && <div className="rx-row"><span className="rx-k">{tr('ainv.email', 'الإيميل')}</span><span className="rx-v">{active.inviteeEmail}</span></div>}
+              {active.inviteePhone && <div className="rx-row"><span className="rx-k">{tr('ainv.phone', 'التليفون')}</span><span className="rx-v">{active.inviteePhone}</span></div>}
+              {active.field && <div className="rx-row"><span className="rx-k">{tr('co.th.field', 'المجال')}</span><span className="rx-v">{active.field}</span></div>}
               <p className="rx-desc">{active.projectDescription}</p>
               {active.message && (
                 <>
-                  <label className="rx-label">رسالة العميل لمقدم الخدمة</label>
+                  <label className="rx-label">{tr('ainv.clientMsg', 'رسالة العميل لمقدم الخدمة')}</label>
                   <p className="rx-desc" style={{ margin: 0 }}>{active.message}</p>
                 </>
               )}
 
               {saveErr && <div className="rx-err" style={{ marginTop: 14 }}>{saveErr}</div>}
 
-              <label className="rx-label">حالة الدعوة</label>
+              <label className="rx-label">{tr('ainv.statusLabel', 'حالة الدعوة')}</label>
               <select className="rx-select" value={status} onChange={(e) => setStatus(e.target.value)}>
                 {STATUS_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
+                  <option key={o.value} value={o.value}>{tr(o.labelKey)}</option>
                 ))}
               </select>
 
-              <label className="rx-label">ملاحظة للعميل (اختياري)</label>
+              <label className="rx-label">{tr('arc.noteLabel', 'ملاحظة للعميل (اختياري)')}</label>
               <textarea
                 className="rx-area"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="أي تحديث حابب توصّله للعميل عن حالة الدعوة."
+                placeholder={tr('ainv.notePh', 'أي تحديث حابب توصّله للعميل عن حالة الدعوة.')}
               />
             </div>
             <div className="rx-foot">
-              <button className="ad-btn-mini" onClick={close}>إلغاء</button>
+              <button className="ad-btn-mini" onClick={close}>{tr('common.cancel', 'إلغاء')}</button>
               <button className="ad-btn" onClick={submit} disabled={saving}>
-                {saving ? 'جاري الحفظ...' : 'حفظ التحديث'}
+                {saving ? tr('apl.saving', 'جاري الحفظ...') : tr('ainv.saveUpdate', 'حفظ التحديث')}
               </button>
             </div>
           </div>
