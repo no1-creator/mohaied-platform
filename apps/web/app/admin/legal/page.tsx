@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import AdminShell from '@/components/AdminShell';
+import { useI18n } from '@/lib/i18n';
 
 type Req = {
   id: string;
@@ -29,22 +30,22 @@ type Consultant = {
   legalConsultantProfile?: { title?: string; field?: string } | null;
 };
 
-const CAT_LABEL: Record<string, string> = {
-  IP_PROTECTION: 'ملكية فكرية',
-  COMPANY_FORMATION: 'تأسيس شركات',
-  FOREIGNER_CASE: 'قضايا أجانب',
-  GENERAL_CONSULT: 'استشارة عامة',
-  OTHER: 'أخرى',
+const CAT_LABEL_KEYS: Record<string, string> = {
+  IP_PROTECTION: 'alg.cat.IP_PROTECTION',
+  COMPANY_FORMATION: 'alg.cat.COMPANY_FORMATION',
+  FOREIGNER_CASE: 'alg.cat.FOREIGNER_CASE',
+  GENERAL_CONSULT: 'alg.cat.GENERAL_CONSULT',
+  OTHER: 'alg.cat.OTHER',
 };
 
-const STATUS_LABEL: Record<string, string> = {
-  SUBMITTED: 'مُقدَّم',
-  IN_REVIEW: 'قيد المراجعة',
-  ASSIGNED: 'تم التعيين',
-  IN_PROGRESS: 'قيد التنفيذ',
-  RESOLVED: 'تم الحل',
-  CLOSED: 'مغلق',
-  REJECTED: 'مرفوض',
+const STATUS_LABEL_KEYS: Record<string, string> = {
+  SUBMITTED: 'alg.status.SUBMITTED',
+  IN_REVIEW: 'alg.status.IN_REVIEW',
+  ASSIGNED: 'alg.status.ASSIGNED',
+  IN_PROGRESS: 'alg.status.IN_PROGRESS',
+  RESOLVED: 'alg.status.RESOLVED',
+  CLOSED: 'alg.status.CLOSED',
+  REJECTED: 'alg.status.REJECTED',
 };
 
 const STATUS_TONE: Record<string, string> = {
@@ -58,17 +59,17 @@ const STATUS_TONE: Record<string, string> = {
 };
 
 const TABS = [
-  { key: 'ALL', label: 'الكل' },
-  { key: 'SUBMITTED', label: 'مُقدَّم' },
-  { key: 'IN_REVIEW', label: 'قيد المراجعة' },
-  { key: 'ASSIGNED', label: 'تم التعيين' },
-  { key: 'IN_PROGRESS', label: 'قيد التنفيذ' },
-  { key: 'RESOLVED', label: 'تم الحل' },
-  { key: 'CLOSED', label: 'مغلق' },
-  { key: 'REJECTED', label: 'مرفوض' },
+  { key: 'ALL', labelKey: 'aky.status.ALL' },
+  { key: 'SUBMITTED', labelKey: 'alg.status.SUBMITTED' },
+  { key: 'IN_REVIEW', labelKey: 'alg.status.IN_REVIEW' },
+  { key: 'ASSIGNED', labelKey: 'alg.status.ASSIGNED' },
+  { key: 'IN_PROGRESS', labelKey: 'alg.status.IN_PROGRESS' },
+  { key: 'RESOLVED', labelKey: 'alg.status.RESOLVED' },
+  { key: 'CLOSED', labelKey: 'alg.status.CLOSED' },
+  { key: 'REJECTED', labelKey: 'alg.status.REJECTED' },
 ];
 
-const STATUS_OPTIONS = Object.keys(STATUS_LABEL);
+const STATUS_OPTIONS = Object.keys(STATUS_LABEL_KEYS);
 
 const AL_CSS = `
 .al-editor{background:#fff;border:1px solid var(--green-light);border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 10px 26px rgba(24,70,61,.08);}
@@ -86,6 +87,7 @@ const AL_CSS = `
 `;
 
 export default function AdminLegalPage() {
+  const { tr } = useI18n();
   const [rows, setRows] = useState<Req[]>([]);
   const [consultants, setConsultants] = useState<Consultant[]>([]);
   const [tab, setTab] = useState('ALL');
@@ -144,13 +146,13 @@ export default function AdminLegalPage() {
       setSel(null);
       await load();
     } catch (e: any) {
-      alert(e?.message || 'حصل خطأ أثناء الحفظ');
+      alert(e?.message || tr('alg.errSave', 'حصل خطأ أثناء الحفظ'));
     }
     setSaving(false);
   }
 
   return (
-    <AdminShell active="legal" title="الطلبات القانونية">
+    <AdminShell active="legal" title={tr('alg.title', 'الطلبات القانونية')}>
       <style>{AL_CSS}</style>
 
       <div className="ad-toolbar">
@@ -161,7 +163,7 @@ export default function AdminLegalPage() {
               className={tab === t.key ? 'active' : ''}
               onClick={() => setTab(t.key)}
             >
-              {t.label}
+              {tr(t.labelKey)}
             </button>
           ))}
         </div>
@@ -170,47 +172,47 @@ export default function AdminLegalPage() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && load()}
-            placeholder="ابحث بالعنوان أو الكود..."
+            placeholder={tr('alg.searchPh', 'ابحث بالعنوان أو الكود...')}
           />
-          <button onClick={load}>بحث</button>
+          <button onClick={load}>{tr('common.search', 'بحث')}</button>
         </div>
       </div>
 
       {sel && (
         <div className="al-editor">
           <h3>{sel.title}</h3>
-          <div className="al-code">{sel.code} · {CAT_LABEL[sel.category] || sel.category}</div>
+          <div className="al-code">{sel.code} · {CAT_LABEL_KEYS[sel.category] ? tr(CAT_LABEL_KEYS[sel.category]) : sel.category}</div>
           <div className="al-editor-grid">
             {sel.description && (
               <div className="al-detail">
                 {sel.description}
-                {sel.entityName ? `\n\nاسم الكيان: ${sel.entityName}` : ''}
-                {sel.nationality ? `\nالجنسية: ${sel.nationality}` : ''}
-                {sel.budget ? `\nالميزانية: ${sel.budget} ج.م` : ''}
-                {sel.preferredContact ? `\nوسيلة التواصل: ${sel.preferredContact}` : ''}
-                {sel.consultantNote ? `\n\nرد المستشار: ${sel.consultantNote}` : ''}
+                {sel.entityName ? `\n\n${tr('alg.entityName', 'اسم الكيان:')} ${sel.entityName}` : ''}
+                {sel.nationality ? `\n${tr('alg.nationality', 'الجنسية:')} ${sel.nationality}` : ''}
+                {sel.budget ? `\n${tr('alg.budget', 'الميزانية:')} ${sel.budget} ${tr('common.currency', 'ج.م')}` : ''}
+                {sel.preferredContact ? `\n${tr('alg.contact', 'وسيلة التواصل:')} ${sel.preferredContact}` : ''}
+                {sel.consultantNote ? `\n\n${tr('alg.consultantReply', 'رد المستشار:')} ${sel.consultantNote}` : ''}
               </div>
             )}
             <div className="al-fld">
-              <label>الحالة</label>
+              <label>{tr('co.th.status', 'الحالة')}</label>
               <select
                 value={draftStatus}
                 onChange={(e) => setDraftStatus(e.target.value)}
               >
                 {STATUS_OPTIONS.map((s) => (
                   <option key={s} value={s}>
-                    {STATUS_LABEL[s]}
+                    {tr(STATUS_LABEL_KEYS[s])}
                   </option>
                 ))}
               </select>
             </div>
             <div className="al-fld">
-              <label>المستشار المسؤول</label>
+              <label>{tr('alg.assignedConsultant', 'المستشار المسؤول')}</label>
               <select
                 value={draftConsultant}
                 onChange={(e) => setDraftConsultant(e.target.value)}
               >
-                <option value="">— بدون تعيين —</option>
+                <option value="">{tr('alg.unassigned', '— بدون تعيين —')}</option>
                 {consultants.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.fullName}
@@ -222,40 +224,40 @@ export default function AdminLegalPage() {
               </select>
             </div>
             <div className="al-fld full">
-              <label>ملاحظة للعميل (اختياري)</label>
+              <label>{tr('arc.noteLabel', 'ملاحظة للعميل (اختياري)')}</label>
               <textarea
                 value={draftNote}
                 onChange={(e) => setDraftNote(e.target.value)}
-                placeholder="ملاحظة تظهر للعميل مع طلبه"
+                placeholder={tr('alg.notePh', 'ملاحظة تظهر للعميل مع طلبه')}
               />
             </div>
           </div>
           <div className="al-editor-actions">
             <button className="ad-btn" onClick={save} disabled={saving}>
-              {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
+              {saving ? tr('apl.saving', 'جاري الحفظ...') : tr('alg.saveChanges', 'حفظ التغييرات')}
             </button>
             <button className="al-cancel" onClick={() => setSel(null)}>
-              إلغاء
+              {tr('common.cancel', 'إلغاء')}
             </button>
           </div>
         </div>
       )}
 
       {loading ? (
-        <div className="ad-loading">جاري التحميل...</div>
+        <div className="ad-loading">{tr('cls.loading', 'جاري التحميل...')}</div>
       ) : rows.length === 0 ? (
-        <div className="ad-empty">لا توجد طلبات في هذا القسم.</div>
+        <div className="ad-empty">{tr('alg.empty', 'لا توجد طلبات في هذا القسم.')}</div>
       ) : (
         <div className="ad-table-wrap">
           <table className="ad-table">
             <thead>
               <tr>
-                <th>الكود</th>
-                <th>العنوان</th>
-                <th>النوع</th>
-                <th>العميل</th>
-                <th>المستشار</th>
-                <th>الحالة</th>
+                <th>{tr('acx.th.code', 'الكود')}</th>
+                <th>{tr('aad.fTitle', 'العنوان')}</th>
+                <th>{tr('acx.th.type', 'النوع')}</th>
+                <th>{tr('adp.th.client', 'العميل')}</th>
+                <th>{tr('alg.thConsultant', 'المستشار')}</th>
+                <th>{tr('co.th.status', 'الحالة')}</th>
                 <th></th>
               </tr>
             </thead>
@@ -264,18 +266,18 @@ export default function AdminLegalPage() {
                 <tr key={r.id}>
                   <td className="ad-mono">{r.code}</td>
                   <td>{r.title}</td>
-                  <td>{CAT_LABEL[r.category] || r.category}</td>
+                  <td>{CAT_LABEL_KEYS[r.category] ? tr(CAT_LABEL_KEYS[r.category]) : r.category}</td>
                   <td>{r.client?.fullName || '—'}</td>
                   <td>{r.assignedConsultant?.fullName || '—'}</td>
                   <td>
                     <span className={`ad-badge ${STATUS_TONE[r.status] || 'muted'}`}>
-                      {STATUS_LABEL[r.status] || r.status}
+                      {STATUS_LABEL_KEYS[r.status] ? tr(STATUS_LABEL_KEYS[r.status]) : r.status}
                     </span>
                   </td>
                   <td>
                     <div className="ad-row-actions">
                       <button className="ad-btn-mini" onClick={() => openEditor(r)}>
-                        إدارة
+                        {tr('ainv.manage', 'إدارة')}
                       </button>
                     </div>
                   </td>
