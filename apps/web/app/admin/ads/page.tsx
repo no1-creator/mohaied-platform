@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 import { api } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 
 type Ad = {
   id: string;
@@ -26,17 +27,17 @@ type Ad = {
 };
 
 const PLACEMENTS = [
-  { value: 'HOME_TOP', label: 'أعلى الرئيسية' },
-  { value: 'HOME_STRIP', label: 'شريط وسط الرئيسية' },
-  { value: 'CLIENT_DASHBOARD', label: 'صفحة العميل' },
+  { value: 'HOME_TOP', labelKey: 'aad.place.HOME_TOP' },
+  { value: 'HOME_STRIP', labelKey: 'aad.place.HOME_STRIP' },
+  { value: 'CLIENT_DASHBOARD', labelKey: 'aad.place.CLIENT_DASHBOARD' },
 ];
 
-const STATUS_LABELS: Record<string, string> = {
-  PENDING: 'بانتظار المراجعة',
-  ACTIVE: 'مفعّل',
-  PAUSED: 'موقوف',
-  REJECTED: 'مرفوض',
-  EXPIRED: 'منتهي',
+const STATUS_LABEL_KEYS: Record<string, string> = {
+  PENDING: 'aad.status.PENDING',
+  ACTIVE: 'aad.status.ACTIVE',
+  PAUSED: 'aad.status.PAUSED',
+  REJECTED: 'aad.status.REJECTED',
+  EXPIRED: 'aad.status.EXPIRED',
 };
 
 const EMPTY = {
@@ -150,10 +151,10 @@ function addDaysStr(n: number) {
   d.setDate(d.getDate() + n);
   return d.toISOString().slice(0, 10);
 }
-function fmtDate(iso?: string | null) {
+function fmtDate(iso?: string | null, locale = 'ar-EG') {
   if (!iso) return '—';
   try {
-    return new Date(iso).toLocaleDateString('ar-EG');
+    return new Date(iso).toLocaleDateString(locale);
   } catch {
     return '—';
   }
@@ -227,6 +228,8 @@ const AAD_CSS = `
 `;
 
 export default function AdminAdsPage() {
+  const { tr, lang } = useI18n();
+  const dateLocale = lang === 'en' ? 'en-US' : 'ar-EG';
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -283,7 +286,7 @@ export default function AdminAdsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      alert('من فضلك اختر ملف صورة');
+      alert(tr('aad.errPickImage', 'من فضلك اختر ملف صورة'));
       return;
     }
     setUploading(true);
@@ -291,7 +294,7 @@ export default function AdminAdsPage() {
       const dataUrl = await compressImage(file);
       setForm((f) => ({ ...f, imageUrl: dataUrl }));
     } catch {
-      alert('تعذّرت معالجة الصورة، جرّب صورة تانية');
+      alert(tr('aad.errProcess', 'تعذّرت معالجة الصورة، جرّب صورة تانية'));
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -299,7 +302,10 @@ export default function AdminAdsPage() {
   };
 
   const submit = async () => {
-if (!form.imageUrl && !form.title.trim()) { alert('ضيف صورة أو عنوان على الأقل'); return; }
+    if (!form.imageUrl && !form.title.trim()) {
+      alert(tr('aad.errNeed', 'ضيف صورة أو عنوان على الأقل'));
+      return;
+    }
     setSaving(true);
     const payload = {
       title: form.title,
@@ -321,7 +327,7 @@ if (!form.imageUrl && !form.title.trim()) { alert('ضيف صورة أو عنوا
       resetForm();
       load();
     } catch (err: any) {
-      alert('فشل الحفظ: ' + err.message);
+      alert(tr('aad.saveFailPre', 'فشل الحفظ: ') + err.message);
     } finally {
       setSaving(false);
     }
@@ -337,7 +343,7 @@ if (!form.imageUrl && !form.title.trim()) { alert('ضيف صورة أو عنوا
   };
 
   const remove = async (id: string) => {
-    if (!confirm('متأكد من حذف الإعلان؟')) return;
+    if (!confirm(tr('aad.confirmDelete', 'متأكد من حذف الإعلان؟'))) return;
     try {
       await api(`/ads/${id}`, { method: 'DELETE' });
       if (editingId === id) resetForm();
@@ -348,152 +354,155 @@ if (!form.imageUrl && !form.title.trim()) { alert('ضيف صورة أو عنوا
   };
 
   return (
-    <AdminShell active="ads" title="الإعلانات">
+    <AdminShell active="ads" title={tr('aad.title', 'الإعلانات')}>
       <style>{AAD_CSS}</style>
 
       <div className={`aad-form ${editingId ? 'aad-editing' : ''}`}>
         <div className="aad-form-head">
-          <div className="aad-form-title">{editingId ? '✏️ تعديل الإعلان' : 'إضافة إعلان جديد'}</div>
+          <div className="aad-form-title">{editingId ? tr('aad.editTitle', '✏️ تعديل الإعلان') : tr('aad.newTitle', 'إضافة إعلان جديد')}</div>
           {editingId && (
-            <button className="aad-cancel" onClick={resetForm}>إلغاء التعديل</button>
+            <button className="aad-cancel" onClick={resetForm}>{tr('aad.cancelEdit', 'إلغاء التعديل')}</button>
           )}
         </div>
 
         <div className="aad-grid">
           <div className="aad-f aad-wide">
-            <span>العنوان </span>
-            <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="مثال: خصم 20% على تصميم المواقع" />
+            <span>{tr('aad.fTitle', 'العنوان')}</span>
+            <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={tr('aad.titlePh', 'مثال: خصم 20% على تصميم المواقع')} />
           </div>
           <div className="aad-f">
-            <span>الوصف</span>
-            <input value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} placeholder="سطر وصف قصير" />
+            <span>{tr('apl.fDesc', 'الوصف')}</span>
+            <input value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} placeholder={tr('aad.subtitlePh', 'سطر وصف قصير')} />
           </div>
           <div className="aad-f">
-            <span>نص الزر</span>
-            <input value={form.ctaLabel} onChange={(e) => setForm({ ...form, ctaLabel: e.target.value })} placeholder="اعرف أكثر" />
+            <span>{tr('aad.fCta', 'نص الزر')}</span>
+            <input value={form.ctaLabel} onChange={(e) => setForm({ ...form, ctaLabel: e.target.value })} placeholder={tr('aad.ctaPh', 'اعرف أكثر')} />
           </div>
           <div className="aad-f">
-            <span>الرابط عند الضغط (اختياري)</span>
+            <span>{tr('aad.fLink', 'الرابط عند الضغط (اختياري)')}</span>
             <input value={form.linkUrl} onChange={(e) => setForm({ ...form, linkUrl: e.target.value })} placeholder="https://..." />
           </div>
           <div className="aad-f">
-            <span>مكان العرض</span>
+            <span>{tr('aad.fPlacement', 'مكان العرض')}</span>
             <select value={form.placement} onChange={(e) => setForm({ ...form, placement: e.target.value })}>
               {PLACEMENTS.map((p) => (
-                <option key={p.value} value={p.value}>{p.label}</option>
+                <option key={p.value} value={p.value}>{tr(p.labelKey)}</option>
               ))}
             </select>
           </div>
         </div>
 
         <div className="aad-f aad-wide" style={{ marginTop: 14 }}>
-          <span>صورة الإعلان</span>
+          <span>{tr('aad.fImage', 'صورة الإعلان')}</span>
           {form.imageUrl ? (
             <div className="aad-preview" style={{ backgroundImage: `url(${form.imageUrl})` }}>
               <button className="aad-preview-x" onClick={() => setForm({ ...form, imageUrl: '' })}>✕</button>
             </div>
           ) : (
             <label className="aad-drop">
-              <span>🖼️ {uploading ? 'جاري المعالجة...' : 'ارفع صورة من جهازك'}</span>
-              <span className="aad-drop-hint">يفضّل صورة عريضة (مثال 1600×600) — بتتصغّر تلقائيًا</span>
+              <span>🖼️ {uploading ? tr('aad.processing', 'جاري المعالجة...') : tr('aad.uploadDevice', 'ارفع صورة من جهازك')}</span>
+              <span className="aad-drop-hint">{tr('aad.imageHint', 'يفضّل صورة عريضة (مثال 1600×600) — بتتصغّر تلقائيًا')}</span>
               <input type="file" accept="image/*" hidden onChange={onFile} />
             </label>
           )}
         </div>
 
-        <div className="aad-sec">⏱️ مدة العرض</div>
+        <div className="aad-sec">{tr('aad.secDuration', '⏱️ مدة العرض')}</div>
         <div className="aad-quick">
-          <button className="aad-chip" onClick={() => setDuration(7)}>7 أيام</button>
-          <button className="aad-chip" onClick={() => setDuration(30)}>30 يوم</button>
-          <button className="aad-chip" onClick={() => setDuration(90)}>90 يوم</button>
-          <button className="aad-chip" onClick={() => setForm({ ...form, startDate: '', endDate: '' })}>بدون مدة (دائم)</button>
+          <button className="aad-chip" onClick={() => setDuration(7)}>{tr('aad.days7', '7 أيام')}</button>
+          <button className="aad-chip" onClick={() => setDuration(30)}>{tr('aad.days30', '30 يوم')}</button>
+          <button className="aad-chip" onClick={() => setDuration(90)}>{tr('aad.days90', '90 يوم')}</button>
+          <button className="aad-chip" onClick={() => setForm({ ...form, startDate: '', endDate: '' })}>{tr('aad.noDuration', 'بدون مدة (دائم)')}</button>
         </div>
         <div className="aad-grid">
           <div className="aad-f">
-            <span>من تاريخ</span>
+            <span>{tr('aad.fromDate', 'من تاريخ')}</span>
             <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
           </div>
           <div className="aad-f">
-            <span>إلى تاريخ</span>
+            <span>{tr('aad.toDate', 'إلى تاريخ')}</span>
             <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
           </div>
         </div>
 
-        <div className="aad-sec">🎯 التحكم في الظهور</div>
+        <div className="aad-sec">{tr('aad.secVisibility', '🎯 التحكم في الظهور')}</div>
         <div className="aad-grid">
           <div className="aad-f">
-            <span>الأولوية (أعلى = يظهر أول وأكتر)</span>
+            <span>{tr('aad.fPriority', 'الأولوية (أعلى = يظهر أول وأكتر)')}</span>
             <input type="number" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} />
           </div>
           <div className="aad-f">
-            <span>حد الظهور في اليوم (0 = مفتوح)</span>
+            <span>{tr('aad.fDailyCap', 'حد الظهور في اليوم (0 = مفتوح)')}</span>
             <input type="number" value={form.dailyImpressionCap} onChange={(e) => setForm({ ...form, dailyImpressionCap: e.target.value })} />
-            <span className="aad-hint">لما يوصل العدد ده في اليوم، الإعلان يوقف لبكرة تلقائيًا.</span>
+            <span className="aad-hint">{tr('aad.dailyCapHint', 'لما يوصل العدد ده في اليوم، الإعلان يوقف لبكرة تلقائيًا.')}</span>
           </div>
         </div>
 
-        <div className="aad-sec">💰 التسعير</div>
+        <div className="aad-sec">{tr('aad.secPricing', '💰 التسعير')}</div>
         <div className="aad-grid">
           <div className="aad-f">
-            <span>السعر (جنيه)</span>
+            <span>{tr('aad.fAmount', 'السعر')} ({tr('common.currency', 'ج.م')})</span>
             <input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
           </div>
           <label className="aad-check">
             <input type="checkbox" checked={form.paid} onChange={(e) => setForm({ ...form, paid: e.target.checked })} />
-            تم دفع قيمة الإعلان
+            {tr('aad.paidCheck', 'تم دفع قيمة الإعلان')}
           </label>
         </div>
 
-     <button className="aad-submit" onClick={submit} disabled={saving}>
-  {saving ? 'جاري الحفظ...' : editingId ? 'حفظ التعديلات' : 'إضافة الإعلان (مفعّل مباشرة)'}
+        <button className="aad-submit" onClick={submit} disabled={saving}>
+          {saving ? tr('apl.saving', 'جاري الحفظ...') : editingId ? tr('apl.saveEdits', 'حفظ التعديلات') : tr('aad.addBtn', 'إضافة الإعلان (مفعّل مباشرة)')}
         </button>
       </div>
 
       {loading ? (
-        <div className="aad-empty">جاري التحميل...</div>
+        <div className="aad-empty">{tr('cls.loading', 'جاري التحميل...')}</div>
       ) : error ? (
         <div className="aad-empty">{error}</div>
       ) : ads.length === 0 ? (
-        <div className="aad-empty">لا توجد إعلانات بعد. أضف أول إعلان من الأعلى.</div>
+        <div className="aad-empty">{tr('aad.empty', 'لا توجد إعلانات بعد. أضف أول إعلان من الأعلى.')}</div>
       ) : (
         <div className="aad-list">
-          {ads.map((ad) => (
-            <div key={ad.id} className={`aad-row ${editingId === ad.id ? 'aad-active-edit' : ''}`}>
-              <div className="aad-thumb" style={ad.imageUrl ? { backgroundImage: `url(${ad.imageUrl})` } : {}}>
-                {!ad.imageUrl && 'بدون صورة'}
-              </div>
-              <div className="aad-row-main">
-                <div className="aad-row-top">
-                  <span className="aad-row-title">{ad.title}</span>
-                  <span className={`aad-badge aad-s-${ad.status}`}>{STATUS_LABELS[ad.status] || ad.status}</span>
+          {ads.map((ad) => {
+            const pl = PLACEMENTS.find((p) => p.value === ad.placement);
+            return (
+              <div key={ad.id} className={`aad-row ${editingId === ad.id ? 'aad-active-edit' : ''}`}>
+                <div className="aad-thumb" style={ad.imageUrl ? { backgroundImage: `url(${ad.imageUrl})` } : {}}>
+                  {!ad.imageUrl && tr('aad.noImage', 'بدون صورة')}
                 </div>
-                <div className="aad-meta">
-                  <span>{PLACEMENTS.find((p) => p.value === ad.placement)?.label || ad.placement}</span>
-                  <span>الأولوية: {ad.priority}</span>
-                  <span>السعر: {ad.amount > 0 ? `${ad.amount} ج` : '—'}{ad.paid ? ' ✓ مدفوع' : ''}</span>
+                <div className="aad-row-main">
+                  <div className="aad-row-top">
+                    <span className="aad-row-title">{ad.title}</span>
+                    <span className={`aad-badge aad-s-${ad.status}`}>{STATUS_LABEL_KEYS[ad.status] ? tr(STATUS_LABEL_KEYS[ad.status]) : ad.status}</span>
+                  </div>
+                  <div className="aad-meta">
+                    <span>{pl ? tr(pl.labelKey) : ad.placement}</span>
+                    <span>{tr('aad.metaPriority', 'الأولوية:')} {ad.priority}</span>
+                    <span>{tr('aad.metaPrice', 'السعر:')} {ad.amount > 0 ? `${ad.amount} ${tr('common.currency', 'ج.م')}` : '—'}{ad.paid ? tr('aad.paidTag', ' ✓ مدفوع') : ''}</span>
+                  </div>
+                  <div className="aad-meta">
+                    <span>👁 {ad.impressions}</span>
+                    <span>👆 {ad.clicks}</span>
+                    <span>{tr('aad.metaToday', 'اليوم:')} {ad.impressionsToday}/{ad.dailyImpressionCap > 0 ? ad.dailyImpressionCap : '∞'}</span>
+                    <span>{tr('aad.metaDuration', 'المدة:')} {fmtDate(ad.startDate, dateLocale)} ← {fmtDate(ad.endDate, dateLocale)}</span>
+                  </div>
                 </div>
-                <div className="aad-meta">
-                  <span>👁 {ad.impressions}</span>
-                  <span>👆 {ad.clicks}</span>
-                  <span>اليوم: {ad.impressionsToday}/{ad.dailyImpressionCap > 0 ? ad.dailyImpressionCap : '∞'}</span>
-                  <span>المدة: {fmtDate(ad.startDate)} ← {fmtDate(ad.endDate)}</span>
+                <div className="aad-actions">
+                  <button className="aad-ico" title={tr('apl.edit', 'تعديل')} onClick={() => startEdit(ad)}>{IC.edit}</button>
+                  {ad.status !== 'ACTIVE' && (
+                    <button className="aad-ico aad-ico-ok" title={tr('aop.enable', 'تفعيل')} onClick={() => setStatus(ad.id, 'ACTIVE')}>{IC.play}</button>
+                  )}
+                  {ad.status === 'ACTIVE' && (
+                    <button className="aad-ico aad-ico-warn" title={tr('aop.disable', 'إيقاف')} onClick={() => setStatus(ad.id, 'PAUSED')}>{IC.pause}</button>
+                  )}
+                  {ad.status !== 'REJECTED' && (
+                    <button className="aad-ico" title={tr('aad.reject', 'رفض')} onClick={() => setStatus(ad.id, 'REJECTED')}>{IC.reject}</button>
+                  )}
+                  <button className="aad-ico aad-ico-danger" title={tr('apl.delete', 'حذف')} onClick={() => remove(ad.id)}>{IC.trash}</button>
                 </div>
               </div>
-              <div className="aad-actions">
-                <button className="aad-ico" title="تعديل" onClick={() => startEdit(ad)}>{IC.edit}</button>
-                {ad.status !== 'ACTIVE' && (
-                  <button className="aad-ico aad-ico-ok" title="تفعيل" onClick={() => setStatus(ad.id, 'ACTIVE')}>{IC.play}</button>
-                )}
-                {ad.status === 'ACTIVE' && (
-                  <button className="aad-ico aad-ico-warn" title="إيقاف" onClick={() => setStatus(ad.id, 'PAUSED')}>{IC.pause}</button>
-                )}
-                {ad.status !== 'REJECTED' && (
-                  <button className="aad-ico" title="رفض" onClick={() => setStatus(ad.id, 'REJECTED')}>{IC.reject}</button>
-                )}
-                <button className="aad-ico aad-ico-danger" title="حذف" onClick={() => remove(ad.id)}>{IC.trash}</button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </AdminShell>
