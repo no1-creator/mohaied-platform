@@ -3,9 +3,11 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getToken } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 
 export default function SupervisorHome() {
   const router = useRouter();
+  const { tr } = useI18n();
 
   useEffect(() => {
     if (!getToken()) {
@@ -26,7 +28,7 @@ export default function SupervisorHome() {
         fontFamily: "'Noto Sans Arabic', sans-serif",
       }}
     >
-      جاري التحويل...
+      {tr('common.redirecting', 'جاري التحويل...')}
     </div>
   );
 }
