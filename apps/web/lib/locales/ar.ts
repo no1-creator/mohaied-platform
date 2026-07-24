@@ -886,4 +886,20 @@ export const ar: Record<string, string> = {
 'atm.superAdminSwitch': 'سوبر أدمن (وصول كامل + إدارة الفريق)',
 'atm.fullAccessSwitch': 'وصول كامل لكل الأقسام',
 'atm.saveScopes': 'حفظ الصلاحيات',
+
+// مفتاح عام لصفحات التحويل
+'common.redirecting': 'جاري التحويل...',
+// ===== المشرف: التكليفات =====
+'sas.title': 'تكليفاتي',
+'sas.status.INVITED': 'دعوة جديدة',
+'sas.status.ACCEPTED': 'مقبولة',
+'sas.status.ACTIVE': 'نشطة',
+'sas.status.DECLINED': 'مرفوضة',
+'sas.status.COMPLETED': 'منتهية',
+'sas.empty': 'مفيش تكليفات حاليًا.',
+'sas.rate': 'أجر المراجعة:',
+'sas.reportsUnit': 'تقرير',
+'sas.accept': 'قبول التكليف',
+'sas.decline': 'رفض',
+'sas.reportsLink': 'التقارير وكتابة تقرير',
 };
