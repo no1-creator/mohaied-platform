@@ -874,4 +874,16 @@ export const ar: Record<string, string> = {
 'aem.err': 'حصل خطأ',
 'aem.errName': 'اكتب اسم المكتب.',
 'aem.errCity': 'اكتب المدينة.',
+
+// ===== الأدمن: صلاحيات الفريق =====
+'atm.title': 'صلاحيات الفريق',
+'atm.errLoad': 'تعذّر التحميل',
+'atm.saved': 'اتحفظت التغييرات ✅',
+'atm.limitedNote': 'انت أدمن محدود الصلاحية — تقدر تشوف الفريق بس، والتعديل متاح للسوبر أدمن.',
+'atm.superAdmin': 'سوبر أدمن',
+'atm.fullAccess': 'وصول كامل',
+'atm.limited': 'محدود',
+'atm.superAdminSwitch': 'سوبر أدمن (وصول كامل + إدارة الفريق)',
+'atm.fullAccessSwitch': 'وصول كامل لكل الأقسام',
+'atm.saveScopes': 'حفظ الصلاحيات',
 };
