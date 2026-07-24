@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { api, getToken } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 
 type Notif = {
   id: string;
@@ -51,19 +52,24 @@ const NB_CSS = `
 .nb-empty { padding:36px 16px; text-align:center; color:var(--muted); font-size:13px; }
 `;
 
-function timeAgo(iso: string) {
+function timeAgo(iso: string, tr: (k: string, f?: string) => string, lang: string) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 60) return 'الآن';
+  const fmt = (n: number, unitKey: string) => {
+    const unit = tr(unitKey);
+    return lang === 'en' ? `${n}${unit} ago` : `منذ ${n} ${unit}`;
+  };
+  if (s < 60) return tr('nb.now', 'الآن');
   const m = Math.floor(s / 60);
-  if (m < 60) return `منذ ${m} د`;
+  if (m < 60) return fmt(m, 'nb.unitMin');
   const h = Math.floor(m / 60);
-  if (h < 24) return `منذ ${h} س`;
+  if (h < 24) return fmt(h, 'nb.unitHour');
   const d = Math.floor(h / 24);
-  if (d < 30) return `منذ ${d} يوم`;
-  return `منذ ${Math.floor(d / 30)} شهر`;
+  if (d < 30) return fmt(d, 'nb.unitDay');
+  return fmt(Math.floor(d / 30), 'nb.unitMonth');
 }
 
 export default function NotificationBell() {
+  const { tr, lang } = useI18n();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Notif[]>([]);
   const [count, setCount] = useState(0);
@@ -142,7 +148,7 @@ export default function NotificationBell() {
   return (
     <div className="nb" ref={ref}>
       <style>{NB_CSS}</style>
-      <button className="nb-btn" onClick={toggle} aria-label="الإشعارات">
+      <button className="nb-btn" onClick={toggle} aria-label={tr('nb.title', 'الإشعارات')}>
         <svg
           width="20"
           height="20"
@@ -164,17 +170,17 @@ export default function NotificationBell() {
       {open && (
         <div className="nb-panel">
           <div className="nb-head">
-            <span className="nb-title">الإشعارات</span>
+            <span className="nb-title">{tr('nb.title', 'الإشعارات')}</span>
             {hasUnread && (
               <button className="nb-readall" onClick={markAll}>
-                تحديد الكل كمقروء
+                {tr('nb.readAll', 'تحديد الكل كمقروء')}
               </button>
             )}
           </div>
           <div className="nb-list">
-            {loading && <div className="nb-empty">جاري التحميل...</div>}
+            {loading && <div className="nb-empty">{tr('cls.loading', 'جاري التحميل...')}</div>}
             {!loading && items.length === 0 && (
-              <div className="nb-empty">مفيش إشعارات لسه 🔔</div>
+              <div className="nb-empty">{tr('nb.empty', 'مفيش إشعارات لسه 🔔')}</div>
             )}
             {!loading &&
               items.map((n) =>
@@ -189,7 +195,7 @@ export default function NotificationBell() {
                     <div className="nb-body">
                       <div className="nb-h">{n.title}</div>
                       {n.body && <div className="nb-t">{n.body}</div>}
-                      <div className="nb-time">{timeAgo(n.createdAt)}</div>
+                      <div className="nb-time">{timeAgo(n.createdAt, tr, lang)}</div>
                     </div>
                     {!n.isRead && <span className="nb-dot" />}
                   </Link>
@@ -203,7 +209,7 @@ export default function NotificationBell() {
                     <div className="nb-body">
                       <div className="nb-h">{n.title}</div>
                       {n.body && <div className="nb-t">{n.body}</div>}
-                      <div className="nb-time">{timeAgo(n.createdAt)}</div>
+                      <div className="nb-time">{timeAgo(n.createdAt, tr, lang)}</div>
                     </div>
                     {!n.isRead && <span className="nb-dot" />}
                   </div>
