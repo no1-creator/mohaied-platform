@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import AdminShell from '@/components/AdminShell';
-import { WORK_MODE, JOB_STATUS, money } from '@/lib/employment';
+import { money, workModeLabel, jobStatusLabel, jobStatusTone } from '@/lib/employment';
+import { useI18n } from '@/lib/i18n';
 
 type Office = {
   id: string; code: string; name: string; city: string; address?: string | null;
@@ -59,6 +60,7 @@ const AEM_CSS = `
 
 export default function AdminEmploymentPage() {
   const router = useRouter();
+  const { tr } = useI18n();
   const [state, setState] = useState<'loading' | 'ok' | 'denied'>('loading');
   const [tab, setTab] = useState<'offices' | 'jobs'>('offices');
 
@@ -118,8 +120,8 @@ export default function AdminEmploymentPage() {
 
   async function createOffice() {
     setOErr('');
-    if (oName.trim().length < 2) return setOErr('اكتب اسم المكتب.');
-    if (oCity.trim().length < 2) return setOErr('اكتب المدينة.');
+    if (oName.trim().length < 2) return setOErr(tr('aem.errName', 'اكتب اسم المكتب.'));
+    if (oCity.trim().length < 2) return setOErr(tr('aem.errCity', 'اكتب المدينة.'));
     setOSaving(true);
     try {
       await api('/employment/offices', {
@@ -134,7 +136,7 @@ export default function AdminEmploymentPage() {
       });
       setOName(''); setOCity(''); setOAddress(''); setOCapacity(''); setODesc('');
       await loadOffices();
-    } catch (e: any) { setOErr(e?.message || 'حصل خطأ'); }
+    } catch (e: any) { setOErr(e?.message || tr('aem.err', 'حصل خطأ')); }
     setOSaving(false);
   }
 
@@ -158,13 +160,13 @@ export default function AdminEmploymentPage() {
       });
       setEditOffice('');
       await loadOffices();
-    } catch (e: any) { alert(e?.message || 'حصل خطأ'); }
+    } catch (e: any) { alert(e?.message || tr('aem.err', 'حصل خطأ')); }
     setBusy(false);
   }
   async function toggleOffice(o: Office) {
     setBusy(true);
     try { await api(`/employment/offices/${o.id}`, { method: 'PATCH', body: { active: !o.active } }); await loadOffices(); }
-    catch (e: any) { alert(e?.message || 'حصل خطأ'); }
+    catch (e: any) { alert(e?.message || tr('aem.err', 'حصل خطأ')); }
     setBusy(false);
   }
 
@@ -181,41 +183,41 @@ export default function AdminEmploymentPage() {
       });
       setEditJob('');
       await loadJobs();
-    } catch (e: any) { alert(e?.message || 'حصل خطأ'); }
+    } catch (e: any) { alert(e?.message || tr('aem.err', 'حصل خطأ')); }
     setBusy(false);
   }
 
   if (state === 'loading')
-    return (<AdminShell active="employment" title="التوظيف الخليجي"><div className="aem-empty">جاري التحميل...</div></AdminShell>);
+    return (<AdminShell active="employment" title={tr('aem.title', 'التوظيف الخليجي')}><div className="aem-empty">{tr('cls.loading', 'جاري التحميل...')}</div></AdminShell>);
   if (state === 'denied')
-    return (<AdminShell active="employment" title="التوظيف الخليجي"><div className="aem-empty">الصفحة دي للأدمن بس.</div></AdminShell>);
+    return (<AdminShell active="employment" title={tr('aem.title', 'التوظيف الخليجي')}><div className="aem-empty">{tr('aem.denied', 'الصفحة دي للأدمن بس.')}</div></AdminShell>);
 
   return (
-    <AdminShell active="employment" title="التوظيف الخليجي">
+    <AdminShell active="employment" title={tr('aem.title', 'التوظيف الخليجي')}>
       <style>{AEM_CSS}</style>
 
       <div className="aem-tabs">
-        <button className={tab === 'offices' ? 'active' : ''} onClick={() => setTab('offices')}>مكاتب محايد</button>
-        <button className={tab === 'jobs' ? 'active' : ''} onClick={() => setTab('jobs')}>مراقبة الوظائف</button>
+        <button className={tab === 'offices' ? 'active' : ''} onClick={() => setTab('offices')}>{tr('aem.tabOffices', 'مكاتب محايد')}</button>
+        <button className={tab === 'jobs' ? 'active' : ''} onClick={() => setTab('jobs')}>{tr('aem.tabJobs', 'مراقبة الوظائف')}</button>
       </div>
 
       {tab === 'offices' ? (
         <>
           <div className="aem-panel">
-            <h3 className="aem-title" style={{ marginBottom: 12 }}>إضافة مكتب جديد</h3>
+            <h3 className="aem-title" style={{ marginBottom: 12 }}>{tr('aem.addOffice', 'إضافة مكتب جديد')}</h3>
             {oErr && <div className="aem-err">{oErr}</div>}
             <div className="aem-row">
-              <div className="aem-field"><label>اسم المكتب</label><input className="aem-input" value={oName} onChange={(e) => setOName(e.target.value)} placeholder="مثال: مكتب القاهرة" /></div>
-              <div className="aem-field"><label>المدينة</label><input className="aem-input" value={oCity} onChange={(e) => setOCity(e.target.value)} placeholder="مثال: القاهرة" /></div>
-              <div className="aem-field"><label>السعة (اختياري)</label><input className="aem-input" type="number" value={oCapacity} onChange={(e) => setOCapacity(e.target.value)} placeholder="عدد المقاعد" /></div>
+              <div className="aem-field"><label>{tr('aem.oName', 'اسم المكتب')}</label><input className="aem-input" value={oName} onChange={(e) => setOName(e.target.value)} placeholder={tr('aem.oNamePh', 'مثال: مكتب القاهرة')} /></div>
+              <div className="aem-field"><label>{tr('aem.oCity', 'المدينة')}</label><input className="aem-input" value={oCity} onChange={(e) => setOCity(e.target.value)} placeholder={tr('aem.oCityPh', 'مثال: القاهرة')} /></div>
+              <div className="aem-field"><label>{tr('aem.oCapacity', 'السعة (اختياري)')}</label><input className="aem-input" type="number" value={oCapacity} onChange={(e) => setOCapacity(e.target.value)} placeholder={tr('aem.oCapacityPh', 'عدد المقاعد')} /></div>
             </div>
-            <div className="aem-field"><label>العنوان (اختياري)</label><input className="aem-input" value={oAddress} onChange={(e) => setOAddress(e.target.value)} placeholder="العنوان التفصيلي" /></div>
-            <div className="aem-field"><label>وصف (اختياري)</label><textarea className="aem-area" value={oDesc} onChange={(e) => setODesc(e.target.value)} placeholder="تفاصيل المكتب والتجهيزات." /></div>
-            <button className="aem-btn" onClick={createOffice} disabled={oSaving}>{oSaving ? 'جاري الحفظ...' : 'إضافة المكتب'}</button>
+            <div className="aem-field"><label>{tr('aem.oAddress', 'العنوان (اختياري)')}</label><input className="aem-input" value={oAddress} onChange={(e) => setOAddress(e.target.value)} placeholder={tr('aem.oAddressPh', 'العنوان التفصيلي')} /></div>
+            <div className="aem-field"><label>{tr('aem.oDesc', 'وصف (اختياري)')}</label><textarea className="aem-area" value={oDesc} onChange={(e) => setODesc(e.target.value)} placeholder={tr('aem.oDescPh', 'تفاصيل المكتب والتجهيزات.')} /></div>
+            <button className="aem-btn" onClick={createOffice} disabled={oSaving}>{oSaving ? tr('apl.saving', 'جاري الحفظ...') : tr('aem.addOfficeBtn', 'إضافة المكتب')}</button>
           </div>
 
           {offices.length === 0 ? (
-            <div className="aem-empty">مفيش مكاتب مضافة لسه.</div>
+            <div className="aem-empty">{tr('aem.emptyOffices', 'مفيش مكاتب مضافة لسه.')}</div>
           ) : (
             <div className="aem-grid">
               {offices.map((o) => (
@@ -223,9 +225,9 @@ export default function AdminEmploymentPage() {
                   <div className="aem-card-top">
                     <div>
                       <h3 className="aem-title">{o.name}</h3>
-                      <p className="aem-meta">{o.city}{o.capacity != null ? ` · ${o.capacity} مقعد` : ''} · <span className="aem-mono">{o.code}</span></p>
+                      <p className="aem-meta">{o.city}{o.capacity != null ? ` · ${o.capacity} ${tr('aem.seatsUnit', 'مقعد')}` : ''} · <span className="aem-mono">{o.code}</span></p>
                     </div>
-                    <span className={`aem-badge ${o.active ? 'ok' : 'muted'}`}>{o.active ? 'مفعّل' : 'موقوف'}</span>
+                    <span className={`aem-badge ${o.active ? 'ok' : 'muted'}`}>{o.active ? tr('aem.active', 'مفعّل') : tr('aem.inactive', 'موقوف')}</span>
                   </div>
                   {o.address && <p className="aem-meta">{o.address}</p>}
                   {o.description && <p className="aem-meta">{o.description}</p>}
@@ -233,22 +235,22 @@ export default function AdminEmploymentPage() {
                   {editOffice === o.id ? (
                     <div className="aem-sub">
                       <div className="aem-row">
-                        <div className="aem-field"><label>الاسم</label><input className="aem-input" value={oDraft.name || ''} onChange={(e) => setODraft((d) => ({ ...d, name: e.target.value }))} /></div>
-                        <div className="aem-field"><label>المدينة</label><input className="aem-input" value={oDraft.city || ''} onChange={(e) => setODraft((d) => ({ ...d, city: e.target.value }))} /></div>
+                        <div className="aem-field"><label>{tr('adu.th.name', 'الاسم')}</label><input className="aem-input" value={oDraft.name || ''} onChange={(e) => setODraft((d) => ({ ...d, name: e.target.value }))} /></div>
+                        <div className="aem-field"><label>{tr('aem.oCity', 'المدينة')}</label><input className="aem-input" value={oDraft.city || ''} onChange={(e) => setODraft((d) => ({ ...d, city: e.target.value }))} /></div>
                       </div>
-                      <div className="aem-field"><label>العنوان</label><input className="aem-input" value={oDraft.address || ''} onChange={(e) => setODraft((d) => ({ ...d, address: e.target.value }))} /></div>
-                      <div className="aem-field"><label>السعة</label><input className="aem-input" type="number" value={oDraft.capacity ?? ''} onChange={(e) => setODraft((d) => ({ ...d, capacity: e.target.value === '' ? undefined : Number(e.target.value) }))} /></div>
-                      <div className="aem-field"><label>الوصف</label><textarea className="aem-area" value={oDraft.description || ''} onChange={(e) => setODraft((d) => ({ ...d, description: e.target.value }))} /></div>
-                      <label className="aem-check"><input type="checkbox" checked={!!oDraft.active} onChange={(e) => setODraft((d) => ({ ...d, active: e.target.checked }))} /> مكتب مفعّل</label>
+                      <div className="aem-field"><label>{tr('aem.fAddress', 'العنوان')}</label><input className="aem-input" value={oDraft.address || ''} onChange={(e) => setODraft((d) => ({ ...d, address: e.target.value }))} /></div>
+                      <div className="aem-field"><label>{tr('aem.fCapacity', 'السعة')}</label><input className="aem-input" type="number" value={oDraft.capacity ?? ''} onChange={(e) => setODraft((d) => ({ ...d, capacity: e.target.value === '' ? undefined : Number(e.target.value) }))} /></div>
+                      <div className="aem-field"><label>{tr('apl.fDesc', 'الوصف')}</label><textarea className="aem-area" value={oDraft.description || ''} onChange={(e) => setODraft((d) => ({ ...d, description: e.target.value }))} /></div>
+                      <label className="aem-check"><input type="checkbox" checked={!!oDraft.active} onChange={(e) => setODraft((d) => ({ ...d, active: e.target.checked }))} /> {tr('aem.officeActive', 'مكتب مفعّل')}</label>
                       <div className="aem-actions">
-                        <button className="aem-btn" onClick={() => saveOffice(o.id)} disabled={busy}>حفظ</button>
-                        <button className="aem-mini" onClick={() => setEditOffice('')}>إلغاء</button>
+                        <button className="aem-btn" onClick={() => saveOffice(o.id)} disabled={busy}>{tr('common.save', 'حفظ')}</button>
+                        <button className="aem-mini" onClick={() => setEditOffice('')}>{tr('common.cancel', 'إلغاء')}</button>
                       </div>
                     </div>
                   ) : (
                     <div className="aem-actions">
-                      <button className="aem-mini" onClick={() => startEditOffice(o)}>تعديل</button>
-                      <button className={`aem-mini ${o.active ? 'danger' : ''}`} onClick={() => toggleOffice(o)} disabled={busy}>{o.active ? 'إيقاف' : 'تفعيل'}</button>
+                      <button className="aem-mini" onClick={() => startEditOffice(o)}>{tr('apl.edit', 'تعديل')}</button>
+                      <button className={`aem-mini ${o.active ? 'danger' : ''}`} onClick={() => toggleOffice(o)} disabled={busy}>{o.active ? tr('aem.stop', 'إيقاف') : tr('aem.activate', 'تفعيل')}</button>
                     </div>
                   )}
                 </div>
@@ -259,16 +261,16 @@ export default function AdminEmploymentPage() {
       ) : (
         <>
           <div className="aem-search">
-            <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && loadJobs()} placeholder="ابحث بالمسمى أو الكود..." />
+            <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && loadJobs()} placeholder={tr('aem.jobSearchPh', 'ابحث بالمسمى أو الكود...')} />
             <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-              <option value="">كل الحالات</option>
-              {JOB_STATUSES.map((s) => <option key={s} value={s}>{JOB_STATUS[s]?.label || s}</option>)}
+              <option value="">{tr('aem.allStatuses', 'كل الحالات')}</option>
+              {JOB_STATUSES.map((s) => <option key={s} value={s}>{jobStatusLabel(tr, s)}</option>)}
             </select>
-            <button className="aem-btn" onClick={loadJobs}>بحث</button>
+            <button className="aem-btn" onClick={loadJobs}>{tr('common.search', 'بحث')}</button>
           </div>
 
           {jobs.length === 0 ? (
-            <div className="aem-empty">مفيش وظائف مطابقة.</div>
+            <div className="aem-empty">{tr('aem.emptyJobs', 'مفيش وظائف مطابقة.')}</div>
           ) : (
             <div className="aem-grid">
               {jobs.map((j) => (
@@ -276,26 +278,26 @@ export default function AdminEmploymentPage() {
                   <div className="aem-card-top">
                     <div>
                       <h3 className="aem-title">{j.title}{j.featured ? ' ⭐' : ''}</h3>
-                      <p className="aem-meta">{j.employer?.fullName || ''} · {WORK_MODE[j.workMode] || j.workMode} · {money(j.monthlySalary, j.currency)}</p>
+                      <p className="aem-meta">{j.employer?.fullName || ''} · {workModeLabel(tr, j.workMode)} · {money(j.monthlySalary, j.currency)}</p>
                       <p className="aem-meta"><span className="aem-mono">{j.code}</span></p>
                     </div>
-                    <span className={`aem-badge ${JOB_STATUS[j.status]?.tone || 'muted'}`}>{JOB_STATUS[j.status]?.label || j.status}</span>
+                    <span className={`aem-badge ${jobStatusTone(j.status)}`}>{jobStatusLabel(tr, j.status)}</span>
                   </div>
                   {j.adminNote && <p className="aem-meta">📝 {j.adminNote}</p>}
 
                   {editJob === j.id ? (
                     <div className="aem-sub">
-                      <div className="aem-field"><label>الحالة</label><select className="aem-select" value={jDraft.status} onChange={(e) => setJDraft((d) => ({ ...d, status: e.target.value }))}>{JOB_STATUSES.map((s) => <option key={s} value={s}>{JOB_STATUS[s]?.label || s}</option>)}</select></div>
-                      <label className="aem-check"><input type="checkbox" checked={jDraft.featured} onChange={(e) => setJDraft((d) => ({ ...d, featured: e.target.checked }))} /> وظيفة مميّزة (Featured)</label>
-                      <div className="aem-field"><label>ملاحظة إدارية</label><textarea className="aem-area" value={jDraft.adminNote} onChange={(e) => setJDraft((d) => ({ ...d, adminNote: e.target.value }))} placeholder="ملاحظة داخلية (اختياري)" /></div>
+                      <div className="aem-field"><label>{tr('co.th.status', 'الحالة')}</label><select className="aem-select" value={jDraft.status} onChange={(e) => setJDraft((d) => ({ ...d, status: e.target.value }))}>{JOB_STATUSES.map((s) => <option key={s} value={s}>{jobStatusLabel(tr, s)}</option>)}</select></div>
+                      <label className="aem-check"><input type="checkbox" checked={jDraft.featured} onChange={(e) => setJDraft((d) => ({ ...d, featured: e.target.checked }))} /> {tr('aem.jobFeatured', 'وظيفة مميّزة (Featured)')}</label>
+                      <div className="aem-field"><label>{tr('aem.jobAdminNote', 'ملاحظة إدارية')}</label><textarea className="aem-area" value={jDraft.adminNote} onChange={(e) => setJDraft((d) => ({ ...d, adminNote: e.target.value }))} placeholder={tr('aem.jobNotePh', 'ملاحظة داخلية (اختياري)')} /></div>
                       <div className="aem-actions">
-                        <button className="aem-btn" onClick={() => saveJob(j.id)} disabled={busy}>حفظ</button>
-                        <button className="aem-mini" onClick={() => setEditJob('')}>إلغاء</button>
+                        <button className="aem-btn" onClick={() => saveJob(j.id)} disabled={busy}>{tr('common.save', 'حفظ')}</button>
+                        <button className="aem-mini" onClick={() => setEditJob('')}>{tr('common.cancel', 'إلغاء')}</button>
                       </div>
                     </div>
                   ) : (
                     <div className="aem-actions">
-                      <button className="aem-mini" onClick={() => startEditJob(j)}>إدارة</button>
+                      <button className="aem-mini" onClick={() => startEditJob(j)}>{tr('ainv.manage', 'إدارة')}</button>
                     </div>
                   )}
                 </div>
