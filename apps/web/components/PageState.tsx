@@ -1,5 +1,7 @@
 'use client';
 
+import { useI18n } from '@/lib/i18n';
+
 const PS_CSS = `
 .ps-box{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 20px;gap:12px;}
 .ps-spinner{width:38px;height:38px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--green);animation:psSpin .8s linear infinite;}
@@ -14,12 +16,13 @@ const PS_CSS = `
 @keyframes skGlow{0%{background-position:100% 50%;}100%{background-position:0 50%;}}
 `;
 
-export function LoadingState({ label = 'جاري التحميل…' }: { label?: string }) {
+export function LoadingState({ label }: { label?: string }) {
+  const { tr } = useI18n();
   return (
     <div className="ps-box">
       <style>{PS_CSS}</style>
       <div className="ps-spinner" />
-      <p className="ps-hint">{label}</p>
+      <p className="ps-hint">{label ?? tr('cls.loading', 'جاري التحميل…')}</p>
     </div>
   );
 }
@@ -44,21 +47,22 @@ export function EmptyState({
 }
 
 export function ErrorState({
-  message = 'حصل خطأ، حاول تاني.',
+  message,
   onRetry,
 }: {
   message?: string;
   onRetry?: () => void;
 }) {
+  const { tr } = useI18n();
   return (
     <div className="ps-box">
       <style>{PS_CSS}</style>
       <div className="ps-emoji">⚠️</div>
-      <p className="ps-title ps-err">حصل خطأ</p>
-      <p className="ps-hint">{message}</p>
+      <p className="ps-title ps-err">{tr('common.error', 'حصل خطأ')}</p>
+      <p className="ps-hint">{message ?? tr('ps.errMsg', 'حصل خطأ، حاول تاني.')}</p>
       {onRetry && (
         <button className="ps-retry" onClick={onRetry}>
-          إعادة المحاولة
+          {tr('ps.retry', 'إعادة المحاولة')}
         </button>
       )}
     </div>
