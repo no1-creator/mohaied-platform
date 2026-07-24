@@ -5,7 +5,14 @@ import { useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
-import { EMP_TYPE, WORK_MODE, APP_STATUS, EMPLOYMENT_STATUS, LOG_STATUS, money, fdate } from '@/lib/employment';
+import { useI18n } from '@/lib/i18n';
+import {
+  money, fdate,
+  empTypeLabel, workModeLabel,
+  appStatusLabel, appStatusTone,
+  emplStatusLabel, emplStatusTone,
+  logStatusLabel, logStatusTone,
+} from '@/lib/employment';
 
 type Job = {
   id: string; code: string; title: string; description: string; skills?: string | null;
@@ -90,6 +97,7 @@ const EM_CSS = `
 
 export default function JobsPage() {
   const router = useRouter();
+  const { tr } = useI18n();
   const [tab, setTab] = useState<'browse' | 'apps' | 'contracts'>('browse');
   const [jobs, setJobs] = useState<Job[]>([]);
   const [apps, setApps] = useState<App[]>([]);
@@ -166,13 +174,13 @@ export default function JobsPage() {
       });
       setApplied((m) => ({ ...m, [id]: true }));
       setActiveJob('');
-    } catch (e: any) { alert(e?.message || 'حصل خطأ'); }
+    } catch (e: any) { alert(e?.message || tr('common.error', 'حصل خطأ')); }
     setSending(false);
   }
 
   async function withdraw(id: string) {
     try { await api(`/employment/applications/${id}/withdraw`, { method: 'PATCH' }); await loadApps(); }
-    catch (e: any) { alert(e?.message || 'حصل خطأ'); }
+    catch (e: any) { alert(e?.message || tr('common.error', 'حصل خطأ')); }
   }
 
   async function toggleLogs(id: string) {
@@ -184,7 +192,7 @@ export default function JobsPage() {
     }
   }
   async function addLog(id: string) {
-    if (logSummary.trim().length < 3) { alert('اكتب ملخص للشغل'); return; }
+    if (logSummary.trim().length < 3) { alert(tr('job.errLog', 'اكتب ملخص للشغل')); return; }
     setSavingLog(true);
     try {
       await api(`/employment/contracts/${id}/logs`, {
@@ -194,7 +202,7 @@ export default function JobsPage() {
       const d = await api<Log[]>(`/employment/contracts/${id}/logs`);
       setLogs((m) => ({ ...m, [id]: Array.isArray(d) ? d : [] }));
       setLogSummary(''); setLogHours('');
-    } catch (e: any) { alert(e?.message || 'حصل خطأ'); }
+    } catch (e: any) { alert(e?.message || tr('common.error', 'حصل خطأ')); }
     setSavingLog(false);
   }
 
@@ -205,41 +213,41 @@ export default function JobsPage() {
       <BackBar />
       <div className="em-wrap">
         <div className="em-head">
-          <h1 className="em-title">وظائف عن بُعد مع شركات خليجية</h1>
-          <p className="em-sub">قدّم على وظائف موثّقة، وتابع طلباتك وعقودك، وسجّل شغلك اليومي — كله عبر محايد.</p>
+          <h1 className="em-title">{tr('job.title', 'وظائف عن بُعد مع شركات خليجية')}</h1>
+          <p className="em-sub">{tr('job.sub', 'قدّم على وظائف موثّقة، وتابع طلباتك وعقودك، وسجّل شغلك اليومي — كله عبر محايد.')}</p>
         </div>
 
         <div className="em-tabs">
-          <button className={tab === 'browse' ? 'active' : ''} onClick={() => setTab('browse')}>تصفّح الوظائف</button>
-          <button className={tab === 'apps' ? 'active' : ''} onClick={() => setTab('apps')}>طلباتي</button>
-          <button className={tab === 'contracts' ? 'active' : ''} onClick={() => setTab('contracts')}>عقودي</button>
+          <button className={tab === 'browse' ? 'active' : ''} onClick={() => setTab('browse')}>{tr('job.tabBrowse', 'تصفّح الوظائف')}</button>
+          <button className={tab === 'apps' ? 'active' : ''} onClick={() => setTab('apps')}>{tr('job.tabApps', 'طلباتي')}</button>
+          <button className={tab === 'contracts' ? 'active' : ''} onClick={() => setTab('contracts')}>{tr('job.tabContracts', 'عقودي')}</button>
         </div>
 
         {tab === 'browse' && (
           <div className="em-search">
-            <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && loadBrowse()} placeholder="ابحث بالمسمى أو المهارة..." />
+            <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && loadBrowse()} placeholder={tr('job.searchPh', 'ابحث بالمسمى أو المهارة...')} />
             <select value={mode} onChange={(e) => setMode(e.target.value)}>
-              <option value="">كل الأنماط</option>
-              <option value="REMOTE">عن بُعد</option>
-              <option value="ONSITE">من مكتب محايد</option>
-              <option value="HYBRID">مختلط</option>
+              <option value="">{tr('job.allModes', 'كل الأنماط')}</option>
+              <option value="REMOTE">{workModeLabel(tr, 'REMOTE')}</option>
+              <option value="ONSITE">{workModeLabel(tr, 'ONSITE')}</option>
+              <option value="HYBRID">{workModeLabel(tr, 'HYBRID')}</option>
             </select>
-            <button onClick={loadBrowse}>بحث</button>
+            <button onClick={loadBrowse}>{tr('common.search', 'بحث')}</button>
           </div>
         )}
 
         {loading ? (
-          <div className="em-empty">جاري التحميل...</div>
+          <div className="em-empty">{tr('cls.loading', 'جاري التحميل...')}</div>
         ) : tab === 'browse' ? (
           jobs.length === 0 ? (
-            <div className="em-empty">مفيش وظائف متاحة حاليًا.</div>
+            <div className="em-empty">{tr('job.emptyBrowse', 'مفيش وظائف متاحة حاليًا.')}</div>
           ) : (
             <div className="em-grid">
               {jobs.map((j) => (
                 <div key={j.id} className="em-card">
                   <div className="em-card-top">
-                    <span className="em-tag">{WORK_MODE[j.workMode] || j.workMode}</span>
-                    <span className="em-tag">{EMP_TYPE[j.employmentType] || j.employmentType}</span>
+                    <span className="em-tag">{workModeLabel(tr, j.workMode)}</span>
+                    <span className="em-tag">{empTypeLabel(tr, j.employmentType)}</span>
                   </div>
                   <h3 className="em-card-title">{j.title}</h3>
                   <p className="em-card-meta">
@@ -247,28 +255,28 @@ export default function JobsPage() {
                     {j.office ? `${j.office.name} - ${j.office.city}` : j.location || ''}
                   </p>
                   <p className="em-desc">{j.description.length > 160 ? j.description.slice(0, 160) + '…' : j.description}</p>
-                  {j.skills && <p className="em-card-meta">المهارات: {j.skills}</p>}
+                  {j.skills && <p className="em-card-meta">{tr('job.skills', 'المهارات:')} {j.skills}</p>}
                   <div className="em-metaline">
-                    <span>الراتب الشهري <b>{money(j.monthlySalary, j.currency)}</b></span>
-                    {j.seniority && <span>المستوى <b>{j.seniority}</b></span>}
+                    <span>{tr('job.monthlySalary', 'الراتب الشهري')} <b>{money(j.monthlySalary, j.currency)}</b></span>
+                    {j.seniority && <span>{tr('job.level', 'المستوى')} <b>{j.seniority}</b></span>}
                   </div>
 
                   {applied[j.id] ? (
-                    <div className="em-done">تم إرسال طلبك ✓</div>
+                    <div className="em-done">{tr('job.applied', 'تم إرسال طلبك ✓')}</div>
                   ) : activeJob === j.id ? (
                     <div className="em-sub-panel">
-                      <textarea className="em-area" value={cover} onChange={(e) => setCover(e.target.value)} placeholder="خطاب تعريفي مختصر (اختياري)" />
+                      <textarea className="em-area" value={cover} onChange={(e) => setCover(e.target.value)} placeholder={tr('job.coverPh', 'خطاب تعريفي مختصر (اختياري)')} />
                       <div className="em-row">
-                        <input className="em-input" type="number" value={expSalary} onChange={(e) => setExpSalary(e.target.value)} placeholder="الراتب المتوقع (اختياري)" />
-                        <input className="em-input" value={cvUrl} onChange={(e) => setCvUrl(e.target.value)} placeholder="رابط السيرة الذاتية (اختياري)" />
+                        <input className="em-input" type="number" value={expSalary} onChange={(e) => setExpSalary(e.target.value)} placeholder={tr('job.expSalaryPh', 'الراتب المتوقع (اختياري)')} />
+                        <input className="em-input" value={cvUrl} onChange={(e) => setCvUrl(e.target.value)} placeholder={tr('job.cvUrlPh', 'رابط السيرة الذاتية (اختياري)')} />
                       </div>
                       <div className="em-actions">
-                        <button className="em-btn" onClick={() => apply(j.id)} disabled={sending}>{sending ? 'جاري الإرسال...' : 'إرسال الطلب'}</button>
-                        <button className="em-cancel" onClick={() => setActiveJob('')}>إلغاء</button>
+                        <button className="em-btn" onClick={() => apply(j.id)} disabled={sending}>{sending ? tr('job.sending', 'جاري الإرسال...') : tr('job.sendApp', 'إرسال الطلب')}</button>
+                        <button className="em-cancel" onClick={() => setActiveJob('')}>{tr('common.cancel', 'إلغاء')}</button>
                       </div>
                     </div>
                   ) : (
-                    <button className="em-btn full" onClick={() => openApply(j.id)}>قدّم على الوظيفة</button>
+                    <button className="em-btn full" onClick={() => openApply(j.id)}>{tr('job.apply', 'قدّم على الوظيفة')}</button>
                   )}
                 </div>
               ))}
@@ -276,27 +284,27 @@ export default function JobsPage() {
           )
         ) : tab === 'apps' ? (
           apps.length === 0 ? (
-            <div className="em-empty">لسه ماقدّمتش على أي وظيفة.</div>
+            <div className="em-empty">{tr('job.emptyApps', 'لسه ماقدّمتش على أي وظيفة.')}</div>
           ) : (
             <div className="em-list">
               {apps.map((a) => (
                 <div key={a.id} className="em-card">
                   <div className="em-card-top">
-                    <h3 className="em-card-title">{a.job?.title || 'وظيفة'}</h3>
-                    <span className={`em-badge ${APP_STATUS[a.status]?.tone || 'muted'}`}>{APP_STATUS[a.status]?.label || a.status}</span>
+                    <h3 className="em-card-title">{a.job?.title || tr('job.jobFallback', 'وظيفة')}</h3>
+                    <span className={`em-badge ${appStatusTone(a.status)}`}>{appStatusLabel(tr, a.status)}</span>
                   </div>
                   {a.job && <p className="em-card-meta">{a.job.employer?.fullName || ''} · {money(a.job.monthlySalary, a.job.currency)}</p>}
-                  {a.expectedSalary != null && <p className="em-line">راتبك المتوقع: <b>{money(a.expectedSalary, a.job?.currency)}</b></p>}
-                  {a.employerNote && <div className="em-note"><b>رد الشركة:</b> {a.employerNote}</div>}
+                  {a.expectedSalary != null && <p className="em-line">{tr('job.yourExpSalary', 'راتبك المتوقع:')} <b>{money(a.expectedSalary, a.job?.currency)}</b></p>}
+                  {a.employerNote && <div className="em-note"><b>{tr('job.employerReply', 'رد الشركة:')}</b> {a.employerNote}</div>}
                   {['SUBMITTED', 'SHORTLISTED', 'INTERVIEW', 'OFFERED'].includes(a.status) && (
-                    <div className="em-actions"><button className="em-mini danger" onClick={() => withdraw(a.id)}>سحب الطلب</button></div>
+                    <div className="em-actions"><button className="em-mini danger" onClick={() => withdraw(a.id)}>{tr('job.withdraw', 'سحب الطلب')}</button></div>
                   )}
                 </div>
               ))}
             </div>
           )
         ) : contracts.length === 0 ? (
-          <div className="em-empty">مفيش عقود توظيف لسه.</div>
+          <div className="em-empty">{tr('job.emptyContracts', 'مفيش عقود توظيف لسه.')}</div>
         ) : (
           <div className="em-list">
             {contracts.map((c) => (
@@ -306,36 +314,36 @@ export default function JobsPage() {
                     <h3 className="em-card-title">{c.title}</h3>
                     <span className="em-card-meta">{c.employer?.fullName || ''} · {money(c.monthlySalary, c.currency)} · <span className="em-mono">{c.code}</span></span>
                   </div>
-                  <span className={`em-badge ${EMPLOYMENT_STATUS[c.status]?.tone || 'muted'}`}>{EMPLOYMENT_STATUS[c.status]?.label || c.status}</span>
+                  <span className={`em-badge ${emplStatusTone(c.status)}`}>{emplStatusLabel(tr, c.status)}</span>
                 </div>
                 <div className="em-actions">
-                  <button className="em-mini" onClick={() => toggleLogs(c.id)}>{openContract === c.id ? 'إخفاء سجل الشغل' : 'سجل الشغل اليومي'}</button>
+                  <button className="em-mini" onClick={() => toggleLogs(c.id)}>{openContract === c.id ? tr('job.hideLogs', 'إخفاء سجل الشغل') : tr('job.showDailyLog', 'سجل الشغل اليومي')}</button>
                 </div>
 
                 {openContract === c.id && (
                   <div className="em-sub-panel">
                     {c.status === 'ACTIVE' && (
                       <div className="em-inner">
-                        <div className="em-field"><label>سجّل شغل النهاردة</label><textarea className="em-area" value={logSummary} onChange={(e) => setLogSummary(e.target.value)} placeholder="اكتب اللي خلّصته النهاردة..." /></div>
+                        <div className="em-field"><label>{tr('job.logToday', 'سجّل شغل النهاردة')}</label><textarea className="em-area" value={logSummary} onChange={(e) => setLogSummary(e.target.value)} placeholder={tr('job.logSummaryPh', 'اكتب اللي خلّصته النهاردة...')} /></div>
                         <div className="em-row">
-                          <input className="em-input" type="number" value={logHours} onChange={(e) => setLogHours(e.target.value)} placeholder="عدد الساعات (اختياري)" />
-                          <button className="em-btn" onClick={() => addLog(c.id)} disabled={savingLog}>{savingLog ? 'جاري الحفظ...' : 'إضافة السجل'}</button>
+                          <input className="em-input" type="number" value={logHours} onChange={(e) => setLogHours(e.target.value)} placeholder={tr('job.hoursPh', 'عدد الساعات (اختياري)')} />
+                          <button className="em-btn" onClick={() => addLog(c.id)} disabled={savingLog}>{savingLog ? tr('apl.saving', 'جاري الحفظ...') : tr('job.addLog', 'إضافة السجل')}</button>
                         </div>
                       </div>
                     )}
                     {!logs[c.id] ? (
-                      <div className="em-empty small">جاري التحميل...</div>
+                      <div className="em-empty small">{tr('cls.loading', 'جاري التحميل...')}</div>
                     ) : logs[c.id].length === 0 ? (
-                      <div className="em-empty small">مفيش سجلات لسه.</div>
+                      <div className="em-empty small">{tr('job.noLogs', 'مفيش سجلات لسه.')}</div>
                     ) : (
                       logs[c.id].map((l) => (
                         <div key={l.id} className="em-inner">
                           <div className="em-inner-top">
-                            <b>{fdate(l.date)}{l.hours != null ? ` · ${l.hours} ساعة` : ''}</b>
-                            <span className={`em-badge ${LOG_STATUS[l.status]?.tone || 'muted'}`}>{LOG_STATUS[l.status]?.label || l.status}</span>
+                            <b>{fdate(l.date)}{l.hours != null ? ` · ${l.hours} ${tr('emr.hours', 'ساعة')}` : ''}</b>
+                            <span className={`em-badge ${logStatusTone(l.status)}`}>{logStatusLabel(tr, l.status)}</span>
                           </div>
                           <p className="em-line">{l.summary}</p>
-                          {l.employerNote && <div className="em-note"><b>ملاحظة الشركة:</b> {l.employerNote}</div>}
+                          {l.employerNote && <div className="em-note"><b>{tr('job.employerNote', 'ملاحظة الشركة:')}</b> {l.employerNote}</div>}
                         </div>
                       ))
                     )}
