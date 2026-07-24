@@ -902,4 +902,12 @@ export const ar: Record<string, string> = {
 'sas.accept': 'قبول التكليف',
 'sas.decline': 'رفض',
 'sas.reportsLink': 'التقارير وكتابة تقرير',
+
+// ===== المشرف: تفاصيل التكليف والتقارير =====
+'sad.newReport': 'كتابة تقرير جديد',
+'sad.summary': 'ملخص التقرير',
+'sad.notes': 'ملاحظات إضافية (اختياري)',
+'sad.saveReport': 'حفظ التقرير',
+'sad.prevReports': 'التقارير السابقة',
+'sad.noReports': 'لسه مفيش تقارير.',
 };
