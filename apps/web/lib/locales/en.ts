@@ -886,4 +886,20 @@ export const en: Record<string, string> = {
 'atm.superAdminSwitch': 'Super admin (full access + team management)',
 'atm.fullAccessSwitch': 'Full access to all sections',
 'atm.saveScopes': 'Save permissions',
+
+// Shared key for redirect pages
+'common.redirecting': 'Redirecting...',
+// ===== Supervisor: assignments =====
+'sas.title': 'My assignments',
+'sas.status.INVITED': 'New invitation',
+'sas.status.ACCEPTED': 'Accepted',
+'sas.status.ACTIVE': 'Active',
+'sas.status.DECLINED': 'Declined',
+'sas.status.COMPLETED': 'Completed',
+'sas.empty': 'No assignments right now.',
+'sas.rate': 'Review fee:',
+'sas.reportsUnit': 'report(s)',
+'sas.accept': 'Accept assignment',
+'sas.decline': 'Decline',
+'sas.reportsLink': 'Reports & write a report',
 };
