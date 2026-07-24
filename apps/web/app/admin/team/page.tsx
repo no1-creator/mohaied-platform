@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 import { api } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 
 type Admin = {
   id: string;
@@ -28,6 +29,7 @@ function parseScopes(s: string | null): string[] | null {
 }
 
 export default function AdminTeamPage() {
+  const { tr } = useI18n();
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
   const [me, setMe] = useState<Me | null>(null);
@@ -64,12 +66,13 @@ export default function AdminTeamPage() {
         setMe(m || null);
         hydrate(a || []);
       })
-      .catch((e) => setErr(e?.message || 'تعذّر التحميل'))
+      .catch((e) => setErr(e?.message || tr('atm.errLoad', 'تعذّر التحميل')))
       .finally(() => setLoading(false));
   }
 
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const canManage = !!me && (me.isSuperAdmin || me.adminScopes == null);
@@ -103,27 +106,27 @@ export default function AdminTeamPage() {
       });
       setAdmins(updated || []);
       hydrate(updated || []);
-      setMsg('اتحفظت التغييرات ✅');
+      setMsg(tr('atm.saved', 'اتحفظت التغييرات ✅'));
     } catch (e: any) {
-      setMsg(e?.message || 'حصل خطأ أثناء الحفظ');
+      setMsg(e?.message || tr('alg.errSave', 'حصل خطأ أثناء الحفظ'));
     } finally {
       setSavingId('');
     }
   }
 
   return (
-    <AdminShell active="team" title="صلاحيات الفريق">
+    <AdminShell active="team" title={tr('atm.title', 'صلاحيات الفريق')}>
       <style>{TEAM_CSS}</style>
 
       {loading ? (
-        <div className="ad-loading">جاري التحميل...</div>
+        <div className="ad-loading">{tr('cls.loading', 'جاري التحميل...')}</div>
       ) : err ? (
         <div className="ad-error">{err}</div>
       ) : (
         <>
           {!canManage && (
             <div className="tm-note">
-              انت أدمن محدود الصلاحية — تقدر تشوف الفريق بس، والتعديل متاح للسوبر أدمن.
+              {tr('atm.limitedNote', 'انت أدمن محدود الصلاحية — تقدر تشوف الفريق بس، والتعديل متاح للسوبر أدمن.')}
             </div>
           )}
           {msg && <div className="tm-msg">{msg}</div>}
@@ -141,11 +144,11 @@ export default function AdminTeamPage() {
                       <div className="tm-email">{a.email}</div>
                     </div>
                     {d.isSuperAdmin ? (
-                      <span className="ad-badge ok">سوبر أدمن</span>
+                      <span className="ad-badge ok">{tr('atm.superAdmin', 'سوبر أدمن')}</span>
                     ) : d.full ? (
-                      <span className="ad-badge blue">وصول كامل</span>
+                      <span className="ad-badge blue">{tr('atm.fullAccess', 'وصول كامل')}</span>
                     ) : (
-                      <span className="ad-badge amber">محدود</span>
+                      <span className="ad-badge amber">{tr('atm.limited', 'محدود')}</span>
                     )}
                   </div>
 
@@ -156,7 +159,7 @@ export default function AdminTeamPage() {
                       disabled={locked}
                       onChange={(e) => setDraft(a.id, { isSuperAdmin: e.target.checked })}
                     />
-                    <span>سوبر أدمن (وصول كامل + إدارة الفريق)</span>
+                    <span>{tr('atm.superAdminSwitch', 'سوبر أدمن (وصول كامل + إدارة الفريق)')}</span>
                   </label>
 
                   {!d.isSuperAdmin && (
@@ -167,7 +170,7 @@ export default function AdminTeamPage() {
                         disabled={locked}
                         onChange={(e) => setDraft(a.id, { full: e.target.checked })}
                       />
-                      <span>وصول كامل لكل الأقسام</span>
+                      <span>{tr('atm.fullAccessSwitch', 'وصول كامل لكل الأقسام')}</span>
                     </label>
                   )}
 
@@ -193,7 +196,7 @@ export default function AdminTeamPage() {
                       onClick={() => save(a)}
                       disabled={savingId === a.id}
                     >
-                      {savingId === a.id ? 'جاري الحفظ...' : 'حفظ الصلاحيات'}
+                      {savingId === a.id ? tr('apl.saving', 'جاري الحفظ...') : tr('atm.saveScopes', 'حفظ الصلاحيات')}
                     </button>
                   )}
                 </div>
