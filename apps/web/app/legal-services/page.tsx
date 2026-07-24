@@ -6,6 +6,7 @@ import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
 import Icon from '@/components/Icon';
+import { useI18n } from '@/lib/i18n';
 
 type LegalRequest = {
   id: string;
@@ -21,44 +22,26 @@ type LegalRequest = {
 };
 
 const CATEGORIES = [
-  {
-    value: 'IP_PROTECTION',
-    label: 'تسجيل الأفكار وحماية الملكية الفكرية',
-    desc: 'سجّل فكرتك أو برنامجك واحمِ ملكيتك الفكرية بشكل قانوني سليم.',
-    icon: 'sparkles',
-  },
-  {
-    value: 'COMPANY_FORMATION',
-    label: 'تأسيس الشركات في مصر',
-    desc: 'أسّس شركتك في مصر بإجراءات صحيحة ومتابعة قانونية كاملة.',
-    icon: 'building',
-  },
-  {
-    value: 'FOREIGNER_CASE',
-    label: 'قضايا الأجانب في مصر',
-    desc: 'خدمات وتمثيل قانوني للأجانب وإجراءاتهم داخل مصر.',
-    icon: 'globe',
-  },
-  {
-    value: 'GENERAL_CONSULT',
-    label: 'استشارة قانونية عامة',
-    desc: 'اطلب استشارة من مستشار قانوني معتمد في أي موضوع.',
-    icon: 'scale',
-  },
+  { value: 'IP_PROTECTION', labelKey: 'lsv.cat.IP_PROTECTION', descKey: 'lsv.catDesc.IP_PROTECTION', icon: 'sparkles' },
+  { value: 'COMPANY_FORMATION', labelKey: 'lsv.cat.COMPANY_FORMATION', descKey: 'lsv.catDesc.COMPANY_FORMATION', icon: 'building' },
+  { value: 'FOREIGNER_CASE', labelKey: 'lsv.cat.FOREIGNER_CASE', descKey: 'lsv.catDesc.FOREIGNER_CASE', icon: 'globe' },
+  { value: 'GENERAL_CONSULT', labelKey: 'lsv.cat.GENERAL_CONSULT', descKey: 'lsv.catDesc.GENERAL_CONSULT', icon: 'scale' },
 ];
 
-const STATUS: Record<string, { label: string; tone: string }> = {
-  SUBMITTED: { label: 'مُقدَّم', tone: 'blue' },
-  IN_REVIEW: { label: 'قيد المراجعة', tone: 'amber' },
-  ASSIGNED: { label: 'تم التعيين', tone: 'blue' },
-  IN_PROGRESS: { label: 'قيد التنفيذ', tone: 'amber' },
-  RESOLVED: { label: 'تم الحل', tone: 'ok' },
-  CLOSED: { label: 'مغلق', tone: 'muted' },
-  REJECTED: { label: 'مرفوض', tone: 'red' },
+const STATUS: Record<string, { labelKey: string; tone: string }> = {
+  SUBMITTED: { labelKey: 'lsv.status.SUBMITTED', tone: 'blue' },
+  IN_REVIEW: { labelKey: 'lsv.status.IN_REVIEW', tone: 'amber' },
+  ASSIGNED: { labelKey: 'lsv.status.ASSIGNED', tone: 'blue' },
+  IN_PROGRESS: { labelKey: 'lsv.status.IN_PROGRESS', tone: 'amber' },
+  RESOLVED: { labelKey: 'lsv.status.RESOLVED', tone: 'ok' },
+  CLOSED: { labelKey: 'lsv.status.CLOSED', tone: 'muted' },
+  REJECTED: { labelKey: 'lsv.status.REJECTED', tone: 'red' },
 };
 
-const catLabel = (v: string) =>
-  CATEGORIES.find((c) => c.value === v)?.label || 'طلب قانوني';
+const catLabel = (tr: (k: string, f?: string) => string, v: string) => {
+  const c = CATEGORIES.find((x) => x.value === v);
+  return c ? tr(c.labelKey) : tr('lsv.reqFallback', 'طلب قانوني');
+};
 
 const LS_CSS = `
 .ls-wrap{max-width:820px;margin:0 auto;width:100%;padding:26px 20px 90px;}
@@ -99,6 +82,7 @@ const LS_CSS = `
 
 export default function LegalServicesPage() {
   const router = useRouter();
+  const { tr } = useI18n();
   const [requests, setRequests] = useState<LegalRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -120,10 +104,9 @@ export default function LegalServicesPage() {
       <BackBar />
       <div className="ls-wrap">
         <div className="ls-head">
-          <h1 className="ls-title">الخدمات القانونية من محايد</h1>
+          <h1 className="ls-title">{tr('lsv.title', 'الخدمات القانونية من محايد')}</h1>
           <p className="ls-sub">
-            فريقنا القانوني المعتمد جاهز يساعدك — اختار نوع الخدمة وقدّم طلبك،
-            وهنوزّعه على المستشار المناسب ونتابعه معاك خطوة بخطوة.
+            {tr('lsv.sub', 'فريقنا القانوني المعتمد جاهز يساعدك — اختار نوع الخدمة وقدّم طلبك، وهنوزّعه على المستشار المناسب ونتابعه معاك خطوة بخطوة.')}
           </p>
         </div>
 
@@ -140,8 +123,8 @@ export default function LegalServicesPage() {
                 <Icon name={c.icon} />
               </span>
               <span className="ls-cat-body">
-                <span className="ls-cat-title">{c.label}</span>
-                <span className="ls-cat-desc">{c.desc}</span>
+                <span className="ls-cat-title">{tr(c.labelKey)}</span>
+                <span className="ls-cat-desc">{tr(c.descKey)}</span>
               </span>
               <span className="ls-cat-arrow">←</span>
             </button>
@@ -149,20 +132,20 @@ export default function LegalServicesPage() {
         </div>
 
         <div className="ls-mine-head">
-          <h2 className="ls-h2">طلباتي</h2>
+          <h2 className="ls-h2">{tr('lsv.myRequests', 'طلباتي')}</h2>
           <button
             className="ls-new-btn"
             onClick={() => router.push('/legal-services/new')}
           >
-            + طلب جديد
+            {tr('lsv.newReq', '+ طلب جديد')}
           </button>
         </div>
 
         {loading ? (
-          <div className="ls-empty">جاري التحميل...</div>
+          <div className="ls-empty">{tr('cls.loading', 'جاري التحميل...')}</div>
         ) : requests.length === 0 ? (
           <div className="ls-empty">
-            لسه مقدّمتش أي طلب قانوني. اختار خدمة من فوق وابدأ.
+            {tr('lsv.empty', 'لسه مقدّمتش أي طلب قانوني. اختار خدمة من فوق وابدأ.')}
           </div>
         ) : (
           <div className="ls-list">
@@ -172,12 +155,12 @@ export default function LegalServicesPage() {
                   <div>
                     <p className="ls-card-title">{r.title}</p>
                     <span className="ls-card-meta">
-                      {catLabel(r.category)} ·{' '}
+                      {catLabel(tr, r.category)} ·{' '}
                       <span className="ls-mono">{r.code}</span>
                     </span>
                   </div>
                   <span className={`ls-badge ${STATUS[r.status]?.tone || 'muted'}`}>
-                    {STATUS[r.status]?.label || r.status}
+                    {STATUS[r.status] ? tr(STATUS[r.status].labelKey) : r.status}
                   </span>
                 </div>
 
@@ -187,17 +170,17 @@ export default function LegalServicesPage() {
 
                 {r.assignedConsultant && (
                   <div className="ls-note">
-                    <b>المستشار المسؤول:</b> {r.assignedConsultant.fullName}
+                    <b>{tr('lsv.consultant', 'المستشار المسؤول:')}</b> {r.assignedConsultant.fullName}
                   </div>
                 )}
                 {r.adminNote && (
                   <div className="ls-note">
-                    <b>ملاحظة الفريق:</b> {r.adminNote}
+                    <b>{tr('lsv.teamNote', 'ملاحظة الفريق:')}</b> {r.adminNote}
                   </div>
                 )}
                 {r.consultantNote && (
                   <div className="ls-note">
-                    <b>رد المستشار:</b> {r.consultantNote}
+                    <b>{tr('lsv.consultantReply', 'رد المستشار:')}</b> {r.consultantNote}
                   </div>
                 )}
               </div>
