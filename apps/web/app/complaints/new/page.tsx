@@ -7,7 +7,7 @@ import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
 import Icon from '@/components/Icon';
 import { toast } from '@/components/Toast';
-
+import SuccessState from '@/components/SuccessState';
 const TYPES = [
   {
     value: 'DELIVERY_DELAY',
@@ -98,9 +98,10 @@ function NewComplaintInner() {
   const [images, setImages] = useState<string[]>([]);
   const [links, setLinks] = useState<string[]>([]);
   const [linkInput, setLinkInput] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
+const [error, setError] = useState('');
+const [loading, setLoading] = useState(false);
+const [doneId, setDoneId] = useState<string | null>(null);
+const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!getToken()) {
@@ -201,9 +202,9 @@ function NewComplaintInner() {
         method: 'POST',
         body,
       });
-      toast.success('تم تقديم النزاع رسميًا ✅');
-      router.push(`/complaints/${complaint.id}`);
-    } catch (err: any) {
+       toast.success('تم تقديم النزاع رسميًا ✅');
+  setDoneId(complaint.id);
+} catch (err: any) {
       setError(err.message);
       toast.error(err.message);
     } finally {
@@ -211,15 +212,30 @@ function NewComplaintInner() {
     }
   }
 
-  if (!projectId) {
-    return (
-      <div className="nc-wrap">
-        <div className="nc-note">لازم تفتح النزاع من صفحة المشروع.</div>
-      </div>
-    );
-  }
+ if (!projectId) {
+  return (
+    <div className="nc-wrap">
+      <div className="nc-note">لازم تفتح النزاع من صفحة المشروع.</div>
+    </div>
+  );
+}
 
-  const detailsStep = milestones.length > 0 ? '٣' : '٢';
+if (doneId) {
+  return (
+    <div className="nc-wrap">
+      <SuccessState
+        title="تم فتح النزاع رسميًا ✅"
+        message="الطرف الآخر هيتبلّغ ويقدر يرد، وإدارة محايد هتراجع الأدلة وتتدخّل كمُحكّم محايد لحد القرار النهائي المُلزم."
+        primary={{ label: 'متابعة النزاع', href: `/complaints/${doneId}` }}
+        secondary={{ label: 'كل نزاعاتي', href: '/complaints/mine' }}
+        redirectTo={`/complaints/${doneId}`}
+        redirectSeconds={4}
+      />
+    </div>
+  );
+}
+
+const detailsStep = milestones.length > 0 ? '٣' : '٢';
 
   return (
     <div className="nc-wrap">
