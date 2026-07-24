@@ -5,7 +5,15 @@ import { useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
-import { WORK_MODE, JOB_STATUS, APP_STATUS, EMPLOYMENT_STATUS, LOG_STATUS, TYPES, MODES, money, fdate } from '@/lib/employment';
+import { useI18n } from '@/lib/i18n';
+import {
+  TYPES, MODES, money, fdate,
+  empTypeLabel, workModeLabel,
+  jobStatusLabel, jobStatusTone,
+  appStatusLabel, appStatusTone,
+  emplStatusLabel, emplStatusTone,
+  logStatusLabel, logStatusTone,
+} from '@/lib/employment';
 
 type Office = { id: string; name: string; city: string };
 type Job = {
@@ -81,6 +89,7 @@ const EM_CSS = `
 
 export default function EmployerPage() {
   const router = useRouter();
+  const { tr } = useI18n();
   const [state, setState] = useState<'loading' | 'ok' | 'denied'>('loading');
   const [tab, setTab] = useState<'jobs' | 'contracts'>('jobs');
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -143,9 +152,9 @@ export default function EmployerPage() {
 
   async function submit() {
     setError('');
-    if (title.trim().length < 3) return setError('اكتب عنوان وظيفة واضح.');
-    if (description.trim().length < 20) return setError('اكتب وصف كافٍ (20 حرف على الأقل).');
-    if (!monthlySalary || Number(monthlySalary) <= 0) return setError('حدد الراتب الشهري.');
+    if (title.trim().length < 3) return setError(tr('emr.errTitle', 'اكتب عنوان وظيفة واضح.'));
+    if (description.trim().length < 20) return setError(tr('emr.errDesc', 'اكتب وصف كافٍ (20 حرف على الأقل).'));
+    if (!monthlySalary || Number(monthlySalary) <= 0) return setError(tr('emr.errSalary', 'حدد الراتب الشهري.'));
     setSaving(true);
     try {
       await api('/employment/jobs', {
@@ -167,13 +176,13 @@ export default function EmployerPage() {
       setTitle(''); setDescription(''); setSkills(''); setSeniority(''); setEmploymentType('FULL_TIME');
       setWorkMode('REMOTE'); setMonthlySalary(''); setCurrency('USD'); setHeadcount('1'); setLocation(''); setOfficeId('');
       setShowForm(false); await loadJobs();
-    } catch (e: any) { setError(e?.message || 'حصل خطأ'); }
+    } catch (e: any) { setError(e?.message || tr('common.error', 'حصل خطأ')); }
     setSaving(false);
   }
 
   async function setJobStatus(id: string, status: string) {
     try { await api(`/employment/jobs/${id}`, { method: 'PATCH', body: { status } }); await loadJobs(); }
-    catch (e: any) { alert(e?.message || 'حصل خطأ'); }
+    catch (e: any) { alert(e?.message || tr('common.error', 'حصل خطأ')); }
   }
 
   async function toggleApplicants(id: string) {
@@ -190,7 +199,7 @@ export default function EmployerPage() {
       const d = await api<Applicant[]>(`/employment/jobs/${jobId}/applications`);
       setApplicants((m) => ({ ...m, [jobId]: Array.isArray(d) ? d : [] }));
       if (status === 'HIRED') await loadJobs();
-    } catch (e: any) { alert(e?.message || 'حصل خطأ'); }
+    } catch (e: any) { alert(e?.message || tr('common.error', 'حصل خطأ')); }
   }
 
   async function toggleLogs(id: string) {
@@ -206,17 +215,17 @@ export default function EmployerPage() {
       await api(`/employment/logs/${logId}`, { method: 'PATCH', body: { status } });
       const d = await api<Log[]>(`/employment/contracts/${contractId}/logs`);
       setLogs((m) => ({ ...m, [contractId]: Array.isArray(d) ? d : [] }));
-    } catch (e: any) { alert(e?.message || 'حصل خطأ'); }
+    } catch (e: any) { alert(e?.message || tr('common.error', 'حصل خطأ')); }
   }
   async function setContractStatus(id: string, status: string) {
     try { await api(`/employment/contracts/${id}`, { method: 'PATCH', body: { status } }); await loadContracts(); }
-    catch (e: any) { alert(e?.message || 'حصل خطأ'); }
+    catch (e: any) { alert(e?.message || tr('common.error', 'حصل خطأ')); }
   }
 
   if (state === 'loading')
-    return (<><style>{EM_CSS}</style><TopBar /><div className="em-wrap"><div className="em-empty">جاري التحميل...</div></div></>);
+    return (<><style>{EM_CSS}</style><TopBar /><div className="em-wrap"><div className="em-empty">{tr('cls.loading', 'جاري التحميل...')}</div></div></>);
   if (state === 'denied')
-    return (<><style>{EM_CSS}</style><TopBar /><BackBar /><div className="em-wrap"><div className="em-empty">الصفحة دي متاحة لحسابات الشركات (Employer) بس.</div></div></>);
+    return (<><style>{EM_CSS}</style><TopBar /><BackBar /><div className="em-wrap"><div className="em-empty">{tr('emr.denied', 'الصفحة دي متاحة لحسابات الشركات (Employer) بس.')}</div></div></>);
 
   return (
     <>
@@ -226,44 +235,44 @@ export default function EmployerPage() {
       <div className="em-wrap">
         <div className="em-head-row">
           <div>
-            <h1 className="em-title">وظائفي وفريقي</h1>
-            <p className="em-sub">اطرح وظائفك، فلتر المتقدمين ووظّف، وتابع شغل فريقك المصري لايف عبر محايد.</p>
+            <h1 className="em-title">{tr('emr.title', 'وظائفي وفريقي')}</h1>
+            <p className="em-sub">{tr('emr.sub', 'اطرح وظائفك، فلتر المتقدمين ووظّف، وتابع شغل فريقك المصري لايف عبر محايد.')}</p>
           </div>
-          {tab === 'jobs' && <button className="em-new" onClick={() => setShowForm((s) => !s)}>{showForm ? 'إغلاق' : '+ وظيفة جديدة'}</button>}
+          {tab === 'jobs' && <button className="em-new" onClick={() => setShowForm((s) => !s)}>{showForm ? tr('emr.close', 'إغلاق') : tr('emr.newJob', '+ وظيفة جديدة')}</button>}
         </div>
 
         <div className="em-tabs">
-          <button className={tab === 'jobs' ? 'active' : ''} onClick={() => setTab('jobs')}>الوظائف والمتقدمين</button>
-          <button className={tab === 'contracts' ? 'active' : ''} onClick={() => setTab('contracts')}>فريقي وسجل الشغل</button>
+          <button className={tab === 'jobs' ? 'active' : ''} onClick={() => setTab('jobs')}>{tr('emr.tabJobs', 'الوظائف والمتقدمين')}</button>
+          <button className={tab === 'contracts' ? 'active' : ''} onClick={() => setTab('contracts')}>{tr('emr.tabContracts', 'فريقي وسجل الشغل')}</button>
         </div>
 
         {tab === 'jobs' && showForm && (
           <div className="em-form">
             {error && <div className="em-err">{error}</div>}
-            <div className="em-field"><label>المسمى الوظيفي</label><input className="em-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="مثال: مطوّر واجهات أمامية" /></div>
+            <div className="em-field"><label>{tr('emr.fTitle', 'المسمى الوظيفي')}</label><input className="em-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={tr('emr.phTitle', 'مثال: مطوّر واجهات أمامية')} /></div>
             <div className="em-row">
-              <div className="em-field"><label>نوع التعاقد</label><select className="em-select" value={employmentType} onChange={(e) => setEmploymentType(e.target.value)}>{TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}</select></div>
-              <div className="em-field"><label>نمط العمل</label><select className="em-select" value={workMode} onChange={(e) => setWorkMode(e.target.value)}>{MODES.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}</select></div>
+              <div className="em-field"><label>{tr('emr.fType', 'نوع التعاقد')}</label><select className="em-select" value={employmentType} onChange={(e) => setEmploymentType(e.target.value)}>{TYPES.map((t) => <option key={t.value} value={t.value}>{empTypeLabel(tr, t.value)}</option>)}</select></div>
+              <div className="em-field"><label>{tr('emr.fMode', 'نمط العمل')}</label><select className="em-select" value={workMode} onChange={(e) => setWorkMode(e.target.value)}>{MODES.map((m) => <option key={m.value} value={m.value}>{workModeLabel(tr, m.value)}</option>)}</select></div>
             </div>
             <div className="em-row">
-              <div className="em-field"><label>الراتب الشهري</label><input className="em-input" type="number" value={monthlySalary} onChange={(e) => setMonthlySalary(e.target.value)} placeholder="مثال: 1200" /></div>
-              <div className="em-field"><label>العملة</label><input className="em-input" value={currency} onChange={(e) => setCurrency(e.target.value)} placeholder="USD" /></div>
-              <div className="em-field"><label>عدد الشواغر</label><input className="em-input" type="number" value={headcount} onChange={(e) => setHeadcount(e.target.value)} placeholder="1" /></div>
+              <div className="em-field"><label>{tr('emr.fSalary', 'الراتب الشهري')}</label><input className="em-input" type="number" value={monthlySalary} onChange={(e) => setMonthlySalary(e.target.value)} placeholder={tr('emr.phSalary', 'مثال: 1200')} /></div>
+              <div className="em-field"><label>{tr('emr.fCurrency', 'العملة')}</label><input className="em-input" value={currency} onChange={(e) => setCurrency(e.target.value)} placeholder="USD" /></div>
+              <div className="em-field"><label>{tr('emr.fHeadcount', 'عدد الشواغر')}</label><input className="em-input" type="number" value={headcount} onChange={(e) => setHeadcount(e.target.value)} placeholder="1" /></div>
             </div>
-            <div className="em-field"><label>الوصف الوظيفي</label><textarea className="em-area" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="المهام، المتطلبات، وتفاصيل الدور." /></div>
-            <div className="em-field"><label>المهارات المطلوبة (اختياري)</label><input className="em-input" value={skills} onChange={(e) => setSkills(e.target.value)} placeholder="مثال: React, Node.js" /></div>
+            <div className="em-field"><label>{tr('emr.fDesc', 'الوصف الوظيفي')}</label><textarea className="em-area" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={tr('emr.phDesc', 'المهام، المتطلبات، وتفاصيل الدور.')} /></div>
+            <div className="em-field"><label>{tr('emr.fSkills', 'المهارات المطلوبة (اختياري)')}</label><input className="em-input" value={skills} onChange={(e) => setSkills(e.target.value)} placeholder="مثال: React, Node.js" /></div>
             <div className="em-row">
-              <div className="em-field"><label>المستوى (اختياري)</label><input className="em-input" value={seniority} onChange={(e) => setSeniority(e.target.value)} placeholder="مثال: Senior" /></div>
-              <div className="em-field"><label>مكتب محايد (اختياري)</label><select className="em-select" value={officeId} onChange={(e) => setOfficeId(e.target.value)}><option value="">— بدون مكتب —</option>{offices.map((o) => <option key={o.id} value={o.id}>{o.name} - {o.city}</option>)}</select></div>
+              <div className="em-field"><label>{tr('emr.fSeniority', 'المستوى (اختياري)')}</label><input className="em-input" value={seniority} onChange={(e) => setSeniority(e.target.value)} placeholder={tr('emr.phSeniority', 'مثال: Senior')} /></div>
+              <div className="em-field"><label>{tr('emr.fOffice', 'مكتب محايد (اختياري)')}</label><select className="em-select" value={officeId} onChange={(e) => setOfficeId(e.target.value)}><option value="">{tr('emr.noOffice', '— بدون مكتب —')}</option>{offices.map((o) => <option key={o.id} value={o.id}>{o.name} - {o.city}</option>)}</select></div>
             </div>
-            <div className="em-field"><label>الموقع (اختياري)</label><input className="em-input" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="مثال: يفضّل داخل مصر" /></div>
-            <button className="em-btn full" onClick={submit} disabled={saving}>{saving ? 'جاري النشر...' : 'انشر الوظيفة'}</button>
+            <div className="em-field"><label>{tr('emr.fLocation', 'الموقع (اختياري)')}</label><input className="em-input" value={location} onChange={(e) => setLocation(e.target.value)} placeholder={tr('emr.phLocation', 'مثال: يفضّل داخل مصر')} /></div>
+            <button className="em-btn full" onClick={submit} disabled={saving}>{saving ? tr('emr.publishing', 'جاري النشر...') : tr('emr.publish', 'انشر الوظيفة')}</button>
           </div>
         )}
 
         {tab === 'jobs' ? (
           jobs.length === 0 ? (
-            <div className="em-empty">لسه ماطرحتش أي وظيفة.</div>
+            <div className="em-empty">{tr('emr.emptyJobs', 'لسه ماطرحتش أي وظيفة.')}</div>
           ) : (
             <div className="em-list">
               {jobs.map((j) => (
@@ -271,49 +280,49 @@ export default function EmployerPage() {
                   <div className="em-card-top">
                     <div>
                       <h3 className="em-card-title">{j.title}</h3>
-                      <span className="em-card-meta">{WORK_MODE[j.workMode] || j.workMode} · {money(j.monthlySalary, j.currency)} · <span className="em-mono">{j.code}</span></span>
+                      <span className="em-card-meta">{workModeLabel(tr, j.workMode)} · {money(j.monthlySalary, j.currency)} · <span className="em-mono">{j.code}</span></span>
                     </div>
-                    <span className={`em-badge ${JOB_STATUS[j.status]?.tone || 'muted'}`}>{JOB_STATUS[j.status]?.label || j.status}</span>
+                    <span className={`em-badge ${jobStatusTone(j.status)}`}>{jobStatusLabel(tr, j.status)}</span>
                   </div>
                   <div className="em-actions">
-                    <button className="em-mini" onClick={() => toggleApplicants(j.id)}>{openJob === j.id ? 'إخفاء المتقدمين' : 'عرض المتقدمين'}</button>
+                    <button className="em-mini" onClick={() => toggleApplicants(j.id)}>{openJob === j.id ? tr('emr.hideApplicants', 'إخفاء المتقدمين') : tr('emr.showApplicants', 'عرض المتقدمين')}</button>
                     {j.status === 'OPEN' ? (
-                      <button className="em-mini" onClick={() => setJobStatus(j.id, 'PAUSED')}>إيقاف مؤقت</button>
+                      <button className="em-mini" onClick={() => setJobStatus(j.id, 'PAUSED')}>{tr('emr.pause', 'إيقاف مؤقت')}</button>
                     ) : j.status === 'PAUSED' ? (
-                      <button className="em-mini" onClick={() => setJobStatus(j.id, 'OPEN')}>إعادة فتح</button>
+                      <button className="em-mini" onClick={() => setJobStatus(j.id, 'OPEN')}>{tr('emr.reopen', 'إعادة فتح')}</button>
                     ) : null}
-                    {j.status !== 'CLOSED' && <button className="em-mini danger" onClick={() => setJobStatus(j.id, 'CLOSED')}>إغلاق</button>}
+                    {j.status !== 'CLOSED' && <button className="em-mini danger" onClick={() => setJobStatus(j.id, 'CLOSED')}>{tr('emr.close', 'إغلاق')}</button>}
                   </div>
 
                   {openJob === j.id && (
                     <div className="em-sub-panel">
                       {!applicants[j.id] ? (
-                        <div className="em-empty small">جاري التحميل...</div>
+                        <div className="em-empty small">{tr('cls.loading', 'جاري التحميل...')}</div>
                       ) : applicants[j.id].length === 0 ? (
-                        <div className="em-empty small">مفيش متقدمين لسه.</div>
+                        <div className="em-empty small">{tr('emr.noApplicants', 'مفيش متقدمين لسه.')}</div>
                       ) : (
                         applicants[j.id].map((a) => (
                           <div key={a.id} className="em-inner">
                             <div className="em-inner-top">
-                              <b>{a.employee?.fullName || 'متقدم'}</b>
-                              <span className={`em-badge ${APP_STATUS[a.status]?.tone || 'muted'}`}>{APP_STATUS[a.status]?.label || a.status}</span>
+                              <b>{a.employee?.fullName || tr('emr.applicant', 'متقدم')}</b>
+                              <span className={`em-badge ${appStatusTone(a.status)}`}>{appStatusLabel(tr, a.status)}</span>
                             </div>
                             {a.employee?.email && <p className="em-line em-mono">{a.employee.email}</p>}
-                            {a.expectedSalary != null && <p className="em-line">الراتب المتوقع: <b>{money(a.expectedSalary, j.currency)}</b></p>}
+                            {a.expectedSalary != null && <p className="em-line">{tr('emr.expectedSalary', 'الراتب المتوقع:')} <b>{money(a.expectedSalary, j.currency)}</b></p>}
                             {a.coverLetter && <p className="em-line">{a.coverLetter}</p>}
-                            {a.cvUrl && <p className="em-line em-mono"><a href={a.cvUrl} target="_blank" rel="noreferrer">السيرة الذاتية</a></p>}
+                            {a.cvUrl && <p className="em-line em-mono"><a href={a.cvUrl} target="_blank" rel="noreferrer">{tr('emr.cv', 'السيرة الذاتية')}</a></p>}
                             {!['HIRED', 'REJECTED', 'WITHDRAWN'].includes(a.status) && (
                               <>
-                                <input className="em-input" style={{ marginTop: 8 }} value={noteDraft[a.id] || ''} onChange={(e) => setNoteDraft((m) => ({ ...m, [a.id]: e.target.value }))} placeholder="ملاحظة للمتقدم (اختياري)" />
+                                <input className="em-input" style={{ marginTop: 8 }} value={noteDraft[a.id] || ''} onChange={(e) => setNoteDraft((m) => ({ ...m, [a.id]: e.target.value }))} placeholder={tr('emr.notePh', 'ملاحظة للمتقدم (اختياري)')} />
                                 <div className="em-actions">
-                                  <button className="em-mini" onClick={() => respond(j.id, a.id, 'SHORTLISTED')}>قائمة مختصرة</button>
-                                  <button className="em-mini" onClick={() => respond(j.id, a.id, 'INTERVIEW')}>مقابلة</button>
-                                  <button className="em-mini ok" onClick={() => respond(j.id, a.id, 'HIRED')}>تعيين</button>
-                                  <button className="em-mini danger" onClick={() => respond(j.id, a.id, 'REJECTED')}>رفض</button>
+                                  <button className="em-mini" onClick={() => respond(j.id, a.id, 'SHORTLISTED')}>{tr('emr.shortlist', 'قائمة مختصرة')}</button>
+                                  <button className="em-mini" onClick={() => respond(j.id, a.id, 'INTERVIEW')}>{tr('emr.interview', 'مقابلة')}</button>
+                                  <button className="em-mini ok" onClick={() => respond(j.id, a.id, 'HIRED')}>{tr('emr.hire', 'تعيين')}</button>
+                                  <button className="em-mini danger" onClick={() => respond(j.id, a.id, 'REJECTED')}>{tr('emr.reject', 'رفض')}</button>
                                 </div>
                               </>
                             )}
-                            {a.employerNote && <div className="em-note"><b>ملاحظتك:</b> {a.employerNote}</div>}
+                            {a.employerNote && <div className="em-note"><b>{tr('emr.yourNote', 'ملاحظتك:')}</b> {a.employerNote}</div>}
                           </div>
                         ))
                       )}
@@ -324,49 +333,49 @@ export default function EmployerPage() {
             </div>
           )
         ) : contracts.length === 0 ? (
-          <div className="em-empty">مفيش عقود فريق لسه. وظّف متقدّم عشان يتفتح عقد.</div>
+          <div className="em-empty">{tr('emr.emptyContracts', 'مفيش عقود فريق لسه. وظّف متقدّم عشان يتفتح عقد.')}</div>
         ) : (
           <div className="em-list">
             {contracts.map((c) => (
               <div key={c.id} className="em-card">
                 <div className="em-card-top">
                   <div>
-                    <h3 className="em-card-title">{c.employee?.fullName || 'موظف'} — {c.title}</h3>
-                    <span className="em-card-meta">{money(c.monthlySalary, c.currency)} · {WORK_MODE[c.workMode] || c.workMode} · <span className="em-mono">{c.code}</span></span>
+                    <h3 className="em-card-title">{c.employee?.fullName || tr('emr.employee', 'موظف')} — {c.title}</h3>
+                    <span className="em-card-meta">{money(c.monthlySalary, c.currency)} · {workModeLabel(tr, c.workMode)} · <span className="em-mono">{c.code}</span></span>
                   </div>
-                  <span className={`em-badge ${EMPLOYMENT_STATUS[c.status]?.tone || 'muted'}`}>{EMPLOYMENT_STATUS[c.status]?.label || c.status}</span>
+                  <span className={`em-badge ${emplStatusTone(c.status)}`}>{emplStatusLabel(tr, c.status)}</span>
                 </div>
                 <div className="em-actions">
-                  <button className="em-mini" onClick={() => toggleLogs(c.id)}>{openContract === c.id ? 'إخفاء سجل الشغل' : 'متابعة سجل الشغل'}</button>
+                  <button className="em-mini" onClick={() => toggleLogs(c.id)}>{openContract === c.id ? tr('emr.hideLogs', 'إخفاء سجل الشغل') : tr('emr.showLogs', 'متابعة سجل الشغل')}</button>
                   {c.status === 'ACTIVE' ? (
-                    <button className="em-mini" onClick={() => setContractStatus(c.id, 'PAUSED')}>إيقاف مؤقت</button>
+                    <button className="em-mini" onClick={() => setContractStatus(c.id, 'PAUSED')}>{tr('emr.pause', 'إيقاف مؤقت')}</button>
                   ) : c.status === 'PAUSED' ? (
-                    <button className="em-mini" onClick={() => setContractStatus(c.id, 'ACTIVE')}>تنشيط</button>
+                    <button className="em-mini" onClick={() => setContractStatus(c.id, 'ACTIVE')}>{tr('emr.activate', 'تنشيط')}</button>
                   ) : null}
-                  {c.status !== 'ENDED' && <button className="em-mini danger" onClick={() => setContractStatus(c.id, 'ENDED')}>إنهاء العقد</button>}
+                  {c.status !== 'ENDED' && <button className="em-mini danger" onClick={() => setContractStatus(c.id, 'ENDED')}>{tr('emr.endContract', 'إنهاء العقد')}</button>}
                 </div>
 
                 {openContract === c.id && (
                   <div className="em-sub-panel">
                     {!logs[c.id] ? (
-                      <div className="em-empty small">جاري التحميل...</div>
+                      <div className="em-empty small">{tr('cls.loading', 'جاري التحميل...')}</div>
                     ) : logs[c.id].length === 0 ? (
-                      <div className="em-empty small">الموظف لسه ماسجّلش شغل.</div>
+                      <div className="em-empty small">{tr('emr.noLogs', 'الموظف لسه ماسجّلش شغل.')}</div>
                     ) : (
                       logs[c.id].map((l) => (
                         <div key={l.id} className="em-inner">
                           <div className="em-inner-top">
-                            <b>{fdate(l.date)}{l.hours != null ? ` · ${l.hours} ساعة` : ''}</b>
-                            <span className={`em-badge ${LOG_STATUS[l.status]?.tone || 'muted'}`}>{LOG_STATUS[l.status]?.label || l.status}</span>
+                            <b>{fdate(l.date)}{l.hours != null ? ` · ${l.hours} ${tr('emr.hours', 'ساعة')}` : ''}</b>
+                            <span className={`em-badge ${logStatusTone(l.status)}`}>{logStatusLabel(tr, l.status)}</span>
                           </div>
                           <p className="em-line">{l.summary}</p>
                           {l.status === 'SUBMITTED' && (
                             <div className="em-actions">
-                              <button className="em-mini ok" onClick={() => reviewLog(c.id, l.id, 'APPROVED')}>اعتماد</button>
-                              <button className="em-mini danger" onClick={() => reviewLog(c.id, l.id, 'REJECTED')}>رفض</button>
+                              <button className="em-mini ok" onClick={() => reviewLog(c.id, l.id, 'APPROVED')}>{tr('emr.approve', 'اعتماد')}</button>
+                              <button className="em-mini danger" onClick={() => reviewLog(c.id, l.id, 'REJECTED')}>{tr('emr.reject', 'رفض')}</button>
                             </div>
                           )}
-                          {l.employerNote && <div className="em-note"><b>ملاحظتك:</b> {l.employerNote}</div>}
+                          {l.employerNote && <div className="em-note"><b>{tr('emr.yourNote', 'ملاحظتك:')}</b> {l.employerNote}</div>}
                         </div>
                       ))
                     )}
