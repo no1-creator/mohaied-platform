@@ -9,6 +9,7 @@ import BackBar from '@/components/BackBar';
 import ProjectFiles from '@/components/ProjectFiles';
 import ProjectChat from '@/components/ProjectChat';
 import ProjectReview from '@/components/ProjectReview';
+import { LoadingState, ErrorState } from '@/components/PageState';
 
 type Milestone = {
   id: string;
@@ -53,36 +54,47 @@ export default function ProjectDetailPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!getToken()) {
-      router.push('/login');
-      return;
-    }
+ function load() {
+  setLoading(true);
+  setError('');
+  api<Project>(`/projects/${id}`)
+    .then((data) => setProject(data))
+    .catch((err) => setError(err.message))
+    .finally(() => setLoading(false));
+}
 
-    api<Project>(`/projects/${id}`)
-      .then((data) => setProject(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [id, router]);
-
-  if (loading) {
-    return (
-      <main className="min-h-screen grid place-items-center text-muted">
-        جاري التحميل...
-      </main>
-    );
+useEffect(() => {
+  if (!getToken()) {
+    router.push('/login');
+    return;
   }
+  load();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [id, router]);
 
-  if (error) {
-    return (
-      <main className="min-h-screen">
-        <TopBar />
-        <div className="max-w-3xl mx-auto px-6 py-20 text-center text-red-600">
-          {error}
-        </div>
-      </main>
-    );
-  }
+if (loading) {
+  return (
+    <main className="min-h-screen">
+      <TopBar />
+      <BackBar />
+      <div className="max-w-3xl mx-auto px-6 py-10">
+        <LoadingState />
+      </div>
+    </main>
+  );
+}
+
+if (error) {
+  return (
+    <main className="min-h-screen">
+      <TopBar />
+      <BackBar />
+      <div className="max-w-3xl mx-auto px-6 py-10">
+        <ErrorState message={error} onRetry={load} />
+      </div>
+    </main>
+  );
+}
 
   return (
     <main className="min-h-screen">
