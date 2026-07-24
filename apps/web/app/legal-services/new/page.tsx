@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
+import SuccessState from '@/components/SuccessState';
 import { useI18n } from '@/lib/i18n';
 
 const CATEGORIES = [
@@ -45,7 +46,9 @@ export default function NewLegalRequestPage() {
   const [nationality, setNationality] = useState('');
   const [budget, setBudget] = useState('');
   const [preferredContact, setPreferredContact] = useState('');
-  const [error, setError] = useState('');
+const [error, setError] = useState('');
+const [submitting, setSubmitting] = useState(false);
+const [done, setDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -78,21 +81,41 @@ export default function NewLegalRequestPage() {
 
     setSubmitting(true);
     try {
-      await api('/legal/requests', { method: 'POST', body });
-      router.push('/legal-services');
-    } catch (err: any) {
+   await api('/legal/requests', { method: 'POST', body });
+  setDone(true);
+} catch (err: any) {
       setError(err?.message || tr('lfn.errSubmit', 'حصل خطأ أثناء إرسال الطلب. حاول تاني.'));
       setSubmitting(false);
     }
   }
 
+  if (done) {
   return (
     <>
       <style>{LF_CSS}</style>
       <TopBar />
       <BackBar />
       <div className="lf-wrap">
-        <div className="lf-head">
+        <SuccessState
+          title={tr('lfn.okTitle', 'تم إرسال طلبك بنجاح 🎉')}
+          message={tr('lfn.okMsg', 'فريق محايد القانوني هيراجع طلبك ويوزّعه على المستشار المناسب، وهنتواصل معاك في أسرع وقت.')}
+          primary={{ label: tr('lfn.okCta', 'متابعة طلباتي'), href: '/legal-services' }}
+          secondary={{ label: tr('ss.home', 'العودة للرئيسية'), href: '/' }}
+          redirectTo="/legal-services"
+          redirectSeconds={4}
+        />
+      </div>
+    </>
+  );
+}
+
+return (
+  <>
+    <style>{LF_CSS}</style>
+    <TopBar />
+    <BackBar />
+    <div className="lf-wrap">
+      <div className="lf-head">
           <h1 className="lf-title">{tr('lfn.title', 'تقديم طلب قانوني')}</h1>
           <p className="lf-sub">
             {tr('lfn.sub', 'املأ البيانات، وفريق محايد القانوني هيراجع طلبك ويوزّعه على المستشار المناسب في أسرع وقت.')}
