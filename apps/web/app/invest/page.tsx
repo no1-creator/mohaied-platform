@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
+import { useI18n } from '@/lib/i18n';
 
 type Opp = {
   id: string; code: string; title: string; summary: string; description: string;
@@ -18,24 +19,24 @@ type Interest = {
   createdAt: string; opportunity?: Opp | null;
 };
 
-const STAGE: Record<string, string> = {
-  IDEA: 'فكرة', PROTOTYPE: 'نموذج أولي', MVP: 'منتج أولي', REVENUE: 'إيرادات', SCALING: 'توسّع',
+const STAGE_KEY: Record<string, string> = {
+  IDEA: 'ivp.stage.IDEA', PROTOTYPE: 'ivp.stage.PROTOTYPE', MVP: 'ivp.stage.MVP', REVENUE: 'ivp.stage.REVENUE', SCALING: 'ivp.stage.SCALING',
 };
-const OPP_STATUS: Record<string, { label: string; tone: string }> = {
-  OPEN: { label: 'مطروح للتمويل', tone: 'ok' },
-  IN_TALKS: { label: 'في تفاوض', tone: 'amber' },
-  FUNDED: { label: 'تم تمويله', tone: 'blue' },
-  CLOSED: { label: 'مغلق', tone: 'muted' },
-  REJECTED: { label: 'مرفوض', tone: 'red' },
+const OPP_STATUS: Record<string, { labelKey: string; tone: string }> = {
+  OPEN: { labelKey: 'ivp.oppStatus.OPEN', tone: 'ok' },
+  IN_TALKS: { labelKey: 'ivp.oppStatus.IN_TALKS', tone: 'amber' },
+  FUNDED: { labelKey: 'ivp.oppStatus.FUNDED', tone: 'blue' },
+  CLOSED: { labelKey: 'ivp.oppStatus.CLOSED', tone: 'muted' },
+  REJECTED: { labelKey: 'ivp.oppStatus.REJECTED', tone: 'red' },
 };
-const INT_STATUS: Record<string, { label: string; tone: string }> = {
-  PENDING: { label: 'قيد المراجعة', tone: 'amber' },
-  ACCEPTED: { label: 'مقبول', tone: 'ok' },
-  DECLINED: { label: 'مرفوض', tone: 'red' },
-  WITHDRAWN: { label: 'مسحوب', tone: 'muted' },
+const INT_STATUS: Record<string, { labelKey: string; tone: string }> = {
+  PENDING: { labelKey: 'ivp.intStatus.PENDING', tone: 'amber' },
+  ACCEPTED: { labelKey: 'ivp.intStatus.ACCEPTED', tone: 'ok' },
+  DECLINED: { labelKey: 'ivp.intStatus.DECLINED', tone: 'red' },
+  WITHDRAWN: { labelKey: 'ivp.intStatus.WITHDRAWN', tone: 'muted' },
 };
-const money = (v: any, c?: string | null) =>
-  `${Number(v || 0).toLocaleString('en')} ${c || 'ج.م'}`;
+const money = (v: any, c?: string | null, cur?: string) =>
+  `${Number(v || 0).toLocaleString('en')} ${c || cur || 'ج.م'}`;
 
 const IV_CSS = `
 .iv-wrap{max-width:1000px;margin:0 auto;width:100%;padding:26px 20px 90px;}
@@ -85,6 +86,7 @@ const IV_CSS = `
 
 export default function InvestPage() {
   const router = useRouter();
+  const { tr } = useI18n();
   const [tab, setTab] = useState<'browse' | 'mine'>('browse');
   const [opps, setOpps] = useState<Opp[]>([]);
   const [interests, setInterests] = useState<Interest[]>([]);
@@ -95,6 +97,8 @@ export default function InvestPage() {
   const [msg, setMsg] = useState('');
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState<Record<string, boolean>>({});
+
+  const cur = tr('common.currency', 'ج.م');
 
   async function loadBrowse() {
     setLoading(true);
@@ -154,7 +158,7 @@ export default function InvestPage() {
       setDone((d) => ({ ...d, [id]: true }));
       setActiveId('');
     } catch (e: any) {
-      alert(e?.message || 'حصل خطأ، حاول تاني');
+      alert(e?.message || tr('ivp.errRetry', 'حصل خطأ، حاول تاني'));
     }
     setSending(false);
   }
@@ -166,18 +170,18 @@ export default function InvestPage() {
       <BackBar />
       <div className="iv-wrap">
         <div className="iv-head">
-          <h1 className="iv-title">فرص الاستثمار على محايد</h1>
+          <h1 className="iv-title">{tr('ivp.title', 'فرص الاستثمار على محايد')}</h1>
           <p className="iv-sub">
-            اكتشف مشاريع وأفكار مطروحة للتمويل، وابدأ تواصلك مع أصحابها مباشرة عبر المنصة.
+            {tr('ivp.sub', 'اكتشف مشاريع وأفكار مطروحة للتمويل، وابدأ تواصلك مع أصحابها مباشرة عبر المنصة.')}
           </p>
         </div>
 
         <div className="iv-tabs">
           <button className={tab === 'browse' ? 'active' : ''} onClick={() => setTab('browse')}>
-            تصفّح الفرص
+            {tr('ivp.tabBrowse', 'تصفّح الفرص')}
           </button>
           <button className={tab === 'mine' ? 'active' : ''} onClick={() => setTab('mine')}>
-            اهتماماتي
+            {tr('ivp.tabMine', 'اهتماماتي')}
           </button>
         </div>
 
@@ -187,25 +191,25 @@ export default function InvestPage() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && loadBrowse()}
-              placeholder="ابحث بالعنوان أو القطاع..."
+              placeholder={tr('ivp.searchPh', 'ابحث بالعنوان أو القطاع...')}
             />
-            <button onClick={loadBrowse}>بحث</button>
+            <button onClick={loadBrowse}>{tr('common.search', 'بحث')}</button>
           </div>
         )}
 
         {loading ? (
-          <div className="iv-empty">جاري التحميل...</div>
+          <div className="iv-empty">{tr('cls.loading', 'جاري التحميل...')}</div>
         ) : tab === 'browse' ? (
           opps.length === 0 ? (
-            <div className="iv-empty">مفيش فرص متاحة حاليًا.</div>
+            <div className="iv-empty">{tr('ivp.emptyBrowse', 'مفيش فرص متاحة حاليًا.')}</div>
           ) : (
             <div className="iv-grid">
               {opps.map((o) => (
                 <div key={o.id} className="iv-card">
                   <div className="iv-card-top">
-                    <span className="iv-stage">{STAGE[o.stage] || o.stage}</span>
+                    <span className="iv-stage">{STAGE_KEY[o.stage] ? tr(STAGE_KEY[o.stage]) : o.stage}</span>
                     <span className={`iv-badge ${OPP_STATUS[o.status]?.tone || 'muted'}`}>
-                      {OPP_STATUS[o.status]?.label || o.status}
+                      {OPP_STATUS[o.status] ? tr(OPP_STATUS[o.status].labelKey) : o.status}
                     </span>
                   </div>
                   <h3 className="iv-card-title">{o.title}</h3>
@@ -216,25 +220,25 @@ export default function InvestPage() {
                   <p className="iv-card-summary">{o.summary}</p>
                   <ul className="iv-meta">
                     <li>
-                      <span>التمويل المطلوب</span>
-                      <b>{money(o.amountSought, o.currency)}</b>
+                      <span>{tr('ivp.amountSought', 'التمويل المطلوب')}</span>
+                      <b>{money(o.amountSought, o.currency, cur)}</b>
                     </li>
                     {o.equityOffered != null && (
                       <li>
-                        <span>الحصة المعروضة</span>
+                        <span>{tr('ivp.equity', 'الحصة المعروضة')}</span>
                         <b>{o.equityOffered}%</b>
                       </li>
                     )}
                     {o.founder && (
                       <li>
-                        <span>صاحب المشروع</span>
+                        <span>{tr('ivp.founder', 'صاحب المشروع')}</span>
                         <b>{o.founder.fullName}</b>
                       </li>
                     )}
                   </ul>
 
                   {done[o.id] ? (
-                    <div className="iv-done">تم إرسال اهتمامك ✓</div>
+                    <div className="iv-done">{tr('ivp.doneInterest', 'تم إرسال اهتمامك ✓')}</div>
                   ) : activeId === o.id ? (
                     <div className="iv-apply">
                       <input
@@ -242,26 +246,26 @@ export default function InvestPage() {
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        placeholder="المبلغ اللي تنوي تستثمره (اختياري)"
+                        placeholder={tr('ivp.amountPh', 'المبلغ اللي تنوي تستثمره (اختياري)')}
                       />
                       <textarea
                         className="iv-area"
                         value={msg}
                         onChange={(e) => setMsg(e.target.value)}
-                        placeholder="رسالة لصاحب المشروع (اختياري)"
+                        placeholder={tr('ivp.msgPh', 'رسالة لصاحب المشروع (اختياري)')}
                       />
                       <div className="iv-apply-actions">
                         <button className="iv-btn" onClick={() => apply(o.id)} disabled={sending}>
-                          {sending ? 'جاري الإرسال...' : 'إرسال الاهتمام'}
+                          {sending ? tr('ivp.sending', 'جاري الإرسال...') : tr('ivp.sendInterest', 'إرسال الاهتمام')}
                         </button>
                         <button className="iv-cancel" onClick={() => setActiveId('')}>
-                          إلغاء
+                          {tr('common.cancel', 'إلغاء')}
                         </button>
                       </div>
                     </div>
                   ) : (
                     <button className="iv-btn full" onClick={() => openApply(o.id)}>
-                      أبدي اهتمامي بالاستثمار
+                      {tr('ivp.showInterest', 'أبدي اهتمامي بالاستثمار')}
                     </button>
                   )}
                 </div>
@@ -269,31 +273,31 @@ export default function InvestPage() {
             </div>
           )
         ) : interests.length === 0 ? (
-          <div className="iv-empty">لسه ماأبديتش اهتمام بأي فرصة.</div>
+          <div className="iv-empty">{tr('ivp.emptyMine', 'لسه ماأبديتش اهتمام بأي فرصة.')}</div>
         ) : (
           <div className="iv-list">
             {interests.map((it) => (
               <div key={it.id} className="iv-int">
                 <div className="iv-card-top">
-                  <h3 className="iv-card-title">{it.opportunity?.title || 'فرصة'}</h3>
+                  <h3 className="iv-card-title">{it.opportunity?.title || tr('ivp.oppFallback', 'فرصة')}</h3>
                   <span className={`iv-badge ${INT_STATUS[it.status]?.tone || 'muted'}`}>
-                    {INT_STATUS[it.status]?.label || it.status}
+                    {INT_STATUS[it.status] ? tr(INT_STATUS[it.status].labelKey) : it.status}
                   </span>
                 </div>
                 {it.opportunity && (
                   <p className="iv-card-sector">
-                    {it.opportunity.sector} · {money(it.opportunity.amountSought, it.opportunity.currency)}
+                    {it.opportunity.sector} · {money(it.opportunity.amountSought, it.opportunity.currency, cur)}
                   </p>
                 )}
                 {it.amountOffered != null && (
                   <p className="iv-int-line">
-                    عرضك: <b>{money(it.amountOffered, it.opportunity?.currency)}</b>
+                    {tr('ivp.yourOffer', 'عرضك:')} <b>{money(it.amountOffered, it.opportunity?.currency, cur)}</b>
                   </p>
                 )}
-                {it.message && <p className="iv-int-line">رسالتك: {it.message}</p>}
+                {it.message && <p className="iv-int-line">{tr('ivp.yourMsg', 'رسالتك:')} {it.message}</p>}
                 {it.founderNote && (
                   <div className="iv-note">
-                    <b>رد صاحب المشروع:</b> {it.founderNote}
+                    <b>{tr('ivp.founderReply', 'رد صاحب المشروع:')}</b> {it.founderNote}
                   </div>
                 )}
               </div>
