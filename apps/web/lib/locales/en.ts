@@ -902,4 +902,12 @@ export const en: Record<string, string> = {
 'sas.accept': 'Accept assignment',
 'sas.decline': 'Decline',
 'sas.reportsLink': 'Reports & write a report',
+
+// ===== Supervisor: assignment details & reports =====
+'sad.newReport': 'Write a new report',
+'sad.summary': 'Report summary',
+'sad.notes': 'Additional notes (optional)',
+'sad.saveReport': 'Save report',
+'sad.prevReports': 'Previous reports',
+'sad.noReports': 'No reports yet.',
 };
