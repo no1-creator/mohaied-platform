@@ -49,7 +49,6 @@ export default function NewLegalRequestPage() {
 const [error, setError] = useState('');
 const [submitting, setSubmitting] = useState(false);
 const [done, setDone] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!getToken()) {
