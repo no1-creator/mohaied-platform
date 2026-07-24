@@ -1128,4 +1128,16 @@ export const ar: Record<string, string> = {
 'fr.errDesc': 'اكتب وصف كافٍ (20 حرف على الأقل).',
 'fr.errSector': 'حدد القطاع أو المجال.',
 'fr.errAmount': 'حدد قيمة التمويل المطلوب.',
+
+// ===== مكونات مشتركة (حالات الصفحة + الإشعارات) =====
+'ps.errMsg': 'حصل خطأ، حاول تاني.',
+'ps.retry': 'إعادة المحاولة',
+'nb.title': 'الإشعارات',
+'nb.readAll': 'تحديد الكل كمقروء',
+'nb.empty': 'مفيش إشعارات لسه 🔔',
+'nb.now': 'الآن',
+'nb.unitMin': 'د',
+'nb.unitHour': 'س',
+'nb.unitDay': 'يوم',
+'nb.unitMonth': 'شهر',
 };
