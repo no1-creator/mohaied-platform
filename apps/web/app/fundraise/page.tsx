@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
+import { useI18n } from '@/lib/i18n';
 
 type Opp = {
   id: string; code: string; title: string; sector: string;
@@ -16,27 +17,27 @@ type Interest = {
 };
 
 const STAGES = [
-  { value: 'IDEA', label: 'فكرة' },
-  { value: 'PROTOTYPE', label: 'نموذج أولي' },
-  { value: 'MVP', label: 'منتج أولي' },
-  { value: 'REVENUE', label: 'بيحقق إيرادات' },
-  { value: 'SCALING', label: 'مرحلة التوسّع' },
+  { value: 'IDEA', labelKey: 'ivp.stage.IDEA' },
+  { value: 'PROTOTYPE', labelKey: 'ivp.stage.PROTOTYPE' },
+  { value: 'MVP', labelKey: 'ivp.stage.MVP' },
+  { value: 'REVENUE', labelKey: 'ivp.stage.REVENUE' },
+  { value: 'SCALING', labelKey: 'ivp.stage.SCALING' },
 ];
-const OPP_STATUS: Record<string, { label: string; tone: string }> = {
-  OPEN: { label: 'مطروح للتمويل', tone: 'ok' },
-  IN_TALKS: { label: 'في تفاوض', tone: 'amber' },
-  FUNDED: { label: 'تم تمويله', tone: 'blue' },
-  CLOSED: { label: 'مغلق', tone: 'muted' },
-  REJECTED: { label: 'مرفوض', tone: 'red' },
+const OPP_STATUS: Record<string, { labelKey: string; tone: string }> = {
+  OPEN: { labelKey: 'ivp.oppStatus.OPEN', tone: 'ok' },
+  IN_TALKS: { labelKey: 'ivp.oppStatus.IN_TALKS', tone: 'amber' },
+  FUNDED: { labelKey: 'ivp.oppStatus.FUNDED', tone: 'blue' },
+  CLOSED: { labelKey: 'ivp.oppStatus.CLOSED', tone: 'muted' },
+  REJECTED: { labelKey: 'ivp.oppStatus.REJECTED', tone: 'red' },
 };
-const INT_STATUS: Record<string, { label: string; tone: string }> = {
-  PENDING: { label: 'قيد المراجعة', tone: 'amber' },
-  ACCEPTED: { label: 'مقبول', tone: 'ok' },
-  DECLINED: { label: 'مرفوض', tone: 'red' },
-  WITHDRAWN: { label: 'مسحوب', tone: 'muted' },
+const INT_STATUS: Record<string, { labelKey: string; tone: string }> = {
+  PENDING: { labelKey: 'ivp.intStatus.PENDING', tone: 'amber' },
+  ACCEPTED: { labelKey: 'ivp.intStatus.ACCEPTED', tone: 'ok' },
+  DECLINED: { labelKey: 'ivp.intStatus.DECLINED', tone: 'red' },
+  WITHDRAWN: { labelKey: 'ivp.intStatus.WITHDRAWN', tone: 'muted' },
 };
-const money = (v: any, c?: string | null) =>
-  `${Number(v || 0).toLocaleString('en')} ${c || 'ج.م'}`;
+const money = (v: any, c?: string | null, cur?: string) =>
+  `${Number(v || 0).toLocaleString('en')} ${c || cur || 'ج.م'}`;
 
 const FR_CSS = `
 .fr-wrap{max-width:820px;margin:0 auto;width:100%;padding:26px 20px 90px;}
@@ -85,6 +86,8 @@ const FR_CSS = `
 
 export default function FundraisePage() {
   const router = useRouter();
+  const { tr } = useI18n();
+  const cur = tr('common.currency', 'ج.م');
   const [state, setState] = useState<'loading' | 'ok' | 'denied'>('loading');
   const [opps, setOpps] = useState<Opp[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -130,11 +133,11 @@ export default function FundraisePage() {
 
   async function submit() {
     setError('');
-    if (title.trim().length < 3) return setError('اكتب عنوان واضح للفرصة.');
-    if (summary.trim().length < 5) return setError('اكتب نبذة مختصرة.');
-    if (description.trim().length < 20) return setError('اكتب وصف كافٍ (20 حرف على الأقل).');
-    if (!sector.trim()) return setError('حدد القطاع أو المجال.');
-    if (!amountSought || Number(amountSought) <= 0) return setError('حدد قيمة التمويل المطلوب.');
+    if (title.trim().length < 3) return setError(tr('fr.errTitle', 'اكتب عنوان واضح للفرصة.'));
+    if (summary.trim().length < 5) return setError(tr('fr.errSummary', 'اكتب نبذة مختصرة.'));
+    if (description.trim().length < 20) return setError(tr('fr.errDesc', 'اكتب وصف كافٍ (20 حرف على الأقل).'));
+    if (!sector.trim()) return setError(tr('fr.errSector', 'حدد القطاع أو المجال.'));
+    if (!amountSought || Number(amountSought) <= 0) return setError(tr('fr.errAmount', 'حدد قيمة التمويل المطلوب.'));
     setSaving(true);
     try {
       await api('/invest/opportunities', {
@@ -157,7 +160,7 @@ export default function FundraisePage() {
       setShowForm(false);
       await loadMine();
     } catch (e: any) {
-      setError(e?.message || 'حصل خطأ، حاول تاني');
+      setError(e?.message || tr('ivp.errRetry', 'حصل خطأ، حاول تاني'));
     }
     setSaving(false);
   }
@@ -185,7 +188,7 @@ export default function FundraisePage() {
       setInterests((m) => ({ ...m, [oppId]: Array.isArray(d) ? d : [] }));
       await loadMine();
     } catch (e: any) {
-      alert(e?.message || 'حصل خطأ');
+      alert(e?.message || tr('common.error', 'حصل خطأ'));
     }
   }
 
@@ -194,7 +197,7 @@ export default function FundraisePage() {
       await api(`/invest/opportunities/${id}`, { method: 'PATCH', body: { status } });
       await loadMine();
     } catch (e: any) {
-      alert(e?.message || 'حصل خطأ');
+      alert(e?.message || tr('common.error', 'حصل خطأ'));
     }
   }
 
@@ -203,7 +206,7 @@ export default function FundraisePage() {
       <>
         <style>{FR_CSS}</style>
         <TopBar />
-        <div className="fr-wrap"><div className="fr-empty">جاري التحميل...</div></div>
+        <div className="fr-wrap"><div className="fr-empty">{tr('cls.loading', 'جاري التحميل...')}</div></div>
       </>
     );
   }
@@ -214,7 +217,7 @@ export default function FundraisePage() {
         <TopBar />
         <BackBar />
         <div className="fr-wrap">
-          <div className="fr-empty">الصفحة دي متاحة للعملاء ومقدمي الخدمة بس.</div>
+          <div className="fr-empty">{tr('fr.denied', 'الصفحة دي متاحة للعملاء ومقدمي الخدمة بس.')}</div>
         </div>
       </>
     );
@@ -228,13 +231,13 @@ export default function FundraisePage() {
       <div className="fr-wrap">
         <div className="fr-head">
           <div>
-            <h1 className="fr-title">تمويل مشروعك</h1>
+            <h1 className="fr-title">{tr('fr.title', 'تمويل مشروعك')}</h1>
             <p className="fr-sub">
-              اطرح مشروعك أو فكرتك على مستثمري محايد، وتابع اهتماماتهم وردودك عليها.
+              {tr('fr.sub', 'اطرح مشروعك أو فكرتك على مستثمري محايد، وتابع اهتماماتهم وردودك عليها.')}
             </p>
           </div>
           <button className="fr-new" onClick={() => setShowForm((s) => !s)}>
-            {showForm ? 'إغلاق' : '+ اطرح فرصة جديدة'}
+            {showForm ? tr('fr.closeForm', 'إغلاق') : tr('fr.newOpp', '+ اطرح فرصة جديدة')}
           </button>
         </div>
 
@@ -242,63 +245,63 @@ export default function FundraisePage() {
           <div className="fr-form">
             {error && <div className="fr-err">{error}</div>}
             <div className="fr-field">
-              <label>عنوان الفرصة</label>
-              <input className="fr-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="مثال: منصة توصيل ذكية" />
+              <label>{tr('fr.oppTitle', 'عنوان الفرصة')}</label>
+              <input className="fr-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={tr('fr.oppTitlePh', 'مثال: منصة توصيل ذكية')} />
             </div>
             <div className="fr-field">
-              <label>نبذة مختصرة</label>
-              <input className="fr-input" value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="جملة أو اتنين تلخّص الفكرة" />
+              <label>{tr('fr.summary', 'نبذة مختصرة')}</label>
+              <input className="fr-input" value={summary} onChange={(e) => setSummary(e.target.value)} placeholder={tr('fr.summaryPh', 'جملة أو اتنين تلخّص الفكرة')} />
             </div>
             <div className="fr-row">
               <div className="fr-field">
-                <label>القطاع / المجال</label>
-                <input className="fr-input" value={sector} onChange={(e) => setSector(e.target.value)} placeholder="مثال: تكنولوجيا، تجارة..." />
+                <label>{tr('fr.sector', 'القطاع / المجال')}</label>
+                <input className="fr-input" value={sector} onChange={(e) => setSector(e.target.value)} placeholder={tr('fr.sectorPh', 'مثال: تكنولوجيا، تجارة...')} />
               </div>
               <div className="fr-field">
-                <label>المرحلة</label>
+                <label>{tr('fr.stage', 'المرحلة')}</label>
                 <select className="fr-select" value={stage} onChange={(e) => setStage(e.target.value)}>
                   {STAGES.map((s) => (
-                    <option key={s.value} value={s.value}>{s.label}</option>
+                    <option key={s.value} value={s.value}>{tr(s.labelKey)}</option>
                   ))}
                 </select>
               </div>
             </div>
             <div className="fr-row">
               <div className="fr-field">
-                <label>التمويل المطلوب (ج.م)</label>
-                <input className="fr-input" type="number" value={amountSought} onChange={(e) => setAmountSought(e.target.value)} placeholder="مثال: 500000" />
+                <label>{tr('fr.amount', 'التمويل المطلوب')} ({cur})</label>
+                <input className="fr-input" type="number" value={amountSought} onChange={(e) => setAmountSought(e.target.value)} placeholder={tr('fr.amountPh', 'مثال: 500000')} />
               </div>
               <div className="fr-field">
-                <label>الحصة المعروضة % (اختياري)</label>
-                <input className="fr-input" type="number" value={equityOffered} onChange={(e) => setEquityOffered(e.target.value)} placeholder="مثال: 15" />
+                <label>{tr('fr.equity', 'الحصة المعروضة % (اختياري)')}</label>
+                <input className="fr-input" type="number" value={equityOffered} onChange={(e) => setEquityOffered(e.target.value)} placeholder={tr('fr.equityPh', 'مثال: 15')} />
               </div>
             </div>
             <div className="fr-field">
-              <label>وصف تفصيلي</label>
-              <textarea className="fr-area" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="اشرح المشروع، السوق، الفريق، والفرصة." />
+              <label>{tr('fr.desc', 'وصف تفصيلي')}</label>
+              <textarea className="fr-area" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={tr('fr.descPh', 'اشرح المشروع، السوق، الفريق، والفرصة.')} />
             </div>
             <div className="fr-field">
-              <label>أوجه استخدام التمويل (اختياري)</label>
-              <input className="fr-input" value={useOfFunds} onChange={(e) => setUseOfFunds(e.target.value)} placeholder="مثال: تطوير المنتج والتسويق" />
+              <label>{tr('fr.useOfFunds', 'أوجه استخدام التمويل (اختياري)')}</label>
+              <input className="fr-input" value={useOfFunds} onChange={(e) => setUseOfFunds(e.target.value)} placeholder={tr('fr.useOfFundsPh', 'مثال: تطوير المنتج والتسويق')} />
             </div>
             <div className="fr-row">
               <div className="fr-field">
-                <label>الموقع (اختياري)</label>
-                <input className="fr-input" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="مثال: القاهرة" />
+                <label>{tr('fr.location', 'الموقع (اختياري)')}</label>
+                <input className="fr-input" value={location} onChange={(e) => setLocation(e.target.value)} placeholder={tr('fr.locationPh', 'مثال: القاهرة')} />
               </div>
               <div className="fr-field">
-                <label>رابط (اختياري)</label>
+                <label>{tr('fr.website', 'رابط (اختياري)')}</label>
                 <input className="fr-input" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" />
               </div>
             </div>
             <button className="fr-btn" onClick={submit} disabled={saving}>
-              {saving ? 'جاري النشر...' : 'انشر الفرصة'}
+              {saving ? tr('fr.publishing', 'جاري النشر...') : tr('fr.publish', 'انشر الفرصة')}
             </button>
           </div>
         )}
 
         {opps.length === 0 ? (
-          <div className="fr-empty">لسه ماطرحتش أي فرصة. ابدأ من زرار "اطرح فرصة جديدة".</div>
+          <div className="fr-empty">{tr('fr.empty', 'لسه ماطرحتش أي فرصة. ابدأ من زرار "اطرح فرصة جديدة".')}</div>
         ) : (
           <div className="fr-list">
             {opps.map((o) => (
@@ -307,47 +310,47 @@ export default function FundraisePage() {
                   <div>
                     <h3 className="fr-card-title">{o.title}</h3>
                     <span className="fr-card-meta">
-                      {o.sector} · {money(o.amountSought, o.currency)} · <span className="fr-mono">{o.code}</span>
+                      {o.sector} · {money(o.amountSought, o.currency, cur)} · <span className="fr-mono">{o.code}</span>
                     </span>
                   </div>
                   <span className={`fr-badge ${OPP_STATUS[o.status]?.tone || 'muted'}`}>
-                    {OPP_STATUS[o.status]?.label || o.status}
+                    {OPP_STATUS[o.status] ? tr(OPP_STATUS[o.status].labelKey) : o.status}
                   </span>
                 </div>
                 <div className="fr-card-actions">
                   <button className="fr-mini" onClick={() => toggleInterests(o.id)}>
-                    {openId === o.id ? 'إخفاء الاهتمامات' : 'عرض الاهتمامات'}
+                    {openId === o.id ? tr('fr.hideInterests', 'إخفاء الاهتمامات') : tr('fr.showInterests', 'عرض الاهتمامات')}
                   </button>
                   {o.status !== 'CLOSED' ? (
-                    <button className="fr-mini" onClick={() => setStatus(o.id, 'CLOSED')}>إغلاق الفرصة</button>
+                    <button className="fr-mini" onClick={() => setStatus(o.id, 'CLOSED')}>{tr('fr.closeOpp', 'إغلاق الفرصة')}</button>
                   ) : (
-                    <button className="fr-mini" onClick={() => setStatus(o.id, 'OPEN')}>إعادة فتح</button>
+                    <button className="fr-mini" onClick={() => setStatus(o.id, 'OPEN')}>{tr('fr.reopen', 'إعادة فتح')}</button>
                   )}
                 </div>
 
                 {openId === o.id && (
                   <div className="fr-interests">
                     {!interests[o.id] ? (
-                      <div className="fr-empty small">جاري التحميل...</div>
+                      <div className="fr-empty small">{tr('cls.loading', 'جاري التحميل...')}</div>
                     ) : interests[o.id].length === 0 ? (
-                      <div className="fr-empty small">مفيش اهتمامات لسه على الفرصة دي.</div>
+                      <div className="fr-empty small">{tr('fr.noInterests', 'مفيش اهتمامات لسه على الفرصة دي.')}</div>
                     ) : (
                       interests[o.id].map((it) => (
                         <div key={it.id} className="fr-int">
                           <div className="fr-int-top">
-                            <b>{it.investor?.fullName || 'مستثمر'}</b>
+                            <b>{it.investor?.fullName || tr('fr.investorFallback', 'مستثمر')}</b>
                             <span className={`fr-badge ${INT_STATUS[it.status]?.tone || 'muted'}`}>
-                              {INT_STATUS[it.status]?.label || it.status}
+                              {INT_STATUS[it.status] ? tr(INT_STATUS[it.status].labelKey) : it.status}
                             </span>
                           </div>
                           {it.amountOffered != null && (
-                            <p className="fr-int-line">العرض: <b>{money(it.amountOffered, o.currency)}</b></p>
+                            <p className="fr-int-line">{tr('fr.offer', 'العرض:')} <b>{money(it.amountOffered, o.currency, cur)}</b></p>
                           )}
                           {it.message && <p className="fr-int-line">{it.message}</p>}
                           {it.status === 'PENDING' && (
                             <div className="fr-int-actions">
-                              <button className="fr-mini ok" onClick={() => respond(o.id, it.id, 'ACCEPTED')}>قبول</button>
-                              <button className="fr-mini danger" onClick={() => respond(o.id, it.id, 'DECLINED')}>رفض</button>
+                              <button className="fr-mini ok" onClick={() => respond(o.id, it.id, 'ACCEPTED')}>{tr('fr.accept', 'قبول')}</button>
+                              <button className="fr-mini danger" onClick={() => respond(o.id, it.id, 'DECLINED')}>{tr('fr.reject', 'رفض')}</button>
                             </div>
                           )}
                         </div>
