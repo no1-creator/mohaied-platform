@@ -1140,4 +1140,14 @@ export const en: Record<string, string> = {
 'nb.unitHour': 'h',
 'nb.unitDay': 'd',
 'nb.unitMonth': 'mo',
+
+// ===== Success screen + confirm dialog =====
+'ss.defaultTitle': 'Done successfully',
+'ss.redirect': 'Redirecting in',
+'ss.seconds': 'seconds',
+'ss.goNow': 'Go now',
+'ss.home': 'Back to home',
+'cf.title': 'Confirm',
+'cf.confirm': 'Confirm',
+'cf.processing': 'Processing…',
 };
