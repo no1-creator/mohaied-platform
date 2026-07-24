@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
+import { useI18n } from '@/lib/i18n';
 
 type Report = {
   id: string;
@@ -24,6 +25,7 @@ type Assignment = {
 export default function AssignmentDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const { tr } = useI18n();
   const id = params?.id as string;
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
@@ -74,7 +76,7 @@ export default function AssignmentDetailPage() {
   if (loading) {
     return (
       <main className="min-h-screen grid place-items-center text-muted">
-        جاري التحميل...
+        {tr('cls.loading', 'جاري التحميل...')}
       </main>
     );
   }
@@ -92,14 +94,14 @@ export default function AssignmentDetailPage() {
                 {assignment.project?.title}
               </h1>
               <p className="text-sm text-muted">
-                أجر المراجعة: {assignment.ratePerReview} ج.م
+                {tr('sas.rate', 'أجر المراجعة:')} {assignment.ratePerReview} {tr('common.currency', 'ج.م')}
               </p>
             </div>
 
             <form onSubmit={createReport} className="card space-y-4 mb-6">
-              <h2 className="font-black">كتابة تقرير جديد</h2>
+              <h2 className="font-black">{tr('sad.newReport', 'كتابة تقرير جديد')}</h2>
               <div>
-                <label className="label">ملخص التقرير</label>
+                <label className="label">{tr('sad.summary', 'ملخص التقرير')}</label>
                 <textarea
                   className="input-field min-h-[100px]"
                   value={summary}
@@ -109,7 +111,7 @@ export default function AssignmentDetailPage() {
                 />
               </div>
               <div>
-                <label className="label">ملاحظات إضافية (اختياري)</label>
+                <label className="label">{tr('sad.notes', 'ملاحظات إضافية (اختياري)')}</label>
                 <textarea
                   className="input-field"
                   value={notes}
@@ -121,15 +123,15 @@ export default function AssignmentDetailPage() {
                 className="btn-primary"
                 disabled={saving}
               >
-                {saving ? 'جاري الحفظ...' : 'حفظ التقرير'}
+                {saving ? tr('apl.saving', 'جاري الحفظ...') : tr('sad.saveReport', 'حفظ التقرير')}
               </button>
             </form>
 
             <div className="card">
-              <h2 className="font-black mb-4">التقارير السابقة</h2>
+              <h2 className="font-black mb-4">{tr('sad.prevReports', 'التقارير السابقة')}</h2>
               {(!assignment.reports ||
                 assignment.reports.length === 0) && (
-                <p className="text-muted text-sm">لسه مفيش تقارير.</p>
+                <p className="text-muted text-sm">{tr('sad.noReports', 'لسه مفيش تقارير.')}</p>
               )}
               <div className="space-y-3">
                 {assignment.reports?.map((r) => (
