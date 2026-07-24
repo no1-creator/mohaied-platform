@@ -1150,4 +1150,9 @@ export const en: Record<string, string> = {
 'cf.title': 'Confirm',
 'cf.confirm': 'Confirm',
 'cf.processing': 'Processing…',
+
+// Legal request success
+'lfn.okTitle': 'Your request was submitted 🎉',
+'lfn.okMsg': 'Our legal team will review your request and assign the right consultant. We\'ll reach out to you shortly.',
+'lfn.okCta': 'View my requests',
 };
