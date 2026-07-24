@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
+import { useI18n } from '@/lib/i18n';
 
 const CATEGORIES = [
-  { value: 'IP_PROTECTION', label: 'تسجيل الأفكار وحماية الملكية الفكرية' },
-  { value: 'COMPANY_FORMATION', label: 'تأسيس الشركات في مصر' },
-  { value: 'FOREIGNER_CASE', label: 'قضايا الأجانب في مصر' },
-  { value: 'GENERAL_CONSULT', label: 'استشارة قانونية عامة' },
-  { value: 'OTHER', label: 'طلب آخر' },
+  { value: 'IP_PROTECTION', labelKey: 'lsv.cat.IP_PROTECTION' },
+  { value: 'COMPANY_FORMATION', labelKey: 'lsv.cat.COMPANY_FORMATION' },
+  { value: 'FOREIGNER_CASE', labelKey: 'lsv.cat.FOREIGNER_CASE' },
+  { value: 'GENERAL_CONSULT', labelKey: 'lsv.cat.GENERAL_CONSULT' },
+  { value: 'OTHER', labelKey: 'lsv.cat.OTHER' },
 ];
 
 const LF_CSS = `
@@ -36,6 +37,7 @@ const LF_CSS = `
 
 export default function NewLegalRequestPage() {
   const router = useRouter();
+  const { tr } = useI18n();
   const [category, setCategory] = useState('IP_PROTECTION');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -60,9 +62,9 @@ export default function NewLegalRequestPage() {
   async function submit() {
     setError('');
     if (title.trim().length < 3)
-      return setError('اكتب عنوان واضح للطلب (3 حروف على الأقل).');
+      return setError(tr('lfn.errTitle', 'اكتب عنوان واضح للطلب (3 حروف على الأقل).'));
     if (description.trim().length < 10)
-      return setError('اكتب تفاصيل كافية عن طلبك (10 حروف على الأقل).');
+      return setError(tr('lfn.errDesc', 'اكتب تفاصيل كافية عن طلبك (10 حروف على الأقل).'));
 
     const body: Record<string, unknown> = {
       category,
@@ -79,7 +81,7 @@ export default function NewLegalRequestPage() {
       await api('/legal/requests', { method: 'POST', body });
       router.push('/legal-services');
     } catch (err: any) {
-      setError(err?.message || 'حصل خطأ أثناء إرسال الطلب. حاول تاني.');
+      setError(err?.message || tr('lfn.errSubmit', 'حصل خطأ أثناء إرسال الطلب. حاول تاني.'));
       setSubmitting(false);
     }
   }
@@ -91,10 +93,9 @@ export default function NewLegalRequestPage() {
       <BackBar />
       <div className="lf-wrap">
         <div className="lf-head">
-          <h1 className="lf-title">تقديم طلب قانوني</h1>
+          <h1 className="lf-title">{tr('lfn.title', 'تقديم طلب قانوني')}</h1>
           <p className="lf-sub">
-            املأ البيانات، وفريق محايد القانوني هيراجع طلبك ويوزّعه على المستشار
-            المناسب في أسرع وقت.
+            {tr('lfn.sub', 'املأ البيانات، وفريق محايد القانوني هيراجع طلبك ويوزّعه على المستشار المناسب في أسرع وقت.')}
           </p>
         </div>
 
@@ -102,7 +103,7 @@ export default function NewLegalRequestPage() {
           {error && <div className="lf-err">{error}</div>}
 
           <div className="lf-field">
-            <label className="lf-label">نوع الخدمة</label>
+            <label className="lf-label">{tr('lfn.serviceType', 'نوع الخدمة')}</label>
             <select
               className="lf-select"
               value={category}
@@ -110,80 +111,80 @@ export default function NewLegalRequestPage() {
             >
               {CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>
-                  {c.label}
+                  {tr(c.labelKey)}
                 </option>
               ))}
             </select>
           </div>
 
           <div className="lf-field">
-            <label className="lf-label">عنوان الطلب</label>
+            <label className="lf-label">{tr('lfn.reqTitle', 'عنوان الطلب')}</label>
             <input
               className="lf-input"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="مثال: تسجيل علامة تجارية لتطبيق"
+              placeholder={tr('lfn.reqTitlePh', 'مثال: تسجيل علامة تجارية لتطبيق')}
             />
           </div>
 
           {category === 'COMPANY_FORMATION' && (
             <div className="lf-field">
-              <label className="lf-label">اسم الشركة / الكيان المقترح</label>
+              <label className="lf-label">{tr('lfn.entityName', 'اسم الشركة / الكيان المقترح')}</label>
               <input
                 className="lf-input"
                 value={entityName}
                 onChange={(e) => setEntityName(e.target.value)}
-                placeholder="مثال: محايد للتكنولوجيا"
+                placeholder={tr('lfn.entityNamePh', 'مثال: محايد للتكنولوجيا')}
               />
             </div>
           )}
 
           {category === 'FOREIGNER_CASE' && (
             <div className="lf-field">
-              <label className="lf-label">الجنسية</label>
+              <label className="lf-label">{tr('lfn.nationality', 'الجنسية')}</label>
               <input
                 className="lf-input"
                 value={nationality}
                 onChange={(e) => setNationality(e.target.value)}
-                placeholder="مثال: سعودي"
+                placeholder={tr('lfn.nationalityPh', 'مثال: سعودي')}
               />
             </div>
           )}
 
           <div className="lf-field">
-            <label className="lf-label">تفاصيل الطلب</label>
+            <label className="lf-label">{tr('lfn.details', 'تفاصيل الطلب')}</label>
             <textarea
               className="lf-area"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="اشرح طلبك بالتفصيل: المطلوب، وأي معلومات تساعد المستشار يفهم حالتك."
+              placeholder={tr('lfn.detailsPh', 'اشرح طلبك بالتفصيل: المطلوب، وأي معلومات تساعد المستشار يفهم حالتك.')}
             />
           </div>
 
           <div className="lf-row">
             <div className="lf-field">
-              <label className="lf-label">الميزانية التقديرية (اختياري)</label>
+              <label className="lf-label">{tr('lfn.budget', 'الميزانية التقديرية (اختياري)')}</label>
               <input
                 className="lf-input"
                 type="number"
                 value={budget}
                 onChange={(e) => setBudget(e.target.value)}
-                placeholder="ج.م"
+                placeholder={tr('common.currency', 'ج.م')}
               />
             </div>
             <div className="lf-field">
-              <label className="lf-label">وسيلة تواصل مفضّلة (اختياري)</label>
+              <label className="lf-label">{tr('lfn.contact', 'وسيلة تواصل مفضّلة (اختياري)')}</label>
               <input
                 className="lf-input"
                 value={preferredContact}
                 onChange={(e) => setPreferredContact(e.target.value)}
-                placeholder="رقم موبايل / واتساب / إيميل"
+                placeholder={tr('lfn.contactPh', 'رقم موبايل / واتساب / إيميل')}
               />
             </div>
           </div>
 
           <button className="lf-btn" onClick={submit} disabled={submitting}>
-            {submitting ? 'جاري الإرسال...' : 'ابعت الطلب لفريق محايد'}
+            {submitting ? tr('ivp.sending', 'جاري الإرسال...') : tr('lfn.submit', 'ابعت الطلب لفريق محايد')}
           </button>
         </div>
       </div>
