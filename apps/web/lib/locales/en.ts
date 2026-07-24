@@ -1128,4 +1128,16 @@ export const en: Record<string, string> = {
 'fr.errDesc': 'Enter a sufficient description (at least 20 characters).',
 'fr.errSector': 'Specify the sector or field.',
 'fr.errAmount': 'Specify the funding amount sought.',
+
+// ===== Shared components (page states + notifications) =====
+'ps.errMsg': 'Something went wrong, try again.',
+'ps.retry': 'Try again',
+'nb.title': 'Notifications',
+'nb.readAll': 'Mark all as read',
+'nb.empty': 'No notifications yet 🔔',
+'nb.now': 'now',
+'nb.unitMin': 'm',
+'nb.unitHour': 'h',
+'nb.unitDay': 'd',
+'nb.unitMonth': 'mo',
 };
