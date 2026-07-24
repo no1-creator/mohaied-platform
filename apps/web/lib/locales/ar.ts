@@ -1140,4 +1140,14 @@ export const ar: Record<string, string> = {
 'nb.unitHour': 'س',
 'nb.unitDay': 'يوم',
 'nb.unitMonth': 'شهر',
+
+// ===== شاشة النجاح + نافذة التأكيد =====
+'ss.defaultTitle': 'تمّت العملية بنجاح',
+'ss.redirect': 'سيتم تحويلك خلال',
+'ss.seconds': 'ثانية',
+'ss.goNow': 'اذهب الآن',
+'ss.home': 'العودة للرئيسية',
+'cf.title': 'تأكيد',
+'cf.confirm': 'تأكيد',
+'cf.processing': 'جاري التنفيذ...',
 };
