@@ -874,4 +874,16 @@ export const en: Record<string, string> = {
 'aem.err': 'An error occurred',
 'aem.errName': 'Enter the office name.',
 'aem.errCity': 'Enter the city.',
+
+// ===== Admin: team permissions =====
+'atm.title': 'Team permissions',
+'atm.errLoad': 'Failed to load',
+'atm.saved': 'Changes saved ✅',
+'atm.limitedNote': 'You are a limited admin — you can only view the team; editing is available to super admins.',
+'atm.superAdmin': 'Super admin',
+'atm.fullAccess': 'Full access',
+'atm.limited': 'Limited',
+'atm.superAdminSwitch': 'Super admin (full access + team management)',
+'atm.fullAccessSwitch': 'Full access to all sections',
+'atm.saveScopes': 'Save permissions',
 };
