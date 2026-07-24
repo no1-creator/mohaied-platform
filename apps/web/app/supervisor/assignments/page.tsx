@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { api, getToken } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import BackBar from '@/components/BackBar';
+import { useI18n } from '@/lib/i18n';
 
 type Assignment = {
   id: string;
@@ -15,16 +16,17 @@ type Assignment = {
   reports?: { id: string }[];
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  INVITED: 'دعوة جديدة',
-  ACCEPTED: 'مقبولة',
-  ACTIVE: 'نشطة',
-  DECLINED: 'مرفوضة',
-  COMPLETED: 'منتهية',
+const STATUS_LABEL_KEYS: Record<string, string> = {
+  INVITED: 'sas.status.INVITED',
+  ACCEPTED: 'sas.status.ACCEPTED',
+  ACTIVE: 'sas.status.ACTIVE',
+  DECLINED: 'sas.status.DECLINED',
+  COMPLETED: 'sas.status.COMPLETED',
 };
 
 export default function SupervisorAssignmentsPage() {
   const router = useRouter();
+  const { tr } = useI18n();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -67,14 +69,14 @@ export default function SupervisorAssignmentsPage() {
       <TopBar />
       <BackBar />
       <div className="max-w-4xl mx-auto px-6 py-10">
-        <h1 className="text-2xl font-black mb-8">تكليفاتي</h1>
+        <h1 className="text-2xl font-black mb-8">{tr('sas.title', 'تكليفاتي')}</h1>
 
-        {loading && <p className="text-muted">جاري التحميل...</p>}
+        {loading && <p className="text-muted">{tr('cls.loading', 'جاري التحميل...')}</p>}
         {error && <p className="text-red-600 mb-4">{error}</p>}
 
         {!loading && !error && assignments.length === 0 && (
           <div className="card text-center py-16 text-muted">
-            مفيش تكليفات حاليًا.
+            {tr('sas.empty', 'مفيش تكليفات حاليًا.')}
           </div>
         )}
 
@@ -84,12 +86,12 @@ export default function SupervisorAssignmentsPage() {
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-black">{a.project?.title}</h3>
                 <span className="bg-brand-mint text-brand text-xs font-extrabold px-3 py-1 rounded-full">
-                  {STATUS_LABELS[a.status] || a.status}
+                  {STATUS_LABEL_KEYS[a.status] ? tr(STATUS_LABEL_KEYS[a.status]) : a.status}
                 </span>
               </div>
               <p className="text-sm text-muted mb-4">
-                أجر المراجعة: {a.ratePerReview} ج.م ·{' '}
-                {a.reports?.length || 0} تقرير
+                {tr('sas.rate', 'أجر المراجعة:')} {a.ratePerReview} {tr('common.currency', 'ج.م')} ·{' '}
+                {a.reports?.length || 0} {tr('sas.reportsUnit', 'تقرير')}
               </p>
 
               {a.status === 'INVITED' && (
@@ -99,14 +101,14 @@ export default function SupervisorAssignmentsPage() {
                     className="btn-primary"
                     disabled={busy === a.id}
                   >
-                    قبول التكليف
+                    {tr('sas.accept', 'قبول التكليف')}
                   </button>
                   <button
                     onClick={() => respond(a.id, false)}
                     className="btn-ghost"
                     disabled={busy === a.id}
                   >
-                    رفض
+                    {tr('sas.decline', 'رفض')}
                   </button>
                 </div>
               )}
@@ -116,7 +118,7 @@ export default function SupervisorAssignmentsPage() {
                   href={`/supervisor/assignments/${a.id}`}
                   className="bg-brand text-white px-4 py-2 rounded-xl text-sm font-extrabold inline-block"
                 >
-                  التقارير وكتابة تقرير
+                  {tr('sas.reportsLink', 'التقارير وكتابة تقرير')}
                 </Link>
               )}
             </div>
