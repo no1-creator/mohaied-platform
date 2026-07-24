@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
+import { useI18n } from '@/lib/i18n';
 
 // الصفحات اللي مالهاش لازمة زرار رجوع (رئيسية/دخول)
 const TOP_LEVEL = ['/', '/dashboard', '/login', '/register'];
@@ -12,18 +13,20 @@ const BB_CSS = `
 .bb-arrow { font-size:17px; line-height:1; }
 `;
 
-export default function BackBar({ label = 'رجوع' }: { label?: string }) {
+export default function BackBar({ label }: { label?: string }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { tr, lang } = useI18n();
+  const text = label ?? tr('common.back', 'رجوع');
 
   if (!pathname || TOP_LEVEL.includes(pathname)) return null;
 
   return (
     <div className="bb-bar">
       <style>{BB_CSS}</style>
-      <button className="bb-btn" onClick={() => router.back()} aria-label={label}>
-        <span className="bb-arrow" aria-hidden="true">→</span>
-        {label}
+      <button className="bb-btn" onClick={() => router.back()} aria-label={text}>
+        <span className="bb-arrow" aria-hidden="true">{lang === 'en' ? '←' : '→'}</span>
+        {text}
       </button>
     </div>
   );
